@@ -58,7 +58,6 @@ public class Districts extends JavaPlugin {
     // Perm list
     List<permBlock> permList = new ArrayList<permBlock>();
 
-
     /**
      * @return plugin object instance
      */
@@ -227,7 +226,11 @@ public class Districts extends JavaPlugin {
 
 	}
 	Settings.visualization = m;
-
+	Settings.blockPrice = getConfig().getDouble("districts.blockprice", 0D);
+	if (Settings.blockPrice < 0D) {
+	    Settings.blockPrice = 0D;
+	    getLogger().warning("config.yml issue: blockprice cannot be negative, setting to 0 (disabled).");
+	}
     }
 
     /*

@@ -20,7 +20,10 @@ permissions:
      default: true
   districts.advancedplayer:
      description: Gives access to advanced player commands (buy, sell, rent)
-     default: false     
+     default: false  
+  districts.buyblocks:
+     description: Enable block purchasing
+     default: false   
   districts.admin:
      description: Gives access to admin commands
      default: op

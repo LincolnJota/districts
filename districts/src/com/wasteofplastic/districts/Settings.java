@@ -33,6 +33,7 @@ public class Settings {
     public static int checkLeases;
     public static Material visualization;
     public static int blockTick;
+    public static double blockPrice;
    
     
 }

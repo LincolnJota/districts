@@ -3,7 +3,10 @@ districts:
    worldName: world
    # Starting blocks - the number of blocks a player will get at the start
    beginningblocks: 25
-
+   # Block price - how much a block can be bought for with /d buyblocks.
+   # Set it to zero to disable this function
+   # Player must have the districts.buyblocks permission to be able to buy blocks
+   blockprice: 0 
 
    # Visulizations - on or off
    showvisualization: true

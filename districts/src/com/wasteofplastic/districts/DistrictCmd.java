@@ -80,8 +80,10 @@ public class DistrictCmd implements CommandExecutor {
 		player.sendMessage(ChatColor.YELLOW + "/" + label + " balance: " + ChatColor.WHITE + "Shows you how many blocks you have to use for districts");
 		player.sendMessage(ChatColor.YELLOW + "/" + label + " remove: " + ChatColor.WHITE + "Removes a district that you are standing in if you are the owner");
 		player.sendMessage(ChatColor.YELLOW + "/" + label + " info: " + ChatColor.WHITE + "Shows info on the district you are in");
-		player.sendMessage(ChatColor.YELLOW + "/" + label + " buyblocks: " + ChatColor.WHITE + "Shows the price of blocks");
-		player.sendMessage(ChatColor.YELLOW + "/" + label + " buyblocks <number>: " + ChatColor.WHITE + "Tries to buy some blocks");
+		if (Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
+		    player.sendMessage(ChatColor.YELLOW + "/" + label + " buyblocks: " + ChatColor.WHITE + "Shows the price of blocks");
+		    player.sendMessage(ChatColor.YELLOW + "/" + label + " buyblocks <number>: " + ChatColor.WHITE + "Tries to buy some blocks");
+		}
 		if (VaultHelper.checkPerm(player, "districts.advancedplayer")) {
 		    player.sendMessage(ChatColor.YELLOW + "/" + label + " buy: " + ChatColor.WHITE + "Attempts to buy the district you are in");
 		    player.sendMessage(ChatColor.YELLOW + "/" + label + " rent: " + ChatColor.WHITE + "Attempts to rent the district you are in");
@@ -93,6 +95,14 @@ public class DistrictCmd implements CommandExecutor {
 		    player.sendMessage(ChatColor.YELLOW + "/" + label + " untrustall: " + ChatColor.WHITE + "Removes all trusted parties from your district");
 		}
 		return true;
+	    } else if (split[0].equalsIgnoreCase("buyblocks")) {
+		if (Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
+		    player.sendMessage(ChatColor.YELLOW + "Blocks cost " + VaultHelper.econ.format(Settings.blockPrice));
+		    return true;
+		} else {
+		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    return true;
+		}
 	    } else if (split[0].equalsIgnoreCase("untrustall")) {
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
 		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
@@ -452,7 +462,34 @@ public class DistrictCmd implements CommandExecutor {
 	    }
 	    break;
 	case 2:
-	    if (split[0].equalsIgnoreCase("untrust")) {
+	    if (split[0].equalsIgnoreCase("buyblocks")) {
+		if (Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
+		    int num = 0;
+		    try {
+			num = Integer.valueOf(split[1]);
+			if (num < 1) {
+			    throw new java.lang.IllegalArgumentException();
+			}
+		    } catch (Exception e) {
+			player.sendMessage(ChatColor.RED + "How many blocks do you want to buy?");
+			player.sendMessage(ChatColor.RED + "Blocks cost " + VaultHelper.econ.format(Settings.blockPrice));
+			return true;
+		    }
+		    double cost = Settings.blockPrice * (double)num;
+		    if (VaultHelper.econ.has(player, cost)) {
+			VaultHelper.econ.withdrawPlayer(player, cost);
+			players.addBlocks(player.getUniqueId(), num);
+			player.sendMessage(ChatColor.YELLOW + "You bought " + num + " blocks for " + VaultHelper.econ.format(cost));
+			return true;
+		    }
+		    player.sendMessage(ChatColor.RED + "You do not have enough money to buy that many blocks!");
+		    player.sendMessage(ChatColor.RED + "Blocks cost " + VaultHelper.econ.format(Settings.blockPrice));
+		    return true;
+		} else {
+		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    return true;
+		}
+	    } else if (split[0].equalsIgnoreCase("untrust")) {
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
 		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
 		    return true;
