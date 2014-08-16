@@ -4,7 +4,9 @@
 package com.wasteofplastic.districts;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -32,11 +34,11 @@ public class PlayerCache {
 	    }
 	}
     }
-    
+
     /*
      * Cache control methods
      */
-        
+
     public void addPlayer(final UUID playerUUID) {
 	//if (!plugin.getServer().getOfflinePlayer(playerUUID).hasPlayedBefore()) {
 	//    plugin.getLogger().severe("Asked to create a player that does not exist!");
@@ -47,7 +49,7 @@ public class PlayerCache {
 	}
 	//}
     }
-    
+
     /**
      * Stores the player's info to a file and removes the player from the list
      * of currently online players
@@ -62,7 +64,7 @@ public class PlayerCache {
 	    plugin.getLogger().info("Removing player from cache: " + player);
 	}
     }
-    
+
     /**
      * Removes all players on the server now from cache and saves their info
      */
@@ -89,7 +91,7 @@ public class PlayerCache {
 	final Players player = new Players(plugin, playerUUID);
 	return player.getIslandLocation();
     }
-*/
+     */
     /**
      * Checks if the player is known or not by looking through the filesystem
      * 
@@ -119,7 +121,7 @@ public class PlayerCache {
 	// Not found, sorry.
 	return false;
     }
-    
+
     /**
      * Returns the player object for the named player
      * @param playerUUID - String name of player
@@ -128,6 +130,28 @@ public class PlayerCache {
     public Players get(UUID playerUUID) {
 	addPlayer(playerUUID);
 	return playerCache.get(playerUUID);
+    }
+
+    /**
+     * @return a list of all known players UUID's
+     */
+    public List<UUID> getAllPlayers() {
+	// Get the file system
+	final File folder = plugin.playersFolder;
+	final File[] files = folder.listFiles();
+	List<UUID> result = new ArrayList<UUID>();
+	// Go through the native YAML files
+	for (final File f : files) {
+	    // Need to remove the .yml suffix
+	    if (f.getName().endsWith(".yml")) {
+		UUID player = UUID.fromString(f.getName().substring(0, f.getName().length() - 4));
+		if (player != null) {
+		    result.add(player);
+		}
+	    }
+	}
+	return result;
+
     }
 
     /**
@@ -140,7 +164,7 @@ public class PlayerCache {
 	return playerCache.get(playerUUID).hasADistrict();
     }
 
-    
+
     public void removeDistrict(UUID playerUUID) {
 	addPlayer(playerUUID);
 	// TODO Remove a district
@@ -150,7 +174,7 @@ public class PlayerCache {
     public void setHasDistricts(UUID playerUUID, boolean b) {
 	addPlayer(playerUUID);
 	playerCache.get(playerUUID).setHasDistricts(b);
-   }
+    }
 
     public void newDistrict(UUID playerUUID, Location islandLocation) {
 	addPlayer(playerUUID);
@@ -218,7 +242,7 @@ public class PlayerCache {
 	addPlayer(playerUUID);
 	playerCache.get(playerUUID).setInDistrict(inDistrict);
     }
-    
+
     /**
      * @param playerUUID
      * @return the district the player is in or null if no district
@@ -232,7 +256,7 @@ public class PlayerCache {
      */
     public int getBlockBalance(UUID playerUUID) {
 	addPlayer(playerUUID);
-        return playerCache.get(playerUUID).getBlockBalance();
+	return playerCache.get(playerUUID).getBlockBalance();
     }
 
     /**
@@ -250,7 +274,7 @@ public class PlayerCache {
      */
     public int addBlocks(UUID playerUUID, int blocks) {
 	addPlayer(playerUUID);
-        return playerCache.get(playerUUID).addBlocks(blocks);
+	return playerCache.get(playerUUID).addBlocks(blocks);
     }
 
     /**
@@ -262,7 +286,7 @@ public class PlayerCache {
      */
     public int removeBlocks(UUID playerUUID, int blocks) {
 	addPlayer(playerUUID);
-       return playerCache.get(playerUUID).removeBlocks(blocks);
+	return playerCache.get(playerUUID).removeBlocks(blocks);
     }
 
     public boolean getVisualize(UUID playerUUID) {
@@ -274,7 +298,7 @@ public class PlayerCache {
 	addPlayer(playerUUID);
 	playerCache.get(playerUUID).setVisualize(visualize);
     }
-    
+
 }
 
 

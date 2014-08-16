@@ -77,10 +77,11 @@ public class DistrictGuard implements Listener {
 		event.setTo(newLoc);
 	    }
 	}
+	/*
 	if (!plugin.getPos1s().containsKey(player.getUniqueId())) {
 	    // Check if visualizations are turned on for this player
 	    if (plugin.players.getVisualize(player.getUniqueId())) {
-		// Check if they are in a district
+		// If the player has visualizations running, then
 		if (plugin.getVisualizations().containsKey(player.getUniqueId())) {
 		    return;
 		}
@@ -88,6 +89,7 @@ public class DistrictGuard implements Listener {
 		if (d != null) {
 		    plugin.visualize(d,player);
 		} else {
+		    plugin.getLogger().info("Removing viz during move event");
 		    plugin.devisualize(player);
 		}
 	    } else {
@@ -95,7 +97,7 @@ public class DistrictGuard implements Listener {
 		    plugin.devisualize(player);
 		}
 	    }
-	}
+	}*/
 	// Check if they are wielding a golden hoe
 	if (player.getItemInHand() != null) {
 	    //plugin.getLogger().info("Item in hand");
@@ -190,6 +192,10 @@ public class DistrictGuard implements Listener {
 	    if (!toDistrict.getEnterMessage().isEmpty()) {
 		player.sendMessage(toDistrict.getEnterMessage());
 	    }
+	    // Check player's visualization setting
+	    if (plugin.players.getVisualize(player.getUniqueId())) {
+		plugin.visualize(toDistrict, player);
+	    }
 	    if (toDistrict.isForSale()) {
 		player.sendMessage("This district is for sale for " + VaultHelper.econ.format(toDistrict.getPrice()) + "!");
 	    } else if (toDistrict.isForRent() && toDistrict.getRenter() == null) {
@@ -202,6 +208,10 @@ public class DistrictGuard implements Listener {
 	    if (!fromDistrict.getFarewellMessage().isEmpty()) {
 		player.sendMessage(fromDistrict.getFarewellMessage());
 	    }
+	    // Check player's visualization setting
+	    if (plugin.players.getVisualize(player.getUniqueId())) {
+		plugin.visualize(toDistrict, player);
+	    } 
 	    if (!toDistrict.getEnterMessage().isEmpty()) {
 		player.sendMessage(toDistrict.getEnterMessage());
 	    }
@@ -354,16 +364,16 @@ public class DistrictGuard implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamage(final EntityDamageByEntityEvent e) {
 	if (!e.getEntity().getWorld().getName().equalsIgnoreCase(Settings.worldName)) {
-	    plugin.getLogger().info("Not in world");
+	    //plugin.getLogger().info("Not in world");
 	    return;
 	}
 	// Get the district that this block is in (if any)
 	DistrictRegion d = plugin.getInDistrict(e.getEntity().getLocation());
 	if (d == null) {
-	    plugin.getLogger().info("Not in a district");
+	    //plugin.getLogger().info("Not in a district");
 	    return;	    
 	}
-	plugin.getLogger().info("D is something " + d.getEnterMessage());
+	//plugin.getLogger().info("D is something " + d.getEnterMessage());
 	// Ops can do anything
 	if (e.getDamager() instanceof Player) {
 	    if (((Player)e.getDamager()).isOp()) {
@@ -385,20 +395,20 @@ public class DistrictGuard implements Listener {
 	if (!(e.getDamager() instanceof Player) && !(e.getDamager() instanceof Projectile)) {
 	    return;
 	}
-	plugin.getLogger().info("Entity is " + e.getEntity().toString());
+	//plugin.getLogger().info("Entity is " + e.getEntity().toString());
 	// Check for player initiated damage
 	if (e.getDamager() instanceof Player) {
-	    plugin.getLogger().info("Damager is " + ((Player)e.getDamager()).getName());
+	    //plugin.getLogger().info("Damager is " + ((Player)e.getDamager()).getName());
 	    // If the target is not a player check if mobs can be hurt
 	    if (!(e.getEntity() instanceof Player)) {
 		if (e.getEntity() instanceof Monster) {
-		    plugin.getLogger().info("Entity is a monster - ok to hurt"); 
+		    //plugin.getLogger().info("Entity is a monster - ok to hurt"); 
 		    return;
 		} else {
-		    plugin.getLogger().info("Entity is a non-monster - check if ok to hurt"); 
+		    //plugin.getLogger().info("Entity is a non-monster - check if ok to hurt"); 
 		    UUID playerUUID = e.getDamager().getUniqueId();
 		    if (playerUUID == null) {
-			plugin.getLogger().info("player ID is null");
+			//plugin.getLogger().info("player ID is null");
 		    }
 		    if (!d.getAllowHurtMobs(playerUUID)) {
 			((Player)e.getDamager()).sendMessage(ChatColor.RED + Locale.districtProtected);
@@ -420,29 +430,29 @@ public class DistrictGuard implements Listener {
 	    }
 	}
 
-	plugin.getLogger().info("Player attack (or arrow)");
+	//plugin.getLogger().info("Player attack (or arrow)");
 	// Only damagers who are players or arrows are left
 	// If the projectile is anything else than an arrow don't worry about it in this listener
 	// Handle splash potions separately.
 	if (e.getDamager() instanceof Arrow) {
-	    plugin.getLogger().info("Arrow attack");
+	    //plugin.getLogger().info("Arrow attack");
 	    Arrow arrow = (Arrow)e.getDamager();
 	    // It really is an Arrow
 	    if (arrow.getShooter() instanceof Player) {
 		Player shooter = (Player)arrow.getShooter();
-		plugin.getLogger().info("Player arrow attack");
+		//plugin.getLogger().info("Player arrow attack");
 		if (e.getEntity() instanceof Player) {
-		    plugin.getLogger().info("Player vs Player!");
+		    //plugin.getLogger().info("Player vs Player!");
 		    // Arrow shot by a player at another player
 		    if (!d.getAllowPVP()) {
-			plugin.getLogger().info("Target player is in a no-PVP district!");
+			//plugin.getLogger().info("Target player is in a no-PVP district!");
 			((Player)arrow.getShooter()).sendMessage("Target is in a no-PVP district!");
 			e.setCancelled(true);
 			return;
 		    } 
 		} else {
 		    if (!(e.getEntity() instanceof Monster)) {
-			plugin.getLogger().info("Entity is a non-monster - check if ok to hurt"); 
+			//plugin.getLogger().info("Entity is a non-monster - check if ok to hurt"); 
 			UUID playerUUID = shooter.getUniqueId();
 			if (!d.getAllowHurtMobs(playerUUID)) {
 			    shooter.sendMessage(ChatColor.RED + Locale.districtProtected);
@@ -454,7 +464,7 @@ public class DistrictGuard implements Listener {
 		}
 	    }
 	} else if (e.getDamager() instanceof Player){
-	    plugin.getLogger().info("Player attack");
+	    //plugin.getLogger().info("Player attack");
 	    // Just a player attack
 	    if (!d.getAllowPVP()) {
 		((Player)e.getDamager()).sendMessage("Target is in a no-PVP district!");

@@ -3,6 +3,31 @@ districts:
    worldName: world
    # Starting blocks - the number of blocks a player will get at the start
    beginningblocks: 25
+
+
+   # Visulizations - on or off
+   showvisualization: true
+   # Visualization material
+   # Can be anything, but must be solid.
+   # Good ones - GLOWSTONE, DIAMOND_BLOCK, GOLD_BLOCK, etc.
+   # Default is REDSTONE_BLOCK
+   visualblock: DIAMOND_BLOCK
+
+
+   # Who gets blocks and how often
+   # permission: <number of blocks>:<max>
+   # List permission and how many blocks they get every tick and the maximum #
+   # The permission can be anything you like, but you have to add it to the
+   # players using a permissions plugin or other plugin.
+   blockgroups:
+     districts.player: 1:100
+     districts.advancedplayer: 2:200
+     districts.vip: 3:300
+     districts.donor: 20:500
+     districts.superdonor: 100:1000
+   # How often to give out the blocks in minutes, if zero, blocks will never be given
+   blocktick: 1
+
    # How often to check leases in hours. If this is 0, then leases will be checked
    # once when the plugin is loaded. If your server is automatically reset every day
    # this may be sufficient. The smaller this number, the quicker a lease will expire

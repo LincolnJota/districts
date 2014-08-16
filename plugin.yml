@@ -1,6 +1,6 @@
 name: Districts
 main: com.wasteofplastic.districts.Districts
-version: 0.4
+version: 0.5
 description: Districts
 author: Tastybento
 depend: [Vault]
@@ -16,8 +16,11 @@ commands:
             /dadmin
 permissions:    
   districts.player:
-     description: Gives access to player commands
+     description: Gives access to basic player commands
      default: true
+  districts.advancedplayer:
+     description: Gives access to advanced player commands (buy, sell, rent)
+     default: false     
   districts.admin:
      description: Gives access to admin commands
      default: op

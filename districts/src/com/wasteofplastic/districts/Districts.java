@@ -17,8 +17,10 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -53,6 +55,8 @@ public class Districts extends JavaPlugin {
     private HashMap<UUID,Location> pos1s = new HashMap<UUID,Location>();
     // Where visualization blocks are kept
     private static HashMap<UUID, List<Location>> visualizations = new HashMap<UUID, List<Location>>();
+    // Perm list
+    List<permBlock> permList = new ArrayList<permBlock>();
 
 
     /**
@@ -195,6 +199,14 @@ public class Districts extends JavaPlugin {
 	    Settings.beginningBlocks = 0;
 	    getLogger().warning("Beginning Blocks in config.yml was set to a negative value!");
 	}
+	Settings.blockTick = getConfig().getInt("districts.blocktick",0);
+	if (Settings.blockTick < 0) {
+	    Settings.blockTick = 0;
+	    getLogger().warning("blocktick in config.yml was set to a negative value! Setting to 0. No blocks given out.");	    
+	} else if (Settings.checkLeases > 1440) {
+	    Settings.checkLeases = 1440;
+	    getLogger().warning("Maximum value for Checkleases in config.yml is 1440 minutes (24h). Setting to 1440.");	    
+	}
 	Settings.checkLeases = getConfig().getInt("districts.checkleases",12);
 	if (Settings.checkLeases < 0) {
 	    Settings.checkLeases = 0;
@@ -203,6 +215,19 @@ public class Districts extends JavaPlugin {
 	    Settings.checkLeases = 24;
 	    getLogger().warning("Maximum value for Checkleases in config.yml is 24 hours. Setting to 24.");	    
 	}
+	String vizMat = getConfig().getString("districts.visualblock", "REDSTONE_BLOCK");
+	Material m = Material.REDSTONE_BLOCK;
+	try {
+	    m = Material.valueOf(vizMat);
+	    if (!m.isSolid()) {
+		m = Material.REDSTONE_BLOCK;
+	    }
+	} catch (Exception e) {
+	    getLogger().severe("Visualization block material (districts.visualblock) is invalid in config.yml! Defaulting to REDSTONE_BLOCK."); 
+
+	}
+	Settings.visualization = m;
+
     }
 
     /*
@@ -215,7 +240,7 @@ public class Districts extends JavaPlugin {
 	try {
 	    // Remove players from memory
 	    players.removeAllPlayers();
-	    saveConfig();
+	    //saveConfig();
 	    saveMessages();
 	} catch (final Exception e) {
 	    plugin.getLogger().severe("Something went wrong saving files!");
@@ -258,6 +283,35 @@ public class Districts extends JavaPlugin {
 	// Load messages
 	loadMessages();
 
+	// Get the block donation section
+	ConfigurationSection blockgroups = getConfig().getConfigurationSection("districts.blockgroups");
+	if (blockgroups != null) {
+	    //getLogger().info("DEBUG: Loading blockgroups");
+	    //getLogger().info("DEBUG: There are " + blockgroups.getKeys(true).size());
+	    for (String perm : blockgroups.getKeys(true)) {
+		//getLogger().info("DEBUG: " + perm);
+		try {
+		    // format is permission: <number of blocks>:<duration>:<max>
+		    String settings[] = blockgroups.getString(perm).split(":");
+		    if (settings.length == 2) {
+			permBlock p = new permBlock();
+			p.name = perm;
+			p.numberOfBlocks = Integer.valueOf(settings[0]);
+			p.max = Integer.valueOf(settings[1]);
+			permList.add(p);
+			getLogger().info("Loading block permission " + p.name + " " + p.numberOfBlocks + ":" + p.max);
+		    }
+		} catch (Exception e) {
+		    getLogger().severe("Error in config.yml in district.blockgroups section - check it");
+		    getLogger().severe("Skipping " + perm);
+		}
+	    }	    
+	} else {
+	    getLogger().severe("Error in config.yml in district.blockgroups section - does not exist"); 
+	}
+
+
+
 	// Kick off a few tasks on the next tick
 	getServer().getScheduler().runTask(plugin, new Runnable() {
 	    @Override
@@ -276,6 +330,23 @@ public class Districts extends JavaPlugin {
 		loadDistricts();
 	    }
 	});
+	// Kick off give blocks
+	long dur = Settings.blockTick * 60 * 20; // Minutes
+	if (dur > 0) {
+	    getLogger().info("Block tick timer started. Will give out blocks every " + Settings.blockTick + " minutes.");
+	    getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
+		@Override
+		public void run() {
+		    //getLogger().info("Giving out blocks. Will repeat in " + Settings.blockTick + " mins.");
+		    giveBlocks();
+		}
+	    }, 0L, dur);
+
+	} else {
+	    getLogger().warning("Blocks will not be given out automatically. Set blocktick to non-zero to change.");
+	}
+
+
 	// Kick off the check leases 
 	long duration = Settings.checkLeases * 60 * 60 * 20; // Server ticks
 	if (duration > 0) {
@@ -292,6 +363,41 @@ public class Districts extends JavaPlugin {
 	    getLogger().warning("Leases will not be checked automatically. Make sure your server restarts regularly.");
 	}
     }
+
+    /**
+     * Gives out blocks to every registered player depending on their permission level
+     */
+    public static class permBlock {
+	public String name;
+	public int numberOfBlocks, max;
+    }
+    protected void giveBlocks() {
+	// Run through all the players and give blocks as appropriate
+	for (Player p : getServer().getOnlinePlayers()) {
+	    //getLogger().info("DEBUG: Checking player " + p.getDisplayName());
+	    int blockBalance = players.getBlockBalance(p.getUniqueId());
+	    int bestAdd = 0;
+	    // Check perms
+	    for (permBlock pb : permList) {
+		//getLogger().info("DEBUG: checking " + pb.name + " " + pb.numberOfBlocks + ":" + pb.max);
+		if (VaultHelper.checkPerm(p, pb.name)) {
+		    //getLogger().info("DEBUG: Player has perm");
+		    // Check if they have the max already, if not give them more  
+		    //getLogger().info("DEBUG: balance = " + blockBalance);
+		    if ((blockBalance+pb.numberOfBlocks) <= pb.max && pb.numberOfBlocks > bestAdd) {
+			//getLogger().info("DEBUG: Giving blocks!");
+			bestAdd = pb.numberOfBlocks;
+		    } else if ((pb.max - blockBalance) > bestAdd) {
+			//getLogger().info("DEBUG: Maxed out!");
+			bestAdd = pb.max - blockBalance;
+		    }
+		}
+	    }
+	    //getLogger().info("DEBUG: Adding " + bestAdd);
+	    players.setBlocks(p.getUniqueId(), bestAdd + blockBalance);
+	}
+    }
+
 
     public int daysToEndOfLease(DistrictRegion d) {
 	// Basic checking
@@ -671,6 +777,7 @@ public class Districts extends JavaPlugin {
 	if (visualizations.containsKey(player.getUniqueId())) {
 	    devisualize(player);
 	}
+	//getLogger().info("DEBUG: visualize pos1 = " + d.getPos1() + " pos2 = " + d.getPos2());
 	// Get the four corners
 	int minx = Math.min(d.getPos1().getBlockX(), d.getPos2().getBlockX());
 	int maxx = Math.max(d.getPos1().getBlockX(), d.getPos2().getBlockX());
@@ -691,25 +798,25 @@ public class Districts extends JavaPlugin {
 	for (int x = minx; x<= maxx; x++) {
 	    Location v = new Location(player.getWorld(),x,0,minz);
 	    v = player.getWorld().getHighestBlockAt(v).getLocation().subtract(new Vector(0,1,0));
-	    player.sendBlockChange(v, Material.REDSTONE_BLOCK, (byte)0);
+	    player.sendBlockChange(v, Settings.visualization, (byte)0);
 	    positions.add(v);
 	}
 	for (int x = minx; x<= maxx; x++) {
 	    Location v = new Location(player.getWorld(),x,0,maxz);
 	    v = player.getWorld().getHighestBlockAt(v).getLocation().subtract(new Vector(0,1,0));
-	    player.sendBlockChange(v, Material.REDSTONE_BLOCK, (byte)0);
+	    player.sendBlockChange(v, Settings.visualization, (byte)0);
 	    positions.add(v);
 	}
 	for (int z = minz; z<= maxz; z++) {
 	    Location v = new Location(player.getWorld(),minx,0,z);
 	    v = player.getWorld().getHighestBlockAt(v).getLocation().subtract(new Vector(0,1,0));
-	    player.sendBlockChange(v, Material.REDSTONE_BLOCK, (byte)0);
+	    player.sendBlockChange(v, Settings.visualization, (byte)0);
 	    positions.add(v);
 	}
 	for (int z = minz; z<= maxz; z++) {
 	    Location v = new Location(player.getWorld(),maxx,0,z);
 	    v = player.getWorld().getHighestBlockAt(v).getLocation().subtract(new Vector(0,1,0));
-	    player.sendBlockChange(v, Material.REDSTONE_BLOCK, (byte)0);
+	    player.sendBlockChange(v, Settings.visualization, (byte)0);
 	    positions.add(v);
 	}
 
@@ -719,12 +826,12 @@ public class Districts extends JavaPlugin {
     }
 
     @SuppressWarnings("deprecation") void visualize(Location l, Player player) {
-	plugin.getLogger().info("Visualize location");
+	//plugin.getLogger().info("Visualize location");
 	// Deactivate any previous visualization
 	if (visualizations.containsKey(player.getUniqueId())) {
 	    devisualize(player);
 	}
-	player.sendBlockChange(l, Material.REDSTONE_BLOCK, (byte)0);
+	player.sendBlockChange(l, Settings.visualization, (byte)0);
 	// Save these locations
 	List<Location> pos = new ArrayList<Location>();
 	pos.add(l);
@@ -733,7 +840,7 @@ public class Districts extends JavaPlugin {
 
     @SuppressWarnings("deprecation")
     public void devisualize(Player player) {
-	//Districts.getPlugin().getLogger().info("Removing visualization");
+	//getLogger().info("Removing visualization");
 	if (!visualizations.containsKey(player.getUniqueId())) {
 	    return;
 	}
@@ -746,7 +853,7 @@ public class Districts extends JavaPlugin {
 
 
     /**
-     * @return the visualizations
+     * @return A map of blocks being visualized to the player.
      */
     public HashMap<UUID, List<Location>> getVisualizations() {
 	return visualizations;

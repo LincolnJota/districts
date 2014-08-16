@@ -1,5 +1,7 @@
 package com.wasteofplastic.districts;
 
+import org.bukkit.Material;
+
 
 /**
  * @author ben
@@ -29,6 +31,8 @@ public class Settings {
     public static String worldName;
     public static int beginningBlocks;
     public static int checkLeases;
+    public static Material visualization;
+    public static int blockTick;
    
     
 }

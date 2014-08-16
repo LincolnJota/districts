@@ -25,7 +25,7 @@ public class JoinLeaveEvents implements Listener {
      */
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerJoin(final PlayerJoinEvent event) {
-	Player p = event.getPlayer();
+	final Player p = event.getPlayer();
 	final UUID playerUUID = p.getUniqueId();
 	players.addPlayer(playerUUID);
 	// Set the player's name (it may have changed)
@@ -36,12 +36,25 @@ public class JoinLeaveEvents implements Listener {
 	// Check to see if the player is in a district - one may have cropped up around them while they were logged off
 	for (DistrictRegion d: plugin.getDistricts()) {
 	    if (d.intersectsDistrict(p.getLocation())) {
-		plugin.getLogger().info(p.getName() + " is in a known district");
+		//plugin.getLogger().info(p.getName() + " is in a known district");
 		if (players.getInDistrict(playerUUID) == null || !players.getInDistrict(playerUUID).equals(d)) {
 		    players.setInDistrict(playerUUID, d);
 		    p.sendMessage(d.getEnterMessage());
 		}
-		players.setVisualize(playerUUID, true);
+		final DistrictRegion dr = d;
+		if (plugin.players.getVisualize(p.getUniqueId())) {
+		    plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
+
+			@Override
+			public void run() {
+			    //plugin.getLogger().info("visualizing tick");
+			    plugin.visualize(dr, p);
+
+			}},20L);
+		}
+		// }
+
+		//players.setVisualize(playerUUID, true);
 		break;
 	    }
 	}

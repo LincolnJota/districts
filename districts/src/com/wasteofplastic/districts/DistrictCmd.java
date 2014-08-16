@@ -10,11 +10,16 @@ import net.milkbowl.vault.economy.EconomyResponse;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Biome;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 public class DistrictCmd implements CommandExecutor {
     public boolean busyFlag = true;
@@ -51,7 +56,7 @@ public class DistrictCmd implements CommandExecutor {
 	    player.sendMessage("Districts only available in " + Settings.worldName + " world.");
 	    return true;
 	}
-	// Basic permissions check to even use /district
+	// Basic permissions check to even use /" + label + "
 	if (!VaultHelper.checkPerm(player, "districts.player")) {
 	    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
 	    return true;
@@ -62,29 +67,37 @@ public class DistrictCmd implements CommandExecutor {
 	 */
 	final UUID playerUUID = player.getUniqueId();
 	switch (split.length) {
-	// /district command by itself
+	// /" + label + " command by itself
 	case 0:
 	case 1:
-	    // /district <command>
+	    // /" + label + " <command>
 	    if (split.length == 0 || split[0].equalsIgnoreCase("help")) { 
 		player.sendMessage(ChatColor.GREEN + "Districts " + plugin.getDescription().getVersion() + " help:");
 
-		player.sendMessage(ChatColor.YELLOW + "/district claim <radius>: " + ChatColor.WHITE + "Claims a square district with you in the middle of it");
-		player.sendMessage(ChatColor.YELLOW + "/district view: " + ChatColor.WHITE + "Toggles the red district boundary visualization on or off");
-		player.sendMessage(ChatColor.YELLOW + "/district trust <playername>: " + ChatColor.WHITE + "Gives player full access to your district");
-		player.sendMessage(ChatColor.YELLOW + "/district untrust <playername>: " + ChatColor.WHITE + "Revokes trust to your district");
-		player.sendMessage(ChatColor.YELLOW + "/district untrustall: " + ChatColor.WHITE + "Removes all trusted parties from your district");
-		player.sendMessage(ChatColor.YELLOW + "/district pos: " + ChatColor.WHITE + "Sets a position for a district corner");
-		player.sendMessage(ChatColor.YELLOW + "/district balance: " + ChatColor.WHITE + "Shows you how many blocks you have to use for districts");
-		player.sendMessage(ChatColor.YELLOW + "/district remove: " + ChatColor.WHITE + "Removes a district that you are standing in if you are the owner");
-		player.sendMessage(ChatColor.YELLOW + "/district info: " + ChatColor.WHITE + "Shows info on the district you are in");
-		player.sendMessage(ChatColor.YELLOW + "/district buy: " + ChatColor.WHITE + "Attempts to buy the district you are in");
-		player.sendMessage(ChatColor.YELLOW + "/district rent: " + ChatColor.WHITE + "Attempts to rent the district you are in");
-		player.sendMessage(ChatColor.YELLOW + "/district rent <price>: " + ChatColor.WHITE + "Puts the district you are in up for rent for a weekly rent");
-		player.sendMessage(ChatColor.YELLOW + "/district sell <price>: " + ChatColor.WHITE + "Puts the district you are in up for sale");
-		player.sendMessage(ChatColor.YELLOW + "/district cancel: " + ChatColor.WHITE + "Cancels a For Sale, For Rent or a Lease");
+		player.sendMessage(ChatColor.YELLOW + "/" + label + " claim <radius>: " + ChatColor.WHITE + "Claims a square district with you in the middle of it");
+		player.sendMessage(ChatColor.YELLOW + "/" + label + " view: " + ChatColor.WHITE + "Toggles the red district boundary visualization on or off");
+		player.sendMessage(ChatColor.YELLOW + "/" + label + " pos: " + ChatColor.WHITE + "Sets a position for a district corner");
+		player.sendMessage(ChatColor.YELLOW + "/" + label + " balance: " + ChatColor.WHITE + "Shows you how many blocks you have to use for districts");
+		player.sendMessage(ChatColor.YELLOW + "/" + label + " remove: " + ChatColor.WHITE + "Removes a district that you are standing in if you are the owner");
+		player.sendMessage(ChatColor.YELLOW + "/" + label + " info: " + ChatColor.WHITE + "Shows info on the district you are in");
+		player.sendMessage(ChatColor.YELLOW + "/" + label + " buyblocks: " + ChatColor.WHITE + "Shows the price of blocks");
+		player.sendMessage(ChatColor.YELLOW + "/" + label + " buyblocks <number>: " + ChatColor.WHITE + "Tries to buy some blocks");
+		if (VaultHelper.checkPerm(player, "districts.advancedplayer")) {
+		    player.sendMessage(ChatColor.YELLOW + "/" + label + " buy: " + ChatColor.WHITE + "Attempts to buy the district you are in");
+		    player.sendMessage(ChatColor.YELLOW + "/" + label + " rent: " + ChatColor.WHITE + "Attempts to rent the district you are in");
+		    player.sendMessage(ChatColor.YELLOW + "/" + label + " rent <price>: " + ChatColor.WHITE + "Puts the district you are in up for rent for a weekly rent");
+		    player.sendMessage(ChatColor.YELLOW + "/" + label + " sell <price>: " + ChatColor.WHITE + "Puts the district you are in up for sale");
+		    player.sendMessage(ChatColor.YELLOW + "/" + label + " cancel: " + ChatColor.WHITE + "Cancels a For Sale, For Rent or a Lease");
+		    player.sendMessage(ChatColor.YELLOW + "/" + label + " trust <playername>: " + ChatColor.WHITE + "Gives player full access to your district");
+		    player.sendMessage(ChatColor.YELLOW + "/" + label + " untrust <playername>: " + ChatColor.WHITE + "Revokes trust to your district");
+		    player.sendMessage(ChatColor.YELLOW + "/" + label + " untrustall: " + ChatColor.WHITE + "Removes all trusted parties from your district");
+		}
 		return true;
 	    } else if (split[0].equalsIgnoreCase("untrustall")) {
+		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
+		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    return true;
+		}
 		DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d == null) {
 		    player.sendMessage(ChatColor.RED + "Move to a district you own or rent first.");
@@ -141,6 +154,9 @@ public class DistrictCmd implements CommandExecutor {
 		    player.sendMessage(ChatColor.YELLOW + "Switching district boundary off");
 		} else {
 		    player.sendMessage(ChatColor.YELLOW + "Switching district boundary on");
+		    DistrictRegion d = players.getInDistrict(playerUUID);
+		    if (d != null)
+			plugin.visualize(d, player);
 		}
 		players.setVisualize(playerUUID, !players.getVisualize(playerUUID));		
 		return true;
@@ -184,6 +200,7 @@ public class DistrictCmd implements CommandExecutor {
 		}
 		return true;
 	    } else if (split[0].equalsIgnoreCase("remove")) {
+
 		DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
 		    if (d.getOwner().equals(playerUUID)) {
@@ -220,6 +237,10 @@ public class DistrictCmd implements CommandExecutor {
 		player.sendMessage("Your block balance is " + balance);
 		return true;
 	    } else if (split[0].equalsIgnoreCase("buy")) {
+		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
+		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    return true;
+		}
 		DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
 		    if (!d.isForSale()) {
@@ -270,6 +291,10 @@ public class DistrictCmd implements CommandExecutor {
 		}
 		player.sendMessage(ChatColor.RED + "This is not your district!");
 	    } else if (split[0].equalsIgnoreCase("rent")) {
+		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
+		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    return true;
+		}
 		DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
 		    if (!d.isForRent()) {
@@ -327,6 +352,10 @@ public class DistrictCmd implements CommandExecutor {
 		}
 		player.sendMessage(ChatColor.RED + "This is not your district!");
 	    } else if (split[0].equalsIgnoreCase("cancel")) {
+		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
+		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    return true;
+		}
 		DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
 		    if (d.getOwner().equals(playerUUID)) {
@@ -341,11 +370,11 @@ public class DistrictCmd implements CommandExecutor {
 			    player.sendMessage(ChatColor.GOLD + "District is currently leased by " + players.getName(d.getRenter()) + ".");
 			    player.sendMessage(ChatColor.GOLD + "Lease will not renew and will terminate in " + plugin.daysToEndOfLease(d) + " days.");
 			    player.sendMessage(ChatColor.GOLD + "You can put it up for rent again after that date.");
-				if (plugin.getServer().getPlayer(d.getRenter()) != null) {
-				    plugin.getServer().getPlayer(d.getRenter()).sendMessage( players.getName(d.getOwner()) + " ended a lease you have on a district. It will end in " + plugin.daysToEndOfLease(d) + " days.");
-				} else {
-				    plugin.setMessage(d.getRenter(), players.getName(d.getOwner()) + " ended a lease you have on a district!");
-				}
+			    if (plugin.getServer().getPlayer(d.getRenter()) != null) {
+				plugin.getServer().getPlayer(d.getRenter()).sendMessage( players.getName(d.getOwner()) + " ended a lease you have on a district. It will end in " + plugin.daysToEndOfLease(d) + " days.");
+			    } else {
+				plugin.setMessage(d.getRenter(), players.getName(d.getOwner()) + " ended a lease you have on a district!");
+			    }
 
 			    d.setForSale(false);
 			    d.setForRent(false);
@@ -355,16 +384,16 @@ public class DistrictCmd implements CommandExecutor {
 			}
 		    } else if (d.getRenter() != null && d.getRenter().equals(player.getUniqueId())) {
 			// Renter wanting to cancel the lease
-			    player.sendMessage(ChatColor.GOLD + "Lease renewal cancelled. Lease term finishes in " + plugin.daysToEndOfLease(d) + " days.");
-				if (plugin.getServer().getPlayer(d.getOwner()) != null) {
-				    plugin.getServer().getPlayer(d.getOwner()).sendMessage( player.getDisplayName() + " canceled a lease with you. It will end in " + plugin.daysToEndOfLease(d) + " days.");
-				} else {
-				    plugin.setMessage(d.getOwner(), player.getDisplayName() + " canceled a lease with you. It will end in " + plugin.daysToEndOfLease(d) + " days.");
-				}
-			    d.setForSale(false);
-			    d.setForRent(false);
-			    d.setPrice(0D);
-			    return true;
+			player.sendMessage(ChatColor.GOLD + "Lease renewal cancelled. Lease term finishes in " + plugin.daysToEndOfLease(d) + " days.");
+			if (plugin.getServer().getPlayer(d.getOwner()) != null) {
+			    plugin.getServer().getPlayer(d.getOwner()).sendMessage( player.getDisplayName() + " canceled a lease with you. It will end in " + plugin.daysToEndOfLease(d) + " days.");
+			} else {
+			    plugin.setMessage(d.getOwner(), player.getDisplayName() + " canceled a lease with you. It will end in " + plugin.daysToEndOfLease(d) + " days.");
+			}
+			d.setForSale(false);
+			d.setForRent(false);
+			d.setPrice(0D);
+			return true;
 		    } else {
 			player.sendMessage(ChatColor.RED + "This is not your district!");
 		    }
@@ -424,6 +453,11 @@ public class DistrictCmd implements CommandExecutor {
 	    break;
 	case 2:
 	    if (split[0].equalsIgnoreCase("untrust")) {
+		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
+		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    return true;
+		}
+
 		DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d == null) {
 		    player.sendMessage(ChatColor.RED + "Move to a district you own or rent first.");
@@ -483,6 +517,11 @@ public class DistrictCmd implements CommandExecutor {
 		}
 
 	    } else if (split[0].equalsIgnoreCase("trust")) {
+		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
+		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    return true;
+		}
+
 		DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d == null) {
 		    player.sendMessage(ChatColor.RED + "Move to a district you own or rent first.");
@@ -552,7 +591,7 @@ public class DistrictCmd implements CommandExecutor {
 		try {
 		    blocks = Integer.parseInt(split[1]);
 		} catch (Exception e) {
-		    player.sendMessage(ChatColor.RED + "/district claim <number of blocks radius>");
+		    player.sendMessage(ChatColor.RED + "/" + label + " claim <number of blocks radius>");
 		    return true;		    
 		}
 		// Check if they have enough blocks
@@ -581,6 +620,11 @@ public class DistrictCmd implements CommandExecutor {
 		}
 		return true;
 	    } else if (split[0].equalsIgnoreCase("sell")) { 
+		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
+		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    return true;
+		}
+
 		DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
 		    if (d.getOwner().equals(playerUUID)) {
@@ -613,6 +657,11 @@ public class DistrictCmd implements CommandExecutor {
 		return true;
 
 	    } else if (split[0].equalsIgnoreCase("rent")) { 
+		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
+		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    return true;
+		}
+
 		DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
 		    if (d.getOwner().equals(playerUUID)) {

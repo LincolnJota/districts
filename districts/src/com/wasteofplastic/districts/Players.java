@@ -79,10 +79,10 @@ public class Players {
 		    Location pos1 = getLocationString(playerInfo.getString("districts." + key + ".pos-one"));
 		    Location pos2 = getLocationString(playerInfo.getString("districts." + key + ".pos-two"));
 		    // Check if this district already exists
-		    if (plugin.checkDistrictIntersection(pos1, pos2)) {
-			plugin.getLogger().info("DEBUG: District already exists or overlaps - ignoring");
+		    if (!plugin.checkDistrictIntersection(pos1, pos2)) {
+			//plugin.getLogger().info("DEBUG: District already exists or overlaps - ignoring");
 
-		    } else {
+		    //} else {
 			DistrictRegion d = new DistrictRegion(plugin, pos1, pos2, uuid);
 			d.setId(UUID.fromString(playerInfo.getString("districts." + key + ".id")));
 			// Load all the flags
