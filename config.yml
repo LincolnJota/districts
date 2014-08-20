@@ -17,18 +17,23 @@ districts:
    visualblock: DIAMOND_BLOCK
 
 
-   # Who gets blocks and how often
+   # Who gets blocks and how many
    # permission: <number of blocks>:<max>
    # List permission and how many blocks they get every tick and the maximum #
    # The permission can be anything you like, but you have to add it to the
    # players using a permissions plugin or other plugin.
    blockgroups:
+     #Default permission
      districts.player: 1:100
+     #Advanced permission
      districts.advancedplayer: 2:200
+     #These are just examples - make your own or use them if you like
      districts.vip: 3:300
      districts.donor: 20:500
      districts.superdonor: 100:1000
    # How often to give out the blocks in minutes, if zero, blocks will never be given
+   # Players must be *online* to receive blocks, so a small number is okay.
+   # Blocks stop being given when the player maxes out.
    blocktick: 1
 
    # How often to check leases in hours. If this is 0, then leases will be checked
