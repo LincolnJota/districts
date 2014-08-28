@@ -1,5 +1,8 @@
 package com.wasteofplastic.districts;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.Material;
 
 
@@ -27,13 +30,16 @@ public class Settings {
     public static boolean allowBrewing;
     public static boolean allowGateUse;
     public static boolean allowMobHarm;
+    public static boolean allowFlowIn;
+    public static boolean allowFlowOut;
     // General
-    public static String worldName;
+    public static List<String> worldName = new ArrayList<String>();
     public static int beginningBlocks;
     public static int checkLeases;
     public static Material visualization;
     public static int blockTick;
     public static double blockPrice;
+
    
     
 }

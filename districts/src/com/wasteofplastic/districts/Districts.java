@@ -15,20 +15,20 @@ import java.util.UUID;
 import net.milkbowl.vault.economy.EconomyResponse;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
-import com.sun.tools.hat.internal.util.Misc;
 
 /**
  * @author ben
@@ -57,6 +57,8 @@ public class Districts extends JavaPlugin {
     private static HashMap<UUID, List<Location>> visualizations = new HashMap<UUID, List<Location>>();
     // Perm list
     List<permBlock> permList = new ArrayList<permBlock>();
+    // Database of control panels for players
+    HashMap<UUID, List<CPItem>> controlPanel = new HashMap<UUID, List<CPItem>>();
 
     /**
      * @return plugin object instance
@@ -171,6 +173,7 @@ public class Districts extends JavaPlugin {
 	Locale.adminHelpinfo = getLocale().getString("adminHelp.info","display information for the given player.");
 	Locale.reloadconfigReloaded = getLocale().getString("reload.configurationReloaded", "Configuration reloaded from file.");	//delete
 	Locale.deleteremoving = getLocale().getString("delete.removing","District removed.");
+	Locale.controlPanelTitle = getLocale().getString("general.controlpaneltitle", "District Control Panel");
 	// Assign settings
 	Settings.allowPvP = getConfig().getBoolean("districts.allowPvP",false);
 	Settings.allowBreakBlocks = getConfig().getBoolean("districts.allowbreakblocks", false);
@@ -190,9 +193,10 @@ public class Districts extends JavaPlugin {
 	Settings.allowBrewing = getConfig().getBoolean("districts.allowbrewing", false);
 	Settings.allowGateUse = getConfig().getBoolean("districts.allowgateuse", false);
 	Settings.allowMobHarm = getConfig().getBoolean("districts.allowmobharm", false);
+	Settings.allowFlowIn = getConfig().getBoolean("districts.allowflowin", false);
+	Settings.allowFlowOut = getConfig().getBoolean("districts.allowflowout", false);
 	// Other settings
-	Settings.worldName = getConfig().getString("districts.worldName","world");
-	getLogger().info("World name is: " + Settings.worldName );
+	Settings.worldName = getConfig().getStringList("districts.worldName");
 	Settings.beginningBlocks = getConfig().getInt("districts.beginningblocks",25);
 	if (Settings.beginningBlocks < 0) {
 	    Settings.beginningBlocks = 0;
@@ -913,5 +917,74 @@ public class Districts extends JavaPlugin {
 	return closest;
 
     }
+
+    /**
+     * Dynamically creates an inventory of challenges for the player
+     * @param player
+     * @return
+     */
+    public Inventory controlPanel(Player player) {
+	// Create the control panel for the player
+	DistrictRegion d = players.getInDistrict(player.getUniqueId());
+	if (d == null) {
+	    player.sendMessage(ChatColor.RED + "You must be in a district to manage it!");
+	    return null;
+	}
+	// New panel map
+	HashMap<String,Material> icons = new HashMap<String,Material>();
+	icons.put("allowShearing",Material.WOOL);
+	icons.put("allowGateUse", Material.FENCE_GATE);
+	icons.put("allowBucketUse", Material.BUCKET);
+	icons.put("allowChestAccess", Material.CHEST);
+	icons.put("allowRedStone", Material.REDSTONE);
+	icons.put("allowEnderPearls", Material.ENDER_PEARL);
+	icons.put("allowFurnaceUse", Material.FURNACE);
+	icons.put("allowCrafting", Material.WORKBENCH);
+	icons.put("allowBedUse", Material.BED);
+	icons.put("allowBrewing", Material.BREWING_STAND_ITEM);
+	icons.put("allowDoorUse", Material.IRON_DOOR);
+	icons.put("allowMusic", Material.JUKEBOX);
+	icons.put("allowPVP", Material.DIAMOND_SWORD);
+	icons.put("allowLeverButtonUse", Material.LEVER);
+	icons.put("allowMobHarm", Material.SKULL_ITEM);
+	icons.put("allowPlaceBlocks", Material.COBBLESTONE);
+	icons.put("allowBreakBlocks", Material.MOSSY_COBBLESTONE);
+	icons.put("allowCropTrample", Material.WHEAT);
+	List<CPItem> cp = new ArrayList<CPItem>();
+	int slot = 0;
+	// Loop through district flags for this player
+	for (String flagName : d.getFlags().keySet()) {
+	    // Get the icon
+	    if (icons.containsKey(flagName)) {
+		getLogger().info("DEBUG:" + flagName + " : " + d.getFlag(flagName) + " slot " + slot);
+		cp.add(new CPItem(icons.get(flagName), flagName, d.getFlag(flagName), slot++));
+		// Put all the items into the store for this player so when they click on items we know what to do
+		controlPanel.put(player.getUniqueId(),cp);
+	    }
+	}
+	
+	if (cp.size() > 0) {
+	    // Make sure size is a multiple of 9
+	    int size = cp.size() +8;
+	    size -= (size % 9);
+	    Inventory newPanel = Bukkit.createInventory(player, size, Locale.controlPanelTitle);
+	    // Fill the inventory and return
+	    for (CPItem i : cp) {
+		newPanel.addItem(i.getItem());
+	    }
+	    return newPanel;
+	}
+	return null;
+    }
+
+
+    /**
+     * @return the controlPanel
+     */
+    public List<CPItem> getControlPanel(Player player) {
+        return controlPanel.get(player.getUniqueId());
+    }
+
+
 
 }

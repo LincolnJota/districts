@@ -19,6 +19,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.util.Vector;
 
 public class DistrictCmd implements CommandExecutor {
@@ -52,8 +53,8 @@ public class DistrictCmd implements CommandExecutor {
 	}
 	final Player player = (Player) sender;
 	// Check we are in the right world
-	if (!player.getWorld().getName().equalsIgnoreCase(Settings.worldName)) {
-	    player.sendMessage("Districts only available in " + Settings.worldName + " world.");
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(player.getWorld().getName())) {
+	    player.sendMessage("Districts is not available in this world.");
 	    return true;
 	}
 	// Basic permissions check to even use /" + label + "
@@ -85,6 +86,7 @@ public class DistrictCmd implements CommandExecutor {
 		    player.sendMessage(ChatColor.YELLOW + "/" + label + " buyblocks <number>: " + ChatColor.WHITE + "Tries to buy some blocks");
 		}
 		if (VaultHelper.checkPerm(player, "districts.advancedplayer")) {
+		    player.sendMessage(ChatColor.YELLOW + "/" + label + " cp: " + ChatColor.WHITE + "Opens the control panel for this district");
 		    player.sendMessage(ChatColor.YELLOW + "/" + label + " buy: " + ChatColor.WHITE + "Attempts to buy the district you are in");
 		    player.sendMessage(ChatColor.YELLOW + "/" + label + " rent: " + ChatColor.WHITE + "Attempts to rent the district you are in");
 		    player.sendMessage(ChatColor.YELLOW + "/" + label + " rent <price>: " + ChatColor.WHITE + "Puts the district you are in up for rent for a weekly rent");
@@ -95,6 +97,23 @@ public class DistrictCmd implements CommandExecutor {
 		    player.sendMessage(ChatColor.YELLOW + "/" + label + " untrustall: " + ChatColor.WHITE + "Removes all trusted parties from your district");
 		}
 		return true;
+	    } else if (split[0].equalsIgnoreCase("cp")) {
+		if (VaultHelper.checkPerm(player,"districts.advancedplayer")) {
+			DistrictRegion d = players.getInDistrict(playerUUID);
+			if (!player.isOp() && (d == null || !d.getOwner().equals(playerUUID))) {
+			    player.sendMessage(ChatColor.RED + "Move to district you own first.");
+			    return true;
+			} else {
+			    Inventory i = plugin.controlPanel(player);
+			    if (i != null)
+				player.openInventory(i);
+			    return true;			    
+			}
+
+		} else {
+		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    return true;
+		}
 	    } else if (split[0].equalsIgnoreCase("buyblocks")) {
 		if (Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
 		    player.sendMessage(ChatColor.YELLOW + "Blocks cost " + VaultHelper.econ.format(Settings.blockPrice));

@@ -3,7 +3,8 @@
 # the one at http://yaml-online-parser.appspot.com                                        #
 # If this file is deleted, then it will be recreate at the next reload.                   #
 ###########################################################################################
-
+general:
+   controlpaneltitle: "District Control"
 ################
 #General Errors#
 ################

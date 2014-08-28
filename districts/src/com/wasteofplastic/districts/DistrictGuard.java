@@ -1,5 +1,6 @@
 package com.wasteofplastic.districts;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
@@ -17,15 +18,18 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.Potion;
 
@@ -48,8 +52,9 @@ public class DistrictGuard implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
 	Player player = event.getPlayer();
 	World world = player.getWorld();
-	if (!world.getName().equalsIgnoreCase(Settings.worldName))
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(world.getName())) {
 	    return;
+	}
 	if (player.getVehicle() != null) {
 	    return; // handled in vehicle listener
 	}
@@ -231,8 +236,7 @@ public class DistrictGuard implements Listener {
 	//plugin.getLogger().info("On click");
 	// Find out who is doing the clicking
 	final Player p = e.getPlayer();
-	if (!p.getWorld().getName().equalsIgnoreCase(Settings.worldName)) {
-	    //plugin.getLogger().info("Not right world");
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(p.getWorld().getName())) {
 	    return;
 	}
 	final UUID playerUUID = p.getUniqueId();
@@ -341,7 +345,7 @@ public class DistrictGuard implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockBreak(final BlockBreakEvent e) {
-	if (!e.getPlayer().getWorld().getName().equalsIgnoreCase(Settings.worldName)) {
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
 	// Get the district that this block is in (if any)
@@ -363,8 +367,7 @@ public class DistrictGuard implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamage(final EntityDamageByEntityEvent e) {
-	if (!e.getEntity().getWorld().getName().equalsIgnoreCase(Settings.worldName)) {
-	    //plugin.getLogger().info("Not in world");
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getEntity().getWorld().getName())) {
 	    return;
 	}
 	// Get the district that this block is in (if any)
@@ -482,7 +485,7 @@ public class DistrictGuard implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerBlockPlace(final BlockPlaceEvent e) {
-	if (!e.getPlayer().getWorld().getName().equalsIgnoreCase(Settings.worldName)) {
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
 	// If the offending block is not in a district, forget it!
@@ -500,7 +503,7 @@ public class DistrictGuard implements Listener {
     // Prevent sleeping in other beds
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerBedEnter(final PlayerBedEnterEvent e) {
-	if (!e.getPlayer().getWorld().getName().equalsIgnoreCase(Settings.worldName)) {
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
 	// If the offending bed is not in a district, forget it!
@@ -519,7 +522,7 @@ public class DistrictGuard implements Listener {
      */
     @EventHandler(priority = EventPriority.NORMAL)
     public void onBreakHanging(final HangingBreakByEntityEvent e) {
-	if (!e.getRemover().getWorld().getName().equalsIgnoreCase(Settings.worldName)) {
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getRemover().getWorld().getName())) {
 	    return;
 	}
 	if (!(e.getRemover() instanceof Player)) {
@@ -541,7 +544,7 @@ public class DistrictGuard implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onBucketEmpty(final PlayerBucketEmptyEvent e) {
-	if (!e.getPlayer().getWorld().getName().equalsIgnoreCase(Settings.worldName)) {
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
 	// If the offending item is not in a district, forget it!
@@ -556,7 +559,7 @@ public class DistrictGuard implements Listener {
     }
     @EventHandler(priority = EventPriority.NORMAL)
     public void onBucketFill(final PlayerBucketFillEvent e) {
-	if (!e.getPlayer().getWorld().getName().equalsIgnoreCase(Settings.worldName)) {
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
 	// If the offending item is not in a district, forget it!
@@ -574,7 +577,7 @@ public class DistrictGuard implements Listener {
     // Protect sheep
     @EventHandler(priority = EventPriority.NORMAL)
     public void onShear(final PlayerShearEntityEvent e) {
-	if (!e.getPlayer().getWorld().getName().equalsIgnoreCase(Settings.worldName)) {
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
 	// If the offending item is not in a district, forget it!
@@ -588,14 +591,49 @@ public class DistrictGuard implements Listener {
 	}
     }
 
+    // Stop lava flow or water into a district
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onFlow(final BlockFromToEvent e) {
+	// Flow may be allowed anyway
+	if (Settings.allowFlowIn && Settings.allowFlowOut) {
+	    return;
+	}
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getBlock().getWorld().getName())) {
+	    return;
+	}
+	// Get To and From Districts
+	DistrictRegion to = plugin.getInDistrict(e.getToBlock().getLocation());
+	DistrictRegion from = plugin.getInDistrict(e.getBlock().getLocation());
+	// Scenarios
+	// 1. inside district or outside - always ok
+	// 2. inside to outside - allowFlowOut determines
+	// 3. outside to inside - allowFlowIn determines
+	if (to == null && from == null) {
+	    return;
+	}
+	if (to !=null && from != null && to.equals(from)) {
+	    return;
+	}
+	// to or from or both are districts, NOT the same and flow is across a boundary
+	// if to is a district, flow in is allowed 
+	if (to != null && Settings.allowFlowIn) {
+	    return;
+	}
+	// if from is a district, flow may allowed
+	if (from != null && Settings.allowFlowOut) {
+	    return;
+	}
+	// Otherwise cancel - the flow is not allowed
+	e.setCancelled(true);
+    }
+   
+    
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerInteract(final PlayerInteractEvent e) {
-	if (!e.getPlayer().getWorld().getName().equalsIgnoreCase(Settings.worldName)) {
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
-
-	// Player is off island
 	// Check for disallowed clicked blocks
 	if (e.getClickedBlock() != null) {
 	    // If the offending item is not in a district, forget it!
@@ -752,5 +790,65 @@ public class DistrictGuard implements Listener {
 	    // Everything else is okay
 	}
     }
+    
+    // Check for Inventory Clicking (Control Panel)
+    
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onInventoryClick(final InventoryClickEvent e) {
+	// Check that it is a control panel
+	Inventory panel = e.getInventory();
+	if (!panel.getName().equals(Locale.controlPanelTitle)) {
+	    return;
+	}
+	// Check the right worlds
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getWhoClicked().getWorld().getName())) {
+	    return;
+	}
+	Player player = (Player)e.getWhoClicked();
+	// Check for clicks outside
+	if (e.getSlot() < 0) {
+	    player.closeInventory();
+	    return;
+	}
+	// Get the items in the panel for this player
+	List<CPItem> cpitems = plugin.getControlPanel((Player)e.getWhoClicked());
+	if (e.getSlot() > cpitems.size()) {
+	    e.setCancelled(true);
+	    return;
+	}
+	//plugin.getLogger().info("DEBUG: find out what was clicked");
+	// Find out which item was clicked
+	CPItem clickedItem = null;
+	for (CPItem item : cpitems) {
+	    if (item.getSlot() == e.getSlot()) {
+		//plugin.getLogger().info("DEBUG: item slot found, item is " + item.getItem().toString());
+		//plugin.getLogger().info("DEBUG: clicked item is " + e.getCurrentItem().toString());
+		// Check it was the same item and not an item in the player's part of the inventory
+		if (e.getCurrentItem().equals(item.getItem())) {
+		    //plugin.getLogger().info("DEBUG: item matched!");
+		    clickedItem = item;
+		    break;
+		}
+	    }
+	}
+	if (clickedItem == null) {
+	    // Not one of our items
+	    //plugin.getLogger().info("DEBUG: not a recognized item");
+	    e.setCancelled(true);
+	    return;
+	}
+	//plugin.getLogger().info("DEBUG: toggling settings");
+	// Now toggle the setting
+	clickedItem.setFlagValue(!clickedItem.isFlagValue());
+	// Set the district value
+	DistrictRegion d = plugin.players.getInDistrict(player.getUniqueId());
+	d.setFlag(clickedItem.getName(), clickedItem.isFlagValue());
+	
+	// Change the item in this inventory
+	panel.setItem(e.getSlot(), clickedItem.getItem());
+	e.setCancelled(true);
+	return;
+    }
+    
 }
 

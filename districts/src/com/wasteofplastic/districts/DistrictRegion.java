@@ -145,7 +145,17 @@ public class DistrictRegion {
         this.flags = flags;
     }
 
+    public boolean getFlag(String flagName) {
+	if (!flags.containsKey(flagName)) {
+	    return false;
+	}
+	return (Boolean)flags.get(flagName);
+    }
 
+    public void setFlag(String flagName, Boolean value) {
+	flags.put(flagName,value);
+    }
+    
     /**
      * @return the allowPVP
      */

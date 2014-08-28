@@ -17,20 +17,14 @@ public class Locale {
     public static String districtProtected;
 
     public static String newsHeadline;
-    ////////////////////////////////////////////////////////////////
-    //Admin commands that use /acid //
-    ////////////////////////////////////////////////////////////////
-
-    //Help
-
     public static String adminHelpreload;
     public static String adminHelpdelete;
     public static String adminHelpinfo;
 
-    //acid reload
+    //reload
     public static String reloadconfigReloaded;
-    //delete
     public static String deleteremoving;
+    public static String controlPanelTitle;
     
     
    

@@ -1,6 +1,11 @@
 districts:
-   # World Name where Districts will operate
-   worldName: world
+   # World Names where Districts will operate, list them
+   # If this is blank or missing, Districts will operate in all worlds
+   # Note: names must be correctly capitalized to be recognized
+   worldName:
+    - world
+    - creative
+
    # Starting blocks - the number of blocks a player will get at the start
    beginningblocks: 25
    # Block price - how much a block can be bought for with /d buyblocks.
@@ -80,4 +85,7 @@ districts:
    allowgateuse: false
    # Allow non-monster mobs to be hurt
    allowhurtmobs: false
+   # Allow lava or water flow into or out of a district
+   allowflowin: false
+   allowflowout: false
    
