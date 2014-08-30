@@ -952,12 +952,15 @@ public class Districts extends JavaPlugin {
 	icons.put("allowCropTrample", Material.WHEAT);
 	List<CPItem> cp = new ArrayList<CPItem>();
 	int slot = 0;
+	// Put naming in the first few slots
+	cp.add(new CPItem(Material.BOOK_AND_QUILL,"Name district",false,slot++, CPItem.Type.TEXT));
+	
 	// Loop through district flags for this player
 	for (String flagName : d.getFlags().keySet()) {
 	    // Get the icon
 	    if (icons.containsKey(flagName)) {
-		getLogger().info("DEBUG:" + flagName + " : " + d.getFlag(flagName) + " slot " + slot);
-		cp.add(new CPItem(icons.get(flagName), flagName, d.getFlag(flagName), slot++));
+		//getLogger().info("DEBUG:" + flagName + " : " + d.getFlag(flagName) + " slot " + slot);
+		cp.add(new CPItem(icons.get(flagName), flagName, d.getFlag(flagName), slot++, CPItem.Type.TOGGLE));
 		// Put all the items into the store for this player so when they click on items we know what to do
 		controlPanel.put(player.getUniqueId(),cp);
 	    }

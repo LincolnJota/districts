@@ -1,5 +1,6 @@
 package com.wasteofplastic.districts;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -8,6 +9,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.conversations.Conversation;
+import org.bukkit.conversations.ConversationAbandonedEvent;
+import org.bukkit.conversations.ConversationAbandonedListener;
+import org.bukkit.conversations.ConversationFactory;
+import org.bukkit.conversations.ExactMatchConversationCanceller;
+import org.bukkit.conversations.InactivityConversationCanceller;
+import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Monster;
@@ -626,8 +634,8 @@ public class DistrictGuard implements Listener {
 	// Otherwise cancel - the flow is not allowed
 	e.setCancelled(true);
     }
-   
-    
+
+
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerInteract(final PlayerInteractEvent e) {
@@ -790,9 +798,12 @@ public class DistrictGuard implements Listener {
 	    // Everything else is okay
 	}
     }
-    
+
     // Check for Inventory Clicking (Control Panel)
-    
+
+    /**
+     * @param e
+     */
     @EventHandler(priority = EventPriority.NORMAL)
     public void onInventoryClick(final InventoryClickEvent e) {
 	// Check that it is a control panel
@@ -837,18 +848,70 @@ public class DistrictGuard implements Listener {
 	    e.setCancelled(true);
 	    return;
 	}
-	//plugin.getLogger().info("DEBUG: toggling settings");
-	// Now toggle the setting
-	clickedItem.setFlagValue(!clickedItem.isFlagValue());
-	// Set the district value
-	DistrictRegion d = plugin.players.getInDistrict(player.getUniqueId());
-	d.setFlag(clickedItem.getName(), clickedItem.isFlagValue());
-	
-	// Change the item in this inventory
-	panel.setItem(e.getSlot(), clickedItem.getItem());
+	switch (clickedItem.getType()) {
+	case TEXT:
+	    // Enter some text
+	    // Store the district that this is about
+	    final HashMap<Object,Object> map = new HashMap<Object,Object>();
+	    map.put("District", plugin.players.getInDistrict(player.getUniqueId()));
+	    
+	    ConversationFactory factory = new ConversationFactory(plugin);
+	    Conversation conv = factory.withFirstPrompt(new NamingPrompt(plugin)).withLocalEcho(false).withInitialSessionData(map)
+		    .withEscapeSequence("").withTimeout(10).buildConversation(player);
+	    conv.addConversationAbandonedListener(new ConversationAbandonedListener() {
+
+		@Override
+		public void conversationAbandoned(ConversationAbandonedEvent event) {
+		    /* 
+		    if (event.gracefulExit())
+	            {
+	                plugin.getLogger().info("graceful exit");
+	                return;
+	            }*/
+		    if (event.getCanceller() instanceof InactivityConversationCanceller) {
+			event.getContext().getForWhom().sendRawMessage(ChatColor.RED + "Cancelling naming - time out.");
+			return;
+		    }  
+		    if (event.getCanceller() instanceof ExactMatchConversationCanceller) {
+			event.getContext().getForWhom().sendRawMessage(ChatColor.RED + "Leaving it as it is.");
+			return;
+		    }
+		    /*
+	            try
+	            {
+	                plugin.getLogger().info(
+	                        "Canceller "
+	                                + event.getCanceller()
+	                                        .toString());
+	            }
+	            catch (NullPointerException n)
+	            {
+	                // Was null
+	                plugin.getLogger().info(
+	                        "null Canceller");
+	            }*/
+		    
+		}});
+	    conv.begin();
+	    player.closeInventory();
+	    break;
+	case TOGGLE:
+	    //plugin.getLogger().info("DEBUG: toggling settings");
+	    // Now toggle the setting
+	    clickedItem.setFlagValue(!clickedItem.isFlagValue());
+	    // Set the district value
+	    DistrictRegion d = plugin.players.getInDistrict(player.getUniqueId());
+	    d.setFlag(clickedItem.getName(), clickedItem.isFlagValue());
+	    // Change the item in this inventory
+	    panel.setItem(e.getSlot(), clickedItem.getItem());
+	    break;
+	default:
+	    break;
+
+	}
 	e.setCancelled(true);
 	return;
     }
-    
+
 }
 
