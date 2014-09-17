@@ -62,9 +62,37 @@ public class DistrictCmd implements CommandExecutor {
 	 * playerUUID is the unique ID of the player who issued the command
 	 */
 	final UUID playerUUID = player.getUniqueId();
+	DistrictRegion d = players.getInDistrict(playerUUID);
 	switch (split.length) {
 	// /" + label + " command by itself
 	case 0:
+	    // The basic command - show the relevant GUI
+
+	    // The following control panels are available:
+	    // 1. Owner's - shown when the owner is in a district they own or an Op is in a district
+	    // 2. Info - shown when a non-owner is in a district
+	    // 3. Claim - shown when anyone is not in a district
+
+	    // Owner's
+	    if (d != null && (d.getOwner().equals(playerUUID) || player.isOp() || (d.getRenter() != null && d.getRenter().equals(playerUUID)))) {
+		Inventory i = plugin.controlPanel(player);
+		if (i != null)
+		    player.openInventory(i);
+		return true;			    
+	    }
+	    // Renter
+
+	    // Info
+	    if (d != null) {
+		player.openInventory(plugin.infoPanel(player));
+		return true;
+	    } else {
+		// Claim
+		Inventory i = plugin.controlPanel(player);
+		if (i != null)
+		    player.openInventory(i);
+		return true;			    
+	    }
 	case 1:
 	    // /" + label + " <command>
 	    if (split.length == 0 || split[0].equalsIgnoreCase("help")) { 
@@ -94,16 +122,16 @@ public class DistrictCmd implements CommandExecutor {
 		return true;
 	    } else if (split[0].equalsIgnoreCase("cp")) {
 		if (VaultHelper.checkPerm(player,"districts.advancedplayer")) {
-			DistrictRegion d = players.getInDistrict(playerUUID);
-			if (!player.isOp() && (d == null || !d.getOwner().equals(playerUUID))) {
-			    player.sendMessage(ChatColor.RED + "Move to district you own first.");
-			    return true;
-			} else {
-			    Inventory i = plugin.controlPanel(player);
-			    if (i != null)
-				player.openInventory(i);
-			    return true;			    
-			}
+		    //DistrictRegion d = players.getInDistrict(playerUUID);
+		    if (!player.isOp() && (d == null || !d.getOwner().equals(playerUUID))) {
+			player.sendMessage(ChatColor.RED + "Move to district you own first.");
+			return true;
+		    } else {
+			Inventory i = plugin.controlPanel(player);
+			if (i != null)
+			    player.openInventory(i);
+			return true;			    
+		    }
 
 		} else {
 		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
@@ -122,7 +150,7 @@ public class DistrictCmd implements CommandExecutor {
 		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
 		    return true;
 		}
-		DistrictRegion d = players.getInDistrict(playerUUID);
+		//DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d == null) {
 		    player.sendMessage(ChatColor.RED + "Move to a district you own or rent first.");
 		    return true;
@@ -178,7 +206,7 @@ public class DistrictCmd implements CommandExecutor {
 		    player.sendMessage(ChatColor.YELLOW + "Switching district boundary off");
 		} else {
 		    player.sendMessage(ChatColor.YELLOW + "Switching district boundary on");
-		    DistrictRegion d = players.getInDistrict(playerUUID);
+		    //DistrictRegion d = players.getInDistrict(playerUUID);
 		    if (d != null)
 			plugin.visualize(d, player);
 		}
@@ -225,10 +253,14 @@ public class DistrictCmd implements CommandExecutor {
 		return true;
 	    } else if (split[0].equalsIgnoreCase("remove")) {
 
-		DistrictRegion d = players.getInDistrict(playerUUID);
+		//DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
 		    if (d.getOwner().equals(playerUUID)) {
-			player.sendMessage(ChatColor.RED + "Removing district!");
+			if (d.getRenter() != null) {
+			    player.sendMessage(ChatColor.RED + "District is being rented! Wait until lease is finished first!");
+			    return true;
+			}
+			player.sendMessage(ChatColor.GREEN + "Removing district!");
 			// Remove the district
 			HashSet<DistrictRegion> ds = plugin.getDistricts();
 			ds.remove(d);
@@ -265,7 +297,7 @@ public class DistrictCmd implements CommandExecutor {
 		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
 		    return true;
 		}
-		DistrictRegion d = players.getInDistrict(playerUUID);
+		//DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
 		    if (!d.isForSale()) {
 			player.sendMessage(ChatColor.RED + "This district is not for sale!");
@@ -319,7 +351,7 @@ public class DistrictCmd implements CommandExecutor {
 		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
 		    return true;
 		}
-		DistrictRegion d = players.getInDistrict(playerUUID);
+		//DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
 		    if (!d.isForRent()) {
 			player.sendMessage(ChatColor.RED + "This district is not for rent!");
@@ -380,7 +412,7 @@ public class DistrictCmd implements CommandExecutor {
 		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
 		    return true;
 		}
-		DistrictRegion d = players.getInDistrict(playerUUID);
+		//DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
 		    if (d.getOwner().equals(playerUUID)) {
 			// If no one has rented the district yet
@@ -407,16 +439,24 @@ public class DistrictCmd implements CommandExecutor {
 
 			}
 		    } else if (d.getRenter() != null && d.getRenter().equals(player.getUniqueId())) {
-			// Renter wanting to cancel the lease
-			player.sendMessage(ChatColor.GOLD + "Lease renewal cancelled. Lease term finishes in " + plugin.daysToEndOfLease(d) + " days.");
-			if (plugin.getServer().getPlayer(d.getOwner()) != null) {
-			    plugin.getServer().getPlayer(d.getOwner()).sendMessage( player.getDisplayName() + " canceled a lease with you. It will end in " + plugin.daysToEndOfLease(d) + " days.");
+			// Check if lease is already cancelled
+			if (d.isForRent()) {
+			    // Renter wanting to cancel the lease
+			    player.sendMessage(ChatColor.GOLD + "Lease renewal cancelled. Lease term finishes in " + plugin.daysToEndOfLease(d) + " days.");
+			    if (plugin.getServer().getPlayer(d.getOwner()) != null) {
+				plugin.getServer().getPlayer(d.getOwner()).sendMessage( player.getDisplayName() + " canceled a lease with you. It will end in " + plugin.daysToEndOfLease(d) + " days.");
+			    } else {
+				plugin.setMessage(d.getOwner(), player.getDisplayName() + " canceled a lease with you. It will end in " + plugin.daysToEndOfLease(d) + " days.");
+			    }
+			    d.setForSale(false);
+			    d.setForRent(false);
+			    d.setPrice(0D);
+			    // Save renter
+			    plugin.players.save(playerUUID);
+			    plugin.players.save(d.getOwner());
 			} else {
-			    plugin.setMessage(d.getOwner(), player.getDisplayName() + " canceled a lease with you. It will end in " + plugin.daysToEndOfLease(d) + " days.");
+			    player.sendMessage(ChatColor.GOLD + "Lease renewal is already cancelled. Lease term finishes in " + plugin.daysToEndOfLease(d) + " days."); 
 			}
-			d.setForSale(false);
-			d.setForRent(false);
-			d.setPrice(0D);
 			return true;
 		    } else {
 			player.sendMessage(ChatColor.RED + "This is not your district!");
@@ -428,11 +468,12 @@ public class DistrictCmd implements CommandExecutor {
 
 
 	    } else if (split[0].equalsIgnoreCase("trust") || split[0].equalsIgnoreCase("info")) {
-		DistrictRegion d = players.getInDistrict(playerUUID);
+		//DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d == null) {
 		    player.sendMessage(ChatColor.RED + "Move to a district first to see info.");
 		    return true;
 		}
+		player.openInventory(plugin.infoPanel(player));
 		player.sendMessage(ChatColor.GOLD + "[District Info]");
 		if (d.getOwner() != null) {
 		    Player owner = plugin.getServer().getPlayer(d.getOwner());
@@ -509,7 +550,7 @@ public class DistrictCmd implements CommandExecutor {
 		    return true;
 		}
 
-		DistrictRegion d = players.getInDistrict(playerUUID);
+		//DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d == null) {
 		    player.sendMessage(ChatColor.RED + "Move to a district you own or rent first.");
 		    return true;
@@ -573,7 +614,7 @@ public class DistrictCmd implements CommandExecutor {
 		    return true;
 		}
 
-		DistrictRegion d = players.getInDistrict(playerUUID);
+		//DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d == null) {
 		    player.sendMessage(ChatColor.RED + "Move to a district you own or rent first.");
 		    return true;
@@ -676,7 +717,7 @@ public class DistrictCmd implements CommandExecutor {
 		    return true;
 		}
 
-		DistrictRegion d = players.getInDistrict(playerUUID);
+		//DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
 		    if (d.getOwner().equals(playerUUID)) {
 			// Check to see if it is being rented right now
@@ -713,7 +754,7 @@ public class DistrictCmd implements CommandExecutor {
 		    return true;
 		}
 
-		DistrictRegion d = players.getInDistrict(playerUUID);
+		//DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
 		    if (d.getOwner().equals(playerUUID)) {
 			// Check to see if it is being rented right now

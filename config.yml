@@ -47,6 +47,13 @@ districts:
    # after the deadline. 12 hours should be sufficient.
    checkleases: 12
 
+   ### Global settings for districts
+   ### Players cannot customize these settings
+   # Allow lava or water flow into or out of a district
+   allowflowin: false
+   allowflowout: false
+
+
    ### Default settings for districts. Owners will be able to customize the settings
    ### using the control panel
    #[true/false] PVP is allowed or denied.
@@ -85,7 +92,4 @@ districts:
    allowgateuse: false
    # Allow non-monster mobs to be hurt
    allowhurtmobs: false
-   # Allow lava or water flow into or out of a district
-   allowflowin: false
-   allowflowout: false
    

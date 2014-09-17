@@ -25,6 +25,7 @@ public class Locale {
     public static String reloadconfigReloaded;
     public static String deleteremoving;
     public static String controlPanelTitle;
+    public static String infoPanelTitle;
     
     
    

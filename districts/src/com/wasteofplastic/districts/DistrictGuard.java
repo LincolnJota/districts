@@ -15,7 +15,6 @@ import org.bukkit.conversations.ConversationAbandonedListener;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.conversations.ExactMatchConversationCanceller;
 import org.bukkit.conversations.InactivityConversationCanceller;
-import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Monster;
@@ -798,17 +797,12 @@ public class DistrictGuard implements Listener {
 	    // Everything else is okay
 	}
     }
-
-    // Check for Inventory Clicking (Control Panel)
-
-    /**
-     * @param e
-     */
+    // Check for inventory clicking (Info Panel)
     @EventHandler(priority = EventPriority.NORMAL)
-    public void onInventoryClick(final InventoryClickEvent e) {
+    public void onInfoPanelClick(final InventoryClickEvent e) {
 	// Check that it is a control panel
 	Inventory panel = e.getInventory();
-	if (!panel.getName().equals(Locale.controlPanelTitle)) {
+	if (!panel.getName().equals(Locale.infoPanelTitle)) {
 	    return;
 	}
 	// Check the right worlds
@@ -821,8 +815,79 @@ public class DistrictGuard implements Listener {
 	    player.closeInventory();
 	    return;
 	}
+	UUID playerUUID = player.getUniqueId();
+	DistrictRegion d = plugin.players.getInDistrict(player.getUniqueId());
+	// Get the items in the panel for this player
+	List<IPItem> ipitems = plugin.getInfoPanel((Player)e.getWhoClicked());
+	//plugin.getLogger().info("DEBUG: slot = " + e.getSlot());
+	if (e.getSlot() > ipitems.size()) {
+	    e.setCancelled(true);
+	    return;
+	}
+
+	IPItem clickedItem = null;
+	for (IPItem item : ipitems) {
+	    if (item.getSlot() == e.getSlot()) {
+		//plugin.getLogger().info("DEBUG: item slot found, item is " + item.getItem().toString());
+		//plugin.getLogger().info("DEBUG: clicked item is " + e.getCurrentItem().toString());
+		// Check it was the same item and not an item in the player's part of the inventory
+		if (e.getCurrentItem().equals(item.getItem())) {
+		    //plugin.getLogger().info("DEBUG: item matched!");
+		    clickedItem = item;
+		    break;
+		}
+	    }
+	}
+	if (clickedItem == null) {
+	    // Not one of our items
+	    //plugin.getLogger().info("DEBUG: not a recognized item");
+	    e.setCancelled(true);
+	    return;
+	}
+	switch (clickedItem.getType()) {
+	case RENT:
+	    player.performCommand("district rent");
+	    player.closeInventory();
+	    break;
+	case BUY:
+	    player.performCommand("district buy");
+	    player.closeInventory();
+	    break;
+	default:
+	    break;
+	}
+	e.setCancelled(true);
+    }
+
+
+    // Check for Inventory Clicking (Control Panel)
+
+    /**
+     * @param e
+     */
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onControlPanelClick(final InventoryClickEvent e) {
+	// Check that it is a control panel
+	Inventory panel = e.getInventory();
+	if (!panel.getName().equals(Locale.controlPanelTitle)) {
+	    return;
+	}
+	// Check the right worlds
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getWhoClicked().getWorld().getName())) {
+	    return;
+	}
+	Player player = (Player)e.getWhoClicked();
+	UUID playerUUID = player.getUniqueId();
+	DistrictRegion d = plugin.players.getInDistrict(player.getUniqueId());
+
+	// Check for clicks outside
+	if (e.getSlot() < 0) {
+	    player.closeInventory();
+	    return;
+	}
 	// Get the items in the panel for this player
 	List<CPItem> cpitems = plugin.getControlPanel((Player)e.getWhoClicked());
+	//plugin.getLogger().info("DEBUG: slot = " + e.getSlot());
 	if (e.getSlot() > cpitems.size()) {
 	    e.setCancelled(true);
 	    return;
@@ -848,26 +913,20 @@ public class DistrictGuard implements Listener {
 	    e.setCancelled(true);
 	    return;
 	}
+	// Store the district that this is about
+	final HashMap<Object,Object> map = new HashMap<Object,Object>();
+	map.put("District", plugin.players.getInDistrict(player.getUniqueId()));
+	ConversationFactory factory = new ConversationFactory(plugin);
+
 	switch (clickedItem.getType()) {
 	case TEXT:
 	    // Enter some text
-	    // Store the district that this is about
-	    final HashMap<Object,Object> map = new HashMap<Object,Object>();
-	    map.put("District", plugin.players.getInDistrict(player.getUniqueId()));
-	    
-	    ConversationFactory factory = new ConversationFactory(plugin);
-	    Conversation conv = factory.withFirstPrompt(new NamingPrompt(plugin)).withLocalEcho(false).withInitialSessionData(map)
-		    .withEscapeSequence("").withTimeout(10).buildConversation(player);
+	    Conversation conv = factory.withFirstPrompt(new ConversationNaming(plugin)).withLocalEcho(false).withInitialSessionData(map)
+	    .withEscapeSequence("").withTimeout(10).buildConversation(player);
 	    conv.addConversationAbandonedListener(new ConversationAbandonedListener() {
 
 		@Override
 		public void conversationAbandoned(ConversationAbandonedEvent event) {
-		    /* 
-		    if (event.gracefulExit())
-	            {
-	                plugin.getLogger().info("graceful exit");
-	                return;
-	            }*/
 		    if (event.getCanceller() instanceof InactivityConversationCanceller) {
 			event.getContext().getForWhom().sendRawMessage(ChatColor.RED + "Cancelling naming - time out.");
 			return;
@@ -876,21 +935,6 @@ public class DistrictGuard implements Listener {
 			event.getContext().getForWhom().sendRawMessage(ChatColor.RED + "Leaving it as it is.");
 			return;
 		    }
-		    /*
-	            try
-	            {
-	                plugin.getLogger().info(
-	                        "Canceller "
-	                                + event.getCanceller()
-	                                        .toString());
-	            }
-	            catch (NullPointerException n)
-	            {
-	                // Was null
-	                plugin.getLogger().info(
-	                        "null Canceller");
-	            }*/
-		    
 		}});
 	    conv.begin();
 	    player.closeInventory();
@@ -900,18 +944,133 @@ public class DistrictGuard implements Listener {
 	    // Now toggle the setting
 	    clickedItem.setFlagValue(!clickedItem.isFlagValue());
 	    // Set the district value
-	    DistrictRegion d = plugin.players.getInDistrict(player.getUniqueId());
 	    d.setFlag(clickedItem.getName(), clickedItem.isFlagValue());
+	    // Change the item in this inventory
+	    panel.setItem(e.getSlot(), clickedItem.getItem());
+	    break;
+	case BUYBLOCKS:
+	    Conversation buyConv = factory.withFirstPrompt(new ConversationBlocks(plugin,ConversationBlocks.Type.BUY)).withLocalEcho(false).withInitialSessionData(map)
+	    .withTimeout(10).buildConversation(player);
+	    buyConv.addConversationAbandonedListener(new ConversationAbandonedListener() {
+		@Override
+		public void conversationAbandoned(ConversationAbandonedEvent event) {
+		    if (event.getCanceller() instanceof InactivityConversationCanceller) {
+			event.getContext().getForWhom().sendRawMessage(ChatColor.RED + "Cancelling - time out.");
+			return;
+		    }  
+		}});
+	    buyConv.begin();
+	    player.closeInventory();
+	    break;
+	case CLAIM:
+	    Conversation claimConv = factory.withFirstPrompt(new ConversationBlocks(plugin,ConversationBlocks.Type.CLAIM)).withLocalEcho(false).withInitialSessionData(map)
+	    .withTimeout(10).buildConversation(player);
+	    claimConv.addConversationAbandonedListener(new ConversationAbandonedListener() {
+		@Override
+		public void conversationAbandoned(ConversationAbandonedEvent event) {
+		    if (event.getCanceller() instanceof InactivityConversationCanceller) {
+			event.getContext().getForWhom().sendRawMessage(ChatColor.RED + "Cancelling - time out.");
+			return;
+		    }  
+		}});
+	    claimConv.begin();
+	    player.closeInventory();
+	    break;
+	case CANCEL:
+	    player.performCommand("district cancel");
+	    player.closeInventory();
+	    break;
+	case REMOVE:
+	    player.performCommand("district remove");
+	    player.closeInventory();
+	    break;
+	case RENT:
+	    getPrice(d,player,ConversaionSellBuy.Type.RENT);
+	    player.closeInventory();
+	    break;
+	case SELL:
+	    getPrice(d,player,ConversaionSellBuy.Type.SELL);
+	    player.closeInventory();
+	    break;
+	case TRUST:
+	    getPlayers(d,player,GetPlayers.Type.TRUST);
+	    player.closeInventory();
+	    break;
+	case UNTRUST:
+	    getPlayers(d,player,GetPlayers.Type.UNTRUST);
+	    player.closeInventory();	    
+	    break;
+	case VISUALIZE:
+	    // Toggle the visualization setting
+	    if (plugin.players.getVisualize(playerUUID)) {
+		plugin.devisualize(player);
+		clickedItem.setFlagValue(false);
+		//player.sendMessage(ChatColor.YELLOW + "Switching district boundary off");
+	    } else {
+		//player.sendMessage(ChatColor.YELLOW + "Switching district boundary on");
+		clickedItem.setFlagValue(true);
+		//DistrictRegion d = players.getInDistrict(playerUUID);
+		if (d != null)
+		    plugin.visualize(d, player);
+	    }
+	    plugin.players.setVisualize(playerUUID, !plugin.players.getVisualize(playerUUID));		
 	    // Change the item in this inventory
 	    panel.setItem(e.getSlot(), clickedItem.getItem());
 	    break;
 	default:
 	    break;
-
 	}
 	e.setCancelled(true);
 	return;
     }
+
+    private void getPrice(DistrictRegion d, Player player, ConversaionSellBuy.Type type) {
+	final HashMap<Object,Object> map = new HashMap<Object,Object>();
+	map.put("District", plugin.players.getInDistrict(player.getUniqueId()));
+
+	ConversationFactory factory = new ConversationFactory(plugin);
+	Conversation conv = factory.withFirstPrompt(new ConversaionSellBuy(plugin,type)).withLocalEcho(false).withInitialSessionData(map)
+		.withEscapeSequence("").withTimeout(10).buildConversation(player);
+	conv.addConversationAbandonedListener(new ConversationAbandonedListener() {
+
+	    @Override
+	    public void conversationAbandoned(ConversationAbandonedEvent event) {
+		/* 
+		    if (event.gracefulExit())
+	            {
+	                plugin.getLogger().info("graceful exit");
+	                return;
+	            }*/
+		if (event.getCanceller() instanceof InactivityConversationCanceller) {
+		    event.getContext().getForWhom().sendRawMessage(ChatColor.RED + "Cancelling - time out.");
+		    return;
+		}  
+	    }});
+	conv.begin();
+
+    }
+
+    private void getPlayers(DistrictRegion d, Player player, GetPlayers.Type type) {
+	final HashMap<Object,Object> map = new HashMap<Object,Object>();
+	map.put("District", plugin.players.getInDistrict(player.getUniqueId()));
+
+	ConversationFactory factory = new ConversationFactory(plugin);
+	Conversation conv = factory.withFirstPrompt(new GetPlayers(plugin,type)).withLocalEcho(false).withInitialSessionData(map)
+		.withEscapeSequence("").withTimeout(10).buildConversation(player);
+	conv.addConversationAbandonedListener(new ConversationAbandonedListener() {
+
+	    @Override
+	    public void conversationAbandoned(ConversationAbandonedEvent event) {
+		if (event.getCanceller() instanceof InactivityConversationCanceller) {
+		    event.getContext().getForWhom().sendRawMessage(ChatColor.RED + "Cancelling - time out.");
+		    return;
+		}  
+	    }});
+	conv.begin();
+
+    }
+
+
 
 }
 

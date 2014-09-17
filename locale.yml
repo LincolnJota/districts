@@ -5,6 +5,7 @@
 ###########################################################################################
 general:
    controlpaneltitle: "District Control"
+   infopaneltitle: "District Info"
 ################
 #General Errors#
 ################

@@ -1,5 +1,6 @@
 package com.wasteofplastic.districts;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
@@ -44,16 +45,38 @@ public class AdminCmd implements CommandExecutor {
 	    sender.sendMessage(ChatColor.YELLOW + "/dadmin balance <player>:" + ChatColor.WHITE + " show how many blocks player has");
 	    sender.sendMessage(ChatColor.YELLOW + "/dadmin info <player>:" + ChatColor.WHITE + " " + Locale.adminHelpinfo);
 	    sender.sendMessage(ChatColor.YELLOW + "/dadmin info:" + ChatColor.WHITE + " provides info on the district you are in");
-	    sender.sendMessage(ChatColor.YELLOW + "/dadmin delete <player>:" + ChatColor.WHITE + " " + Locale.adminHelpdelete);
+	    //sender.sendMessage(ChatColor.YELLOW + "/dadmin delete:" + ChatColor.WHITE + " " + Locale.adminHelpdelete);
 	    sender.sendMessage(ChatColor.YELLOW + "/dadmin give <player> <blocks>:" + ChatColor.WHITE + " give player some blocks");
 	    sender.sendMessage(ChatColor.YELLOW + "/dadmin take <player> <blocks>:" + ChatColor.WHITE + " remove blocks from player");
 	    sender.sendMessage(ChatColor.YELLOW + "/dadmin set <player> <blocks>:" + ChatColor.WHITE + " set the number of blocks a player has");
+	    sender.sendMessage(ChatColor.YELLOW + "/dadmin evict:" + ChatColor.WHITE + " removes renter from this district");
 	    return true;
 	case 1:
 	    if (split[0].equalsIgnoreCase("reload")) {
 		plugin.reloadConfig();
 		plugin.loadPluginConfig();
 		sender.sendMessage(ChatColor.YELLOW + Locale.reloadconfigReloaded);
+		return true;
+	    } else if (split[0].equalsIgnoreCase("evict")) {
+		if (!(sender instanceof Player)) {
+		    sender.sendMessage(ChatColor.RED + "This command only available in-game");
+		    return true;
+		}
+		Player player = (Player)sender;
+		DistrictRegion d = players.getInDistrict(player.getUniqueId());
+		if (d == null || d.getRenter() == null) {
+		    sender.sendMessage(ChatColor.RED + "Move into a district that has a renter first.");
+		    return true;
+		}
+		// Remove the lease and renter
+		d.setForRent(false);
+		d.setRenter(null);
+		d.setRenterTrusted(new ArrayList<UUID>());
+		d.setLastPayment(null);
+		d.setPrice(0D);
+		d.setForSale(false);
+		players.save(d.getOwner());
+		sender.sendMessage(ChatColor.GREEN + "Renter evicted.");
 		return true;
 	    } else if (split[0].equalsIgnoreCase("info")) {
 		if (!(sender instanceof Player)) {
@@ -70,7 +93,7 @@ public class AdminCmd implements CommandExecutor {
 		sender.sendMessage(ChatColor.GREEN + "Owner:" + players.getName(d.getOwner()));
 		String trusted = "";
 		for (String name : d.getOwnerTrusted()) {
-		   trusted += name + ",";
+		    trusted += name + ",";
 		}
 		if (!trusted.isEmpty()) {
 		    sender.sendMessage(ChatColor.GREEN + "Owner trustees: " + ChatColor.WHITE + trusted.substring(0, trusted.length() - 1));
@@ -79,7 +102,7 @@ public class AdminCmd implements CommandExecutor {
 		    sender.sendMessage(ChatColor.GREEN + "Renter:" + players.getName(d.getRenter()));
 		trusted = "";
 		for (String name : d.getRenterTrusted()) {
-		   trusted += name + ",";
+		    trusted += name + ",";
 		}
 		if (!trusted.isEmpty()) {
 		    sender.sendMessage(ChatColor.GREEN + "Renter trustees: " + ChatColor.WHITE + trusted.substring(0, trusted.length() - 1));

@@ -59,7 +59,7 @@ public class Districts extends JavaPlugin {
     List<permBlock> permList = new ArrayList<permBlock>();
     // Database of control panels for players
     HashMap<UUID, List<CPItem>> controlPanel = new HashMap<UUID, List<CPItem>>();
-
+    HashMap<UUID, List<IPItem>> infoPanel = new HashMap<UUID, List<IPItem>>();
     /**
      * @return plugin object instance
      */
@@ -174,6 +174,7 @@ public class Districts extends JavaPlugin {
 	Locale.reloadconfigReloaded = getLocale().getString("reload.configurationReloaded", "Configuration reloaded from file.");	//delete
 	Locale.deleteremoving = getLocale().getString("delete.removing","District removed.");
 	Locale.controlPanelTitle = getLocale().getString("general.controlpaneltitle", "District Control Panel");
+	Locale.infoPanelTitle = getLocale().getString("general.infopaneltitle", "District Info");
 	// Assign settings
 	Settings.allowPvP = getConfig().getBoolean("districts.allowPvP",false);
 	Settings.allowBreakBlocks = getConfig().getBoolean("districts.allowbreakblocks", false);
@@ -926,10 +927,10 @@ public class Districts extends JavaPlugin {
     public Inventory controlPanel(Player player) {
 	// Create the control panel for the player
 	DistrictRegion d = players.getInDistrict(player.getUniqueId());
-	if (d == null) {
-	    player.sendMessage(ChatColor.RED + "You must be in a district to manage it!");
-	    return null;
-	}
+	//if (d == null) {
+	//    player.sendMessage(ChatColor.RED + "You must be in a district to manage it!");
+	//    return null;
+	//}
 	// New panel map
 	HashMap<String,Material> icons = new HashMap<String,Material>();
 	icons.put("allowShearing",Material.WOOL);
@@ -942,30 +943,112 @@ public class Districts extends JavaPlugin {
 	icons.put("allowCrafting", Material.WORKBENCH);
 	icons.put("allowBedUse", Material.BED);
 	icons.put("allowBrewing", Material.BREWING_STAND_ITEM);
-	icons.put("allowDoorUse", Material.IRON_DOOR);
+	icons.put("allowDoorUse", Material.TRAP_DOOR);
 	icons.put("allowMusic", Material.JUKEBOX);
 	icons.put("allowPVP", Material.DIAMOND_SWORD);
 	icons.put("allowLeverButtonUse", Material.LEVER);
-	icons.put("allowMobHarm", Material.SKULL_ITEM);
+	icons.put("allowMobHarm", Material.LEATHER);
 	icons.put("allowPlaceBlocks", Material.COBBLESTONE);
 	icons.put("allowBreakBlocks", Material.MOSSY_COBBLESTONE);
 	icons.put("allowCropTrample", Material.WHEAT);
 	List<CPItem> cp = new ArrayList<CPItem>();
 	int slot = 0;
-	// Put naming in the first few slots
-	cp.add(new CPItem(Material.BOOK_AND_QUILL,"Name district",false,slot++, CPItem.Type.TEXT));
-	
-	// Loop through district flags for this player
-	for (String flagName : d.getFlags().keySet()) {
-	    // Get the icon
-	    if (icons.containsKey(flagName)) {
-		//getLogger().info("DEBUG:" + flagName + " : " + d.getFlag(flagName) + " slot " + slot);
-		cp.add(new CPItem(icons.get(flagName), flagName, d.getFlag(flagName), slot++, CPItem.Type.TOGGLE));
-		// Put all the items into the store for this player so when they click on items we know what to do
-		controlPanel.put(player.getUniqueId(),cp);
+	// Common options
+	cp.add(new CPItem(Material.SKULL_ITEM, 3,  "Blocks available: " + plugin.players.getBlockBalance(player.getUniqueId()), false, slot++, null, CPItem.Type.INFO ));
+	// Check if buying blocks is allowed
+	if (Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
+	    cp.add(new CPItem(Material.GOLD_INGOT, 0, "Buy Blocks", false, slot++, null, CPItem.Type.BUYBLOCKS));
+	}
+	// Visualize toggle
+	cp.add(new CPItem(Material.DIAMOND_BLOCK, 0, "District Visualization", plugin.players.getVisualize(player.getUniqueId()), slot++, null, CPItem.Type.VISUALIZE));
+
+	// If we are not in a district just offer the claim options
+	if (d == null) {
+	    cp.add(new CPItem(Material.GOLD_HOE, 0, "Claim", plugin.players.getVisualize(player.getUniqueId()), slot++, null, CPItem.Type.CLAIM));
+	} else {
+	    // Put naming in the first few slots
+	    // If this is a rented district, then owner can only look at the name
+	    if (d.getOwner().equals(player.getUniqueId()) && d.getRenter() != null) {
+		cp.add(new CPItem(Material.BOOK_AND_QUILL, 0, "Rented District",false,slot++, chop(ChatColor.WHITE,d.getEnterMessage(),20), CPItem.Type.INFO));
+	    } else {
+		cp.add(new CPItem(Material.BOOK_AND_QUILL, 0, "Name district",false,slot++, null, CPItem.Type.TEXT));
+	    }
+	    // Add other commands here
+	    if (d.getOwner().equals(player.getUniqueId()) && d.getRenter() == null) {
+		cp.add(new CPItem(Material.IRON_DOOR, 0, "Remove District", false, slot++, null, CPItem.Type.REMOVE));
+	    }
+	    if (VaultHelper.checkPerm(player, "districts.advancedplayer") || player.isOp()) {
+		// Owner
+		if (d.getOwner().equals(player.getUniqueId())) {
+		    List<String> trusted = d.getOwnerTrusted();
+		    if (!trusted.isEmpty()) {
+			trusted.add(0, ChatColor.GREEN + "Owner's trusted players:");
+			cp.add(new CPItem(Material.SKULL_ITEM, 3, "Trust players", false, slot++, trusted, CPItem.Type.TRUST));
+			cp.add(new CPItem(Material.SKULL_ITEM, 4, "Untrust players", false, slot++, null, CPItem.Type.UNTRUST));
+		    } else {
+			trusted.addAll(chop(ChatColor.YELLOW,"Trusting allows full access to district",20));
+			cp.add(new CPItem(Material.SKULL_ITEM, 3, "Trust players", false, slot++, trusted, CPItem.Type.TRUST));
+		    }    
+		} else if (d.getRenter() != null) {
+		    List<String> trusted = d.getRenterTrusted();
+		    if (!trusted.isEmpty()) {
+			trusted.add(0, ChatColor.GREEN + "Renter's trusted players:");
+			cp.add(new CPItem(Material.SKULL_ITEM, 3, "Trust players", false, slot++, trusted, CPItem.Type.TRUST));
+			cp.add(new CPItem(Material.SKULL_ITEM, 4, "Untrust players", false, slot++, null, CPItem.Type.UNTRUST));
+		    } else {
+			trusted.addAll(chop(ChatColor.YELLOW,"Trusting allows full access to district",20));
+			cp.add(new CPItem(Material.SKULL_ITEM, 3, "Trust players", false, slot++, trusted, CPItem.Type.TRUST));
+		    }
+		}	
+		// Only allow these if there is no renter and the owner is doing it and they are not already on sale or rent
+		if (!d.isForSale() && !d.isForRent() && d.getOwner().equals(player.getUniqueId()) && d.getRenter() == null) {
+		    cp.add(new CPItem(Material.EMPTY_MAP, 0, "Sell District", false, slot++, null, CPItem.Type.SELL));
+		    cp.add(new CPItem(Material.IRON_INGOT, 0, "Rent District", false, slot++, null, CPItem.Type.RENT));
+		} else {
+		    // Renter options:
+		    if (d.getRenter() != null && d.getRenter().equals(player.getUniqueId())) {
+			if (d.isForRent()) {
+			    cp.add(new CPItem(Material.LAVA, 0, "Cancel your lease", false, slot++, chop(ChatColor.RED,"Lease will end in " + plugin.daysToEndOfLease(d) + " days", 20), CPItem.Type.CANCEL));
+			} else {
+			    cp.add(new CPItem(Material.LAVA, 0, "Lease canceled!", false, slot++, chop(ChatColor.RED,"Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), CPItem.Type.INFO));
+			}
+		    } else if (d.getOwner().equals(player.getUniqueId())) {
+			// Owner options
+			// If there is a renter, they can cancel the lease
+			if (d.getRenter() != null) {
+			    if (d.isForRent()) {
+				cp.add(new CPItem(Material.LAVA, 0, "Cancel lease with renter", false, slot++, chop(ChatColor.WHITE,"Lease will renew in " + plugin.daysToEndOfLease(d) + " days", 20), CPItem.Type.CANCEL));
+			    } else {
+				cp.add(new CPItem(Material.LAVA, 0, "Lease cancelled with renter", false, slot++, chop(ChatColor.GREEN,"Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), CPItem.Type.INFO));
+			    }
+			} else {
+			    // No renter - remove for rent option
+			    if (d.isForRent()) {
+				cp.add(new CPItem(Material.LAVA, 0, "Cancel For Rent", false, slot++, null, CPItem.Type.CANCEL));
+			    } else if (d.isForSale()) {
+				// Remove for sale option
+				cp.add(new CPItem(Material.LAVA, 0, "Cancel For Sale", false, slot++, null, CPItem.Type.CANCEL));
+			    }
+			}
+		    }
+		}
+		// Loop through district flags for this player
+		for (String flagName : d.getFlags().keySet()) {
+		    // Get the icon
+		    if (icons.containsKey(flagName)) {
+			//getLogger().info("DEBUG:" + flagName + " : " + d.getFlag(flagName) + " slot " + slot);
+			if (d.getRenter() != null && d.getRenter().equals(player.getUniqueId())) {
+			    cp.add(new CPItem(icons.get(flagName), 0, flagName, d.getFlag(flagName), slot++, null, CPItem.Type.TOGGLEINFO));
+			} else {
+			    cp.add(new CPItem(icons.get(flagName), 0, flagName, d.getFlag(flagName), slot++, null, CPItem.Type.TOGGLE));
+			}
+		    }
+		}
 	    }
 	}
-	
+	// Put all the items into the store for this player so when they click on items we know what to do
+	controlPanel.put(player.getUniqueId(),cp);
+
 	if (cp.size() > 0) {
 	    // Make sure size is a multiple of 9
 	    int size = cp.size() +8;
@@ -985,9 +1068,182 @@ public class Districts extends JavaPlugin {
      * @return the controlPanel
      */
     public List<CPItem> getControlPanel(Player player) {
-        return controlPanel.get(player.getUniqueId());
+	return controlPanel.get(player.getUniqueId());
+    }
+    public List<IPItem> getInfoPanel(Player player){
+	return infoPanel.get(player.getUniqueId());
     }
 
+    public Inventory infoPanel(Player player) {
+	List<IPItem> ip = new ArrayList<IPItem>();
+	// Create in info panel for the district the player is in
+	DistrictRegion d = players.getInDistrict(player.getUniqueId());
+	if (d == null) {
+	    player.sendMessage(ChatColor.RED + "You must be in a district to see info!");
+	    return null;
+	}
+	// New panel map
+	HashMap<String,Material> icons = new HashMap<String,Material>();
+	icons.put("allowShearing",Material.WOOL);
+	icons.put("allowGateUse", Material.FENCE_GATE);
+	icons.put("allowBucketUse", Material.BUCKET);
+	icons.put("allowChestAccess", Material.CHEST);
+	icons.put("allowRedStone", Material.REDSTONE);
+	icons.put("allowEnderPearls", Material.ENDER_PEARL);
+	icons.put("allowFurnaceUse", Material.FURNACE);
+	icons.put("allowCrafting", Material.WORKBENCH);
+	icons.put("allowBedUse", Material.BED);
+	icons.put("allowBrewing", Material.BREWING_STAND_ITEM);
+	icons.put("allowDoorUse", Material.TRAP_DOOR);
+	icons.put("allowMusic", Material.JUKEBOX);
+	icons.put("allowPVP", Material.DIAMOND_SWORD);
+	icons.put("allowLeverButtonUse", Material.LEVER);
+	icons.put("allowMobHarm", Material.LEATHER);
+	icons.put("allowPlaceBlocks", Material.COBBLESTONE);
+	icons.put("allowBreakBlocks", Material.MOSSY_COBBLESTONE);
+	icons.put("allowCropTrample", Material.WHEAT);
+	int slot = 0;
+	// Put the owner's name
+	UUID o = d.getOwner();
+	UUID r = d.getRenter();
+	//getLogger().info("Owner ID = " + o.toString());
+	//getLogger().info("Renter ID = " + r.toString());
 
+	// Find out if these guys are online
+	Player owner = plugin.getServer().getPlayer(o);
+
+	// Get the list of trusted players
+	if (o != null) {
+	    List<String> trusted = d.getOwnerTrusted();
+	    if (!trusted.isEmpty()) {
+		trusted.add(0, ChatColor.GREEN + "Trusted players:");
+	    }
+	    if (owner != null) {
+
+		ip.add(new IPItem(Material.SKULL_ITEM, 3,  "Owner: " + owner.getDisplayName(), false, slot++, trusted, IPItem.Type.INFO));
+	    } else {
+		ip.add(new IPItem(Material.SKULL_ITEM, 3,  "Owner: " + plugin.players.getName(o), false, slot++, trusted, IPItem.Type.INFO));		
+	    }
+	}
+
+	// Check if buying blocks is allowed
+	if (Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
+	    List<String> description = new ArrayList<String>();
+	    description.add(ChatColor.GOLD + "Blocks cost " + VaultHelper.econ.format(Settings.blockPrice) + " each");
+	    description.add(ChatColor.GREEN + "Click to enter how many you want to buy");
+	    ip.add(new IPItem(Material.GOLD_INGOT, 0, "Buy Blocks", false, slot++, description, IPItem.Type.BUYBLOCKS));
+	}
+
+
+	// For sale
+	if (d.isForSale()) {
+	    ip.add(new IPItem(Material.EMPTY_MAP, 0,  "For Sale!", false, slot++, 
+		    Districts.chop(ChatColor.YELLOW, VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.BUY));
+	}
+
+	// Renting
+	if (r != null) {
+	    List<String> trusted = d.getRenterTrusted();
+	    if (!trusted.isEmpty()) {
+		trusted.add(0, ChatColor.GREEN + "Trusted players:");
+	    }
+	    Player renter = plugin.getServer().getPlayer(r);
+	    if (renter != null) {
+		ip.add(new IPItem(Material.SKULL_ITEM, 3,  "Renter: " + renter.getDisplayName(), false, slot++, trusted, IPItem.Type.INFO));
+	    } else {
+		ip.add(new IPItem(Material.SKULL_ITEM, 3,  "Renter: " + plugin.players.getName(r), false, slot++, trusted, IPItem.Type.INFO));		
+	    }
+	    if (d.isForRent()) {
+		ip.add(new IPItem(Material.GOLD_INGOT, 0,  "Rent: " + VaultHelper.econ.format(d.getPrice()), false, slot++, 
+			Districts.chop(ChatColor.YELLOW, "Due in " + plugin.daysToEndOfLease(d) + " days.", 20), IPItem.Type.INFO));
+	    } else {
+		ip.add(new IPItem(Material.GOLD_INGOT, 0,  "Lease Cancelled!", false, slot++, 
+			Districts.chop(ChatColor.RED, "Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), IPItem.Type.INFO));
+	    }
+	} else {
+	    if (d.isForRent()) {
+		ip.add(new IPItem(Material.GOLD_INGOT, 0,  "For Rent!", false, slot++, 
+			Districts.chop(ChatColor.YELLOW, VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.RENT));
+	    }
+	}	
+	// Loop through district flags for this player
+	for (String flagName : d.getFlags().keySet()) {
+	    // Get the icon
+	    if (icons.containsKey(flagName)) {
+		//getLogger().info("DEBUG:" + flagName + " : " + d.getFlag(flagName) + " slot " + slot);
+		ip.add(new IPItem(icons.get(flagName), 0, flagName, d.getFlag(flagName), slot++));
+		// Put all the items into the store for this player so when they click on items we know what to do
+		infoPanel.put(player.getUniqueId(),ip);
+	    }
+	}
+
+	if (ip.size() > 0) {
+	    // Make sure size is a multiple of 9
+	    int size = ip.size() +8;
+	    size -= (size % 9);
+	    Inventory newPanel = Bukkit.createInventory(player, size, Locale.infoPanelTitle);
+	    // Fill the inventory and return
+	    for (IPItem i : ip) {
+		newPanel.addItem(i.getItem());
+	    }
+	    return newPanel;
+	}
+	return null;
+    }
+
+    /**
+     * Chops up a long string into a list of strings, with a color
+     * @param color
+     * @param longLine
+     * @param length
+     * @return
+     */
+    public static List<String> chop(ChatColor color, String longLine, int length) {
+	List<String> result = new ArrayList<String>();
+	//int multiples = longLine.length() / length;
+	int i = 0;
+	for (i = 0; i< longLine.length(); i += length) {
+	    //for (int i = 0; i< (multiples*length); i += length) {
+	    int endIndex = Math.min(i + length, longLine.length());
+	    String line = longLine.substring(i, endIndex);
+	    // Do the following only if i+length is not the end of the string
+	    if (endIndex < longLine.length()) {
+		// Check if last character in this string is not a space
+		if (!line.substring(line.length()-1).equals(" ")) {
+		    // If it is not a space, check to see if the next character in long line is a space.
+		    if (!longLine.substring(endIndex,endIndex+1).equals(" ")) {
+			// If it is not, then we are cutting a word in two and need to backtrack to the last space if possible
+			int lastSpace = line.lastIndexOf(" ");
+			if (lastSpace < line.length()) {
+			    line = line.substring(0, lastSpace);
+			    i -= (length - lastSpace -1);
+			}
+		    }
+		} 
+	    }
+	    //}
+	    result.add(color + line);
+	}
+	//result.add(color + longLine.substring(i, longLine.length()));
+	return result;
+    }
+    /**
+     * Returns the maximum number of blocks this player can have per their permission
+     * @param p
+     * @return amount or -1 if no permission applies
+     */
+    public int getMaxBlockBalance(Player p) {
+	// Check perms
+	int max = -1;
+	for (permBlock pb : permList) {
+	    //getLogger().info("DEBUG: checking " + pb.name + " " + pb.numberOfBlocks + ":" + pb.max);
+	    if (VaultHelper.checkPerm(p, pb.name)) {
+		if (pb.max > max) {
+		    max = pb.max;
+		} 
+	    }
+	}
+	return max;
+    }
 
 }

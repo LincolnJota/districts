@@ -36,6 +36,7 @@ public class DistrictRegion {
 	    plugin.getLogger().severe("Pos 1 and Pos 2 are not in the same world!");
 	}
 	this.owner = owner;
+	this.renter = null;
 	this.id = UUID.randomUUID();
 	this.ownerTrusted = new ArrayList<UUID>();
 	this.renterTrusted = new ArrayList<UUID>();
