@@ -853,6 +853,25 @@ public class DistrictGuard implements Listener {
 	    player.performCommand("district buy");
 	    player.closeInventory();
 	    break;
+	case BUYBLOCKS:
+	    ConversationFactory factory = new ConversationFactory(plugin);
+	    Conversation buyConv = factory.withFirstPrompt(new ConversationBlocks(plugin,ConversationBlocks.Type.BUY)).withLocalEcho(false)
+		    .withTimeout(10).buildConversation(player);
+	    buyConv.addConversationAbandonedListener(new ConversationAbandonedListener() {
+		@Override
+		public void conversationAbandoned(ConversationAbandonedEvent event) {
+		    if (event.getCanceller() instanceof InactivityConversationCanceller) {
+			event.getContext().getForWhom().sendRawMessage(ChatColor.RED + "Cancelling - time out.");
+			return;
+		    }  
+		}});
+	    buyConv.begin();
+	    player.closeInventory();
+	    break;
+	case INFO:
+	    break;
+	case NAME:
+	    break;
 	default:
 	    break;
 	}

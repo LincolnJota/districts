@@ -1137,8 +1137,8 @@ public class Districts extends JavaPlugin {
 
 	// For sale
 	if (d.isForSale()) {
-	    ip.add(new IPItem(Material.EMPTY_MAP, 0,  "For Sale!", false, slot++, 
-		    Districts.chop(ChatColor.YELLOW, VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.BUY));
+	    ip.add(new IPItem(Material.EMPTY_MAP, 0,  "District For Sale!", false, slot++, 
+		    Districts.chop(ChatColor.YELLOW, "Click to buy for " + VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.BUY));
 	}
 
 	// Renting
@@ -1162,8 +1162,8 @@ public class Districts extends JavaPlugin {
 	    }
 	} else {
 	    if (d.isForRent()) {
-		ip.add(new IPItem(Material.GOLD_INGOT, 0,  "For Rent!", false, slot++, 
-			Districts.chop(ChatColor.YELLOW, VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.RENT));
+		ip.add(new IPItem(Material.GOLD_INGOT, 0,  "District For Rent!", false, slot++, 
+			Districts.chop(ChatColor.YELLOW, "Click to rent for " + VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.RENT));
 	    }
 	}	
 	// Loop through district flags for this player
