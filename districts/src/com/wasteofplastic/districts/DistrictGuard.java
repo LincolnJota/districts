@@ -41,9 +41,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.Potion;
 
-import com.wasteofplastic.acidisland.Locale;
-import com.wasteofplastic.acidisland.Settings;
-
 /**
  * @author ben
  * Provides protection to islands
