@@ -29,6 +29,7 @@ import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
@@ -39,6 +40,9 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.Potion;
+
+import com.wasteofplastic.acidisland.Locale;
+import com.wasteofplastic.acidisland.Settings;
 
 /**
  * @author ben
@@ -398,6 +402,16 @@ public class DistrictGuard implements Listener {
 		    e.setCancelled(true);
 		    return;
 		}
+	    } else if (e.getEntity() instanceof Projectile) {
+		// Prevent projectiles shot by players from removing items from frames
+		Projectile p = (Projectile)e.getDamager();
+		if (p.getShooter() instanceof Player) {
+		    if (!d.getAllowBreakBlocks(((Player)p.getShooter()).getUniqueId())) {
+			((Player)e.getDamager()).sendMessage(ChatColor.RED + Locale.districtProtected);
+			e.setCancelled(true);
+			return;
+		    }		    
+		}
 	    }
 
 	}
@@ -505,6 +519,21 @@ public class DistrictGuard implements Listener {
 	    e.setCancelled(true);
 	}
 
+    }
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerBlockPlace(final HangingPlaceEvent e) {
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
+	    return;
+	}
+	// If the offending block is not in a district, forget it!
+	DistrictRegion d = plugin.getInDistrict(e.getBlock().getLocation());
+	if (d == null) {
+	    return;
+	}
+	if (!d.getAllowPlaceBlocks(e.getPlayer().getUniqueId()) && !e.getPlayer().isOp()) {
+	    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+	    e.setCancelled(true);
+	}
     }
 
     // Prevent sleeping in other beds
