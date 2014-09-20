@@ -399,17 +399,17 @@ public class DistrictGuard implements Listener {
 		    e.setCancelled(true);
 		    return;
 		}
-	    } else if (e.getEntity() instanceof Projectile) {
+	    } else if (e.getDamager() instanceof Projectile) {
 		// Prevent projectiles shot by players from removing items from frames
 		Projectile p = (Projectile)e.getDamager();
 		if (p.getShooter() instanceof Player) {
 		    if (!d.getAllowBreakBlocks(((Player)p.getShooter()).getUniqueId())) {
-			((Player)e.getDamager()).sendMessage(ChatColor.RED + Locale.districtProtected);
+			((Player)p.getShooter()).sendMessage(ChatColor.RED + Locale.districtProtected);
 			e.setCancelled(true);
 			return;
 		    }		    
 		}
-	    }
+	    } 
 
 	}
 	// If the attacker is non-human and not an arrow then everything is okay
