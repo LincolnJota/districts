@@ -36,6 +36,7 @@ import org.bukkit.util.Vector;
 public class Districts extends JavaPlugin {
     // This plugin
     private static Districts plugin;
+    private int debug = 1;
     // The AcidIsland world
     public static World acidWorld = null;
     // Player YAMLs
@@ -236,6 +237,7 @@ public class Districts extends JavaPlugin {
 	    Settings.blockPrice = 0D;
 	    getLogger().warning("config.yml issue: blockprice cannot be negative, setting to 0 (disabled).");
 	}
+	debug = getConfig().getInt("districts.debug",1);
     }
 
     /*
@@ -567,6 +569,10 @@ public class Districts extends JavaPlugin {
 	manager.registerEvents(new DistrictGuard(this), this);
 	// Events for when a player joins or leaves the server
 	manager.registerEvents(new JoinLeaveEvents(this, players), this);
+	// WorldGuard PVP
+	if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
+	    manager.registerEvents(new WorldGuardPVPListener(this), this);
+	}
     }
 
 
@@ -1246,4 +1252,12 @@ public class Districts extends JavaPlugin {
 	return max;
     }
 
+    protected void logger(int level, String message) {
+	if (debug >= level) {
+	    if (level > 1) {
+		message = "DEBUG["+level+"]:" + message;
+	    }
+	    getLogger().info(message);
+	}
+    }
 }

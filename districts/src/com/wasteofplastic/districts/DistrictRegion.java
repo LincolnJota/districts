@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -612,6 +613,9 @@ public class DistrictRegion {
      * @return the enterMessage
      */
     public String getEnterMessage() {
+	if ((Boolean)flags.get("allowPVP")) {
+	    return (ChatColor.RED + "[PVP] " + (String)flags.get("enterMessage"));
+	}
 	return (String)flags.get("enterMessage");
     }
 

@@ -47,6 +47,12 @@ districts:
    # after the deadline. 12 hours should be sufficient.
    checkleases: 12
 
+   #Debug level
+   #Setting to 0 will result in Districts being very quiet, except for errors
+   #1 = normal
+   #2 or higher show debug messages in the console and will get very noisy
+   debug: 1
+
    ### Global settings for districts
    ### Players cannot customize these settings
    # Allow lava or water flow into or out of a district

@@ -443,10 +443,10 @@ public class DistrictGuard implements Listener {
 		// If PVP is okay then return
 		// Target is in a district
 		if (d.getAllowPVP()) {
-		    plugin.getLogger().info("PVP allowed");
+		    plugin.logger(2,"PVP allowed");
 		    return;
 		}
-		plugin.getLogger().info("PVP not allowed");
+		plugin.logger(2,"PVP not allowed");
 
 	    }
 	}

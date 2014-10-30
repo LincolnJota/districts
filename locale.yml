@@ -4,8 +4,27 @@
 # If this file is deleted, then it will be recreate at the next reload.                   #
 ###########################################################################################
 general:
+   notavailable: "Districts are not available in this world"
+   districts: "Districts"
+   owner: "Owner"
+   renter: "Renter"
    controlpaneltitle: "District Control"
    infopaneltitle: "District Info"
+
+help:
+   help: "help"
+   create: "Tries to make a district"
+   remove: "Removes a district that you are standing in if you are the owner"
+   info: "Shows info on the district you and general info"
+   trust: "Gives player full access to your district"
+   untrust: "Revokes trust to your district"
+   untrustall: "Removes all trusted parties from your district"
+   buy: "Attempts to buy the district you are in"
+   rent: "Attempts to rent the district you are in"
+   rentprice: "Puts the district you are in up for rent for a weekly rent"
+   sell: "Puts the district you are in up for sale"
+   cancel: "Cancels a For Sale, For Rent or a Lease"
+
 ################
 #General Errors#
 ################
@@ -17,6 +36,81 @@ error:
    offlinePlayer: "That player is offline or doesn't exist."
    unknownCommand: "Unknown command."
    districtProtected: "District protected"
+   move: "Move to a district you own or rent first."
+   notowner: "You must be the owner or renter of this district to do that."
+   removing: "Removing district!"
+   notyours: "This is not your district!"
+   notinside: "You are not in a district!"
+   tooexpensive: "You cannot afford [price]" 
+   alreadyexists: "District already exists!"
+   noPVP: "Target is in a no-PVP district!"
+
+### Commands
+trust:
+   trust: "[player] trusts you in a district."
+   untrust: "[player] untrusted you in a district."
+   title: "[District Trusted Players]"
+   owners: "[Owner's]"
+   renters: "[Renter's]"
+   none: "None"
+   notrust: "No one is trusted in this district."
+   alreadytrusted: "That player is already trusted."
+
+sell:
+   notforsale: "This district is not for sale!"
+   youareowner: "You already own this district!" 
+   sold: "You successfully sold a district for [price] to [player]"
+   bought: "You purchased the district for [price]!"
+   ecoproblem: "There was an economy problem trying to purchase the district for [price]!"
+   beingrented: "The district is being rented at this time. Wait until the lease expires."
+   invalidprice: "The price is invalid (must be >= [price])"
+   forsale: "Putting district up for sale for [price]"
+   ad: "This district is for sale for [price]!"
+
+rent:
+   notforrent: "This district is not for rent!"
+   alreadyrenting: "You are already renting this district!"
+   alreadyleased: "This district is already being leased."
+   tip: "To end the renter's lease at the next due date, use the cancel command."
+   leased: "You successfully leased a district for [price] to [player]"
+   rented: "You rented the district for [price] for 1 week!"
+   error: "There was an economy problem trying to rent the district for [price]!"
+   invalidrent: "The rent is invalid (must be >= [price])"
+   forrent: "Putting district up for rent for [price]"
+   ad: "This district is for rent for [price] per week."
+
+messages:
+   enter: "Entering [owner]'s district!"
+   leave: "Now leaving [owner]'s district."
+   rententer: "Entering [player]'s rented district!"
+   rentfarewell: "Now leaving [player]'s rented district."
+   youarein: "You are now in [owner]'s district!"
+   removed: "This district is no more..."
+   removedmessage: "A district of yours is no more!"
+   cancelled: "District is no longer for sale or rent."
+   leasestatus1: "District is currently leased by [player]."
+   leasestatus2: "Lease will not renew and will terminate in [time] days."
+   leasestatus3: "You can put it up for rent again after that date."
+   cancelmessage: "[owner] ended a lease you have on a district. It will end in [time] days."
+   leaserenewalcancelled: "Lease renewal cancelled. Lease term finishes in [time] days."
+   renewalcancelmessage: "[renter] canceled a lease with you. It will end in [time] days."
+info:
+   info: "[District Info]"
+   ownerstrusted: "[Owner's trusted players]"
+   none: "None"
+   nextrent: "Next rent of [price] due in [time] days."
+   leasewillend: "Lease will end in [time] days!"
+   renter: "Renter: [nickname] ([name])"
+   renterstrusted: "[Renter's trusted players]"
+   ad: "This district can be leased for [price]"
+
+lease:
+   rentpaid: "You paid a rent of [price] to [owner]."
+   rentpaidowner: "[player] paid you a rent of [price]."
+   cannotpay: "You could not pay a rent of [price] so you were evicted from [owner]'s district"
+   cannotpayowner: "[player] could not pay rent of [price] so was evicted"
+   leaseended: "The lease on a district you were renting from [owner] ended."
+   leaseendedowner: "[player]'s lease ended."
 
 ##################################
 #Admin commands that use /dadmin #
@@ -41,5 +135,3 @@ delete:
 
 news:
    headline: "[District News]"
-
-
