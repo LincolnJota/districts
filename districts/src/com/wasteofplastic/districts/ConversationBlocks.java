@@ -87,7 +87,7 @@ public class ConversationBlocks implements Prompt {
 		context.getForWhom().sendRawMessage(ChatColor.RED + "You have " + VaultHelper.econ.format(balance));
 		return this;
 	    } else {
-		player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		return END_OF_CONVERSATION;
 	    }
 	case CLAIM:

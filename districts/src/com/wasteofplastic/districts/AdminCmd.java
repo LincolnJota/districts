@@ -34,7 +34,7 @@ public class AdminCmd implements CommandExecutor {
 	// Check for permissions
 	if (sender instanceof Player) {
 	    if (!VaultHelper.checkPerm(((Player)sender), "districts.admin")) {
-		sender.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		sender.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		return true;
 	    }
 	}
@@ -113,14 +113,14 @@ public class AdminCmd implements CommandExecutor {
 		}
 		return true;
 	    } else {
-		sender.sendMessage(ChatColor.RED + Locale.errorUnknownCommand);
+		sender.sendMessage(ChatColor.RED + Locale.errorunknownCommand);
 		return false;
 	    }
 	case 2:
 	    if (split[0].equalsIgnoreCase("balance")) {
 		final UUID playerUUID = players.getUUID(split[1]);
 		if (playerUUID == null) {
-		    sender.sendMessage(ChatColor.RED + Locale.errorUnknownPlayer);
+		    sender.sendMessage(ChatColor.RED + Locale.errorunknownPlayer);
 		    return true;
 		} else {	
 		    sender.sendMessage(ChatColor.GOLD + "Block balance: " + players.getBlockBalance(playerUUID));
@@ -130,7 +130,7 @@ public class AdminCmd implements CommandExecutor {
 		// Convert name to a UUID
 		final UUID playerUUID = players.getUUID(split[1]);
 		if (playerUUID == null) {
-		    sender.sendMessage(ChatColor.RED + Locale.errorUnknownPlayer);
+		    sender.sendMessage(ChatColor.RED + Locale.errorunknownPlayer);
 		    return true;
 		} else {	
 		    sender.sendMessage(ChatColor.GREEN + players.getName(playerUUID));
@@ -153,7 +153,7 @@ public class AdminCmd implements CommandExecutor {
 	    if (split[0].equalsIgnoreCase("give")) {
 		final UUID playerUUID = players.getUUID(split[1]);
 		if (playerUUID == null) {
-		    sender.sendMessage(ChatColor.RED + Locale.errorUnknownPlayer);
+		    sender.sendMessage(ChatColor.RED + Locale.errorunknownPlayer);
 		    return true;
 		} else {	
 		    try {
@@ -169,7 +169,7 @@ public class AdminCmd implements CommandExecutor {
 	    } else if (split[0].equalsIgnoreCase("take")) {
 		final UUID playerUUID = players.getUUID(split[1]);
 		if (playerUUID == null) {
-		    sender.sendMessage(ChatColor.RED + Locale.errorUnknownPlayer);
+		    sender.sendMessage(ChatColor.RED + Locale.errorunknownPlayer);
 		    return true;
 		} else {	
 		    try {
@@ -185,7 +185,7 @@ public class AdminCmd implements CommandExecutor {
 	    } else if (split[0].equalsIgnoreCase("set")) {
 		final UUID playerUUID = players.getUUID(split[1]);
 		if (playerUUID == null) {
-		    sender.sendMessage(ChatColor.RED + Locale.errorUnknownPlayer);
+		    sender.sendMessage(ChatColor.RED + Locale.errorunknownPlayer);
 		    return true;
 		} else {	
 		    try {

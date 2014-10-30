@@ -54,7 +54,7 @@ public class DistrictCmd implements CommandExecutor {
 	}
 	// Basic permissions check to even use /" + label + "
 	if (!VaultHelper.checkPerm(player, "districts.player")) {
-	    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+	    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 	    return true;
 	}
 	/*
@@ -134,7 +134,7 @@ public class DistrictCmd implements CommandExecutor {
 		    }
 
 		} else {
-		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
 		}
 	    } else if (split[0].equalsIgnoreCase("buyblocks")) {
@@ -142,12 +142,12 @@ public class DistrictCmd implements CommandExecutor {
 		    player.sendMessage(ChatColor.YELLOW + "Blocks cost " + VaultHelper.econ.format(Settings.blockPrice));
 		    return true;
 		} else {
-		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
 		}
 	    } else if (split[0].equalsIgnoreCase("untrustall")) {
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
-		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
 		}
 		//DistrictRegion d = players.getInDistrict(playerUUID);
@@ -294,7 +294,7 @@ public class DistrictCmd implements CommandExecutor {
 		return true;
 	    } else if (split[0].equalsIgnoreCase("buy")) {
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
-		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
 		}
 		//DistrictRegion d = players.getInDistrict(playerUUID);
@@ -348,7 +348,7 @@ public class DistrictCmd implements CommandExecutor {
 		player.sendMessage(ChatColor.RED + "This is not your district!");
 	    } else if (split[0].equalsIgnoreCase("rent")) {
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
-		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
 		}
 		//DistrictRegion d = players.getInDistrict(playerUUID);
@@ -409,7 +409,7 @@ public class DistrictCmd implements CommandExecutor {
 		player.sendMessage(ChatColor.RED + "This is not your district!");
 	    } else if (split[0].equalsIgnoreCase("cancel")) {
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
-		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
 		}
 		//DistrictRegion d = players.getInDistrict(playerUUID);
@@ -541,12 +541,12 @@ public class DistrictCmd implements CommandExecutor {
 		    player.sendMessage(ChatColor.RED + "Blocks cost " + VaultHelper.econ.format(Settings.blockPrice));
 		    return true;
 		} else {
-		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
 		}
 	    } else if (split[0].equalsIgnoreCase("untrust")) {
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
-		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
 		}
 
@@ -610,7 +610,7 @@ public class DistrictCmd implements CommandExecutor {
 
 	    } else if (split[0].equalsIgnoreCase("trust")) {
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
-		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
 		}
 
@@ -713,7 +713,7 @@ public class DistrictCmd implements CommandExecutor {
 		return true;
 	    } else if (split[0].equalsIgnoreCase("sell")) { 
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
-		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
 		}
 
@@ -750,7 +750,7 @@ public class DistrictCmd implements CommandExecutor {
 
 	    } else if (split[0].equalsIgnoreCase("rent")) { 
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
-		    player.sendMessage(ChatColor.RED + Locale.errorNoPermission);
+		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
 		}
 

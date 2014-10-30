@@ -364,7 +364,7 @@ public class DistrictGuard implements Listener {
 	    return;
 	}
 	if (!d.getAllowBreakBlocks(e.getPlayer().getUniqueId())) {
-	    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+	    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 	    e.setCancelled(true);
 	}
     }
@@ -395,7 +395,7 @@ public class DistrictGuard implements Listener {
 	if (e.getEntity() instanceof ItemFrame) {
 	    if (e.getDamager() instanceof Player) {
 		if (!d.getAllowBreakBlocks(e.getDamager().getUniqueId())) {
-		    ((Player)e.getDamager()).sendMessage(ChatColor.RED + Locale.districtProtected);
+		    ((Player)e.getDamager()).sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
 		    return;
 		}
@@ -404,7 +404,7 @@ public class DistrictGuard implements Listener {
 		Projectile p = (Projectile)e.getDamager();
 		if (p.getShooter() instanceof Player) {
 		    if (!d.getAllowBreakBlocks(((Player)p.getShooter()).getUniqueId())) {
-			((Player)p.getShooter()).sendMessage(ChatColor.RED + Locale.districtProtected);
+			((Player)p.getShooter()).sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 			e.setCancelled(true);
 			return;
 		    }		    
@@ -432,7 +432,7 @@ public class DistrictGuard implements Listener {
 			//plugin.getLogger().info("player ID is null");
 		    }
 		    if (!d.getAllowHurtMobs(playerUUID)) {
-			((Player)e.getDamager()).sendMessage(ChatColor.RED + Locale.districtProtected);
+			((Player)e.getDamager()).sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 			e.setCancelled(true);
 			return;
 		    }
@@ -476,7 +476,7 @@ public class DistrictGuard implements Listener {
 			//plugin.getLogger().info("Entity is a non-monster - check if ok to hurt"); 
 			UUID playerUUID = shooter.getUniqueId();
 			if (!d.getAllowHurtMobs(playerUUID)) {
-			    shooter.sendMessage(ChatColor.RED + Locale.districtProtected);
+			    shooter.sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 			    e.setCancelled(true);
 			    return;
 			}
@@ -512,7 +512,7 @@ public class DistrictGuard implements Listener {
 	    return;
 	}
 	if (!d.getAllowPlaceBlocks(e.getPlayer().getUniqueId()) && !e.getPlayer().isOp()) {
-	    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+	    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 	    e.setCancelled(true);
 	}
 
@@ -528,7 +528,7 @@ public class DistrictGuard implements Listener {
 	    return;
 	}
 	if (!d.getAllowPlaceBlocks(e.getPlayer().getUniqueId()) && !e.getPlayer().isOp()) {
-	    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+	    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 	    e.setCancelled(true);
 	}
     }
@@ -545,7 +545,7 @@ public class DistrictGuard implements Listener {
 	    return;
 	}
 	if (!d.getAllowBedUse(e.getPlayer().getUniqueId()) && !e.getPlayer().isOp()) {
-	    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+	    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 	    e.setCancelled(true);
 	}
     }
@@ -569,7 +569,7 @@ public class DistrictGuard implements Listener {
 	}
 	Player p = (Player)e.getRemover();
 	if (!d.getAllowBreakBlocks(e.getRemover().getUniqueId()) && !p.isOp()) {
-	    p.sendMessage(ChatColor.RED + Locale.districtProtected);
+	    p.sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 	    e.setCancelled(true);
 	}
     }
@@ -586,7 +586,7 @@ public class DistrictGuard implements Listener {
 	    return;
 	}
 	if (!d.getAllowBucketUse(e.getPlayer().getUniqueId()) && !e.getPlayer().isOp()) {
-	    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+	    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 	    e.setCancelled(true);
 	}
     }
@@ -602,7 +602,7 @@ public class DistrictGuard implements Listener {
 	}
 
 	if (!d.getAllowBucketUse(e.getPlayer().getUniqueId()) && !e.getPlayer().isOp()) {
-	    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+	    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 	    e.setCancelled(true);
 	}
     }
@@ -619,7 +619,7 @@ public class DistrictGuard implements Listener {
 	    return;
 	}
 	if (!d.getAllowShearing(e.getPlayer().getUniqueId())) {
-	    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+	    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 	    e.setCancelled(true);
 	}
     }
@@ -682,14 +682,14 @@ public class DistrictGuard implements Listener {
 	    case WOODEN_DOOR:
 	    case TRAP_DOOR:
 		if (!d.getAllowDoorUse(e.getPlayer().getUniqueId())) {
-		    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
 		    return; 
 		}
 		break;
 	    case FENCE_GATE:
 		if (!d.getAllowGateUse(e.getPlayer().getUniqueId())) {
-		    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
 		    return;  
 		}
@@ -703,14 +703,14 @@ public class DistrictGuard implements Listener {
 	    case HOPPER_MINECART:
 	    case STORAGE_MINECART:
 		if (!d.getAllowChestAccess(e.getPlayer().getUniqueId())) {
-		    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
 		    return; 
 		}
 		break;
 	    case SOIL:
 		if (!d.getAllowCropTrample(e.getPlayer().getUniqueId())) {
-		    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
 		    return; 
 		}
@@ -718,7 +718,7 @@ public class DistrictGuard implements Listener {
 	    case BREWING_STAND:
 	    case CAULDRON:
 		if (!d.getAllowBrewing(e.getPlayer().getUniqueId())) {
-		    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
 		    return; 
 		}
@@ -731,7 +731,7 @@ public class DistrictGuard implements Listener {
 	    case REDSTONE_COMPARATOR_ON:
 	    case REDSTONE_COMPARATOR_OFF:
 		if (!d.getAllowRedStone(e.getPlayer().getUniqueId())) {
-		    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
 		    return; 
 		}
@@ -741,7 +741,7 @@ public class DistrictGuard implements Listener {
 	    case FURNACE:
 	    case BURNING_FURNACE:
 		if (!d.getAllowFurnaceUse(e.getPlayer().getUniqueId())) {
-		    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
 		    return; 
 		}
@@ -753,7 +753,7 @@ public class DistrictGuard implements Listener {
 	    case JUKEBOX:
 	    case NOTE_BLOCK:
 		if (!d.getAllowMusic(e.getPlayer().getUniqueId())) {
-		    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
 		    return; 
 		}
@@ -764,7 +764,7 @@ public class DistrictGuard implements Listener {
 	    case WOOD_BUTTON:
 	    case LEVER:
 		if (!d.getAllowLeverButtonUse(e.getPlayer().getUniqueId())) {
-		    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
 		    return; 
 		}	
@@ -773,7 +773,7 @@ public class DistrictGuard implements Listener {
 		break;
 	    case WORKBENCH:
 		if (!d.getAllowCrafting(e.getPlayer().getUniqueId())) {
-		    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
 		    return; 
 		}
@@ -792,13 +792,13 @@ public class DistrictGuard implements Listener {
 
 	    if (e.getMaterial().equals(Material.BOAT) && (e.getClickedBlock() != null && !e.getClickedBlock().isLiquid())) {
 		// Trying to put a boat on non-liquid
-		e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+		e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		e.setCancelled(true);
 		return;
 	    }
 	    if (e.getMaterial().equals(Material.ENDER_PEARL)) {
 		if (!d.getAllowEnderPearls(e.getPlayer().getUniqueId())) {
-		    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
 		}
 		return;
@@ -813,7 +813,7 @@ public class DistrictGuard implements Listener {
 		    } else {
 			// Splash potions are allowed only if PVP is allowed
 			if (!d.getAllowPVP()) {
-			    e.getPlayer().sendMessage(ChatColor.RED + Locale.districtProtected);
+			    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 			    e.setCancelled(true);
 			}
 		    }
@@ -914,7 +914,7 @@ public class DistrictGuard implements Listener {
     public void onControlPanelClick(final InventoryClickEvent e) {
 	// Check that it is a control panel
 	Inventory panel = e.getInventory();
-	if (!panel.getName().equals(Locale.controlPanelTitle)) {
+	if (!panel.getName().equals(Locale.controlpaneltitle)) {
 	    return;
 	}
 	// Check the right worlds

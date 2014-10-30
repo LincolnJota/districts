@@ -161,6 +161,7 @@ public class Districts extends JavaPlugin {
 	}
 	// Get the localization strings
 	getLocale();
+	/*
 	Locale.adminHelpdelete = getLocale().getString("adminHelp.delete", "deletes the district you are standing in.");
 	Locale.errorUnknownPlayer = getLocale().getString("error.unknownPlayer","That player is unknown.");
 	Locale.errorNoPermission = getLocale().getString("error.noPermission", "You don't have permission to use that command!");
@@ -175,7 +176,100 @@ public class Districts extends JavaPlugin {
 	Locale.reloadconfigReloaded = getLocale().getString("reload.configurationReloaded", "Configuration reloaded from file.");	//delete
 	Locale.deleteremoving = getLocale().getString("delete.removing","District removed.");
 	Locale.controlPanelTitle = getLocale().getString("general.controlpaneltitle", "District Control Panel");
+	*/
 	Locale.infoPanelTitle = getLocale().getString("general.infopaneltitle", "District Info");
+	
+	Locale.generalnotavailable = getLocale().getString("general.notavailable", "Districts are not available in this world");
+	Locale.generaldistricts = getLocale().getString("general.districts", "Districts");
+	Locale.generalowner = getLocale().getString("general.owner", "Owner");
+	Locale.generalrenter = getLocale().getString("general.renter", "Renter");
+	Locale.helphelp = getLocale().getString("help.help", "help");
+	Locale.helpcreate = getLocale().getString("help.create", "Tries to make a district");
+	Locale.helpremove = getLocale().getString("help.remove", "Removes a district that you are standing in if you are the owner");
+	Locale.helpinfo = getLocale().getString("help.info", "Shows info on the district you and general info");
+	Locale.helptrust = getLocale().getString("help.trust", "Gives player full access to your district");
+	Locale.helpuntrust = getLocale().getString("help.untrust", "Revokes trust to your district");
+	Locale.helpuntrustall = getLocale().getString("help.untrustall", "Removes all trusted parties from your district");
+	Locale.helpbuy = getLocale().getString("help.buy", "Attempts to buy the district you are in");
+	Locale.helprent = getLocale().getString("help.rent", "Attempts to rent the district you are in");
+	Locale.helprentprice = getLocale().getString("help.rentprice", "Puts the district you are in up for rent for a weekly rent");
+	Locale.helpsell = getLocale().getString("help.sell", "Puts the district you are in up for sale");
+	Locale.helpcancel = getLocale().getString("help.cancel", "Cancels a For Sale, For Rent or a Lease");
+	Locale.errorunknownPlayer = getLocale().getString("error.unknownPlayer", "That player is unknown.");
+	Locale.errornoPermission = getLocale().getString("error.noPermission", "You don't have permission to use that command!");
+	Locale.errorcommandNotReady = getLocale().getString("error.commandNotReady", "You can't use that command right now.");
+	Locale.errorofflinePlayer = getLocale().getString("error.offlinePlayer", "That player is offline or doesn't exist.");
+	Locale.errorunknownCommand = getLocale().getString("error.unknownCommand", "Unknown command.");
+	Locale.errordistrictProtected = getLocale().getString("error.districtProtected", "District protected");
+	Locale.errormove = getLocale().getString("error.move", "Move to a district you own or rent first.");
+	Locale.errornotowner = getLocale().getString("error.notowner", "You must be the owner or renter of this district to do that.");
+	Locale.errorremoving = getLocale().getString("error.removing", "Removing district!");
+	Locale.errornotyours = getLocale().getString("error.notyours", "This is not your district!");
+	Locale.errornotinside = getLocale().getString("error.notinside", "You are not in a district!");
+	Locale.errortooexpensive = getLocale().getString("error.tooexpensive", "You cannot afford [price]" );
+	Locale.erroralreadyexists = getLocale().getString("error.alreadyexists", "District already exists!");
+	Locale.errornorecipe = getLocale().getString("error.norecipe", "This does not meet any district recipe!");
+	Locale.errornoPVP = getLocale().getString("error.noPVP", "Target is in a no-PVP district!");
+	Locale.trusttrust = getLocale().getString("trust.trust", "[player] trusts you in a district.");
+	Locale.trustuntrust = getLocale().getString("trust.untrust", "[player] untrusted you in a district.");
+	Locale.trusttitle = getLocale().getString("trust.title", "[District Trusted Players]");
+	Locale.trustowners = getLocale().getString("trust.owners", "[Owner's]");
+	Locale.trustrenters = getLocale().getString("trust.renters", "[Renter's]");
+	Locale.trustnone = getLocale().getString("trust.none", "None");
+	Locale.trustnotrust = getLocale().getString("trust.notrust", "No one is trusted in this district.");
+	Locale.trustalreadytrusted = getLocale().getString("trust.alreadytrusted", "That player is already trusted.");
+	Locale.sellnotforsale = getLocale().getString("sell.notforsale", "This district is not for sale!");
+	Locale.sellyouareowner = getLocale().getString("sell.youareowner", "You already own this district!" );
+	Locale.sellsold = getLocale().getString("sell.sold", "You successfully sold a district for [price] to [player]");
+	Locale.sellbought = getLocale().getString("sell.bought", "You purchased the district for [price]!");
+	Locale.sellecoproblem = getLocale().getString("sell.ecoproblem", "There was an economy problem trying to purchase the district for [price]!");
+	Locale.sellbeingrented = getLocale().getString("sell.beingrented", "The district is being rented at this time. Wait until the lease expires.");
+	Locale.sellinvalidprice = getLocale().getString("sell.invalidprice", "The price is invalid (must be >= [price])");
+	Locale.sellforsale = getLocale().getString("sell.forsale", "Putting district up for sale for [price]");
+	Locale.sellad = getLocale().getString("sell.ad", "This district is for sale for [price]!");
+	Locale.rentnotforrent = getLocale().getString("rent.notforrent", "This district is not for rent!");
+	Locale.rentalreadyrenting = getLocale().getString("rent.alreadyrenting", "You are already renting this district!");
+	Locale.rentalreadyleased = getLocale().getString("rent.alreadyleased", "This district is already being leased.");
+	Locale.renttip = getLocale().getString("rent.tip", "To end the renter's lease at the next due date, use the cancel command.");
+	Locale.rentleased = getLocale().getString("rent.leased", "You successfully leased a district for [price] to [player]");
+	Locale.rentrented = getLocale().getString("rent.rented", "You rented the district for [price] for 1 week!");
+	Locale.renterror = getLocale().getString("rent.error", "There was an economy problem trying to rent the district for [price]!");
+	Locale.rentinvalidrent = getLocale().getString("rent.invalidrent", "The rent is invalid (must be >= [price])");
+	Locale.rentforrent = getLocale().getString("rent.forrent", "Putting district up for rent for [price]");
+	Locale.rentad = getLocale().getString("rent.ad", "This district is for rent for [price] per week.");
+	Locale.messagesenter = getLocale().getString("messages.enter", "Entering [owner]'s [biome] district!");
+	Locale.messagesleave = getLocale().getString("messages.leave", "Now leaving [owner]'s district.");
+	Locale.messagesrententer = getLocale().getString("messages.rententer", "Entering [player]'s rented [biome] district!");
+	Locale.messagesrentfarewell = getLocale().getString("messages.rentfarewell", "Now leaving [player]'s rented district.");
+	Locale.messagesyouarein = getLocale().getString("messages.youarein", "You are now in [owner]'s [biome] district!");
+	Locale.cancelcancelled = getLocale().getString("cancel.cancelled", "District is no longer for sale or rent.");
+	Locale.cancelleasestatus1 = getLocale().getString("cancel.leasestatus1", "District is currently leased by [player].");
+	Locale.cancelleasestatus2 = getLocale().getString("cancel.leasestatus2", "Lease will not renew and will terminate in [time] days.");
+	Locale.cancelleasestatus3 = getLocale().getString("cancel.leasestatus3", "You can put it up for rent again after that date.");
+	Locale.cancelcancelmessage = getLocale().getString("cancel.cancelmessage", "[owner] ended a lease you have on a district. It will end in [time] days.");
+	Locale.cancelleaserenewalcancelled = getLocale().getString("cancel.leaserenewalcancelled", "Lease renewal cancelled. Lease term finishes in [time] days.");
+	Locale.cancelrenewalcancelmessage = getLocale().getString("cancel.renewalcancelmessage", "[renter] canceled a lease with you. It will end in [time] days.");
+	Locale.infotitle = getLocale().getString("info.title", "&A[District Construction]");
+	Locale.infoinfo = getLocale().getString("info.info", "[District Info]");
+	Locale.infoownerstrusted = getLocale().getString("info.ownerstrusted", "[Owner's trusted players]");
+	Locale.infonone = getLocale().getString("info.none", "None");
+	Locale.infonextrent = getLocale().getString("info.nextrent", "Next rent of [price] due in [time] days.");
+	Locale.infoleasewillend = getLocale().getString("info.leasewillend", "Lease will end in [time] days!");
+	Locale.inforenter = getLocale().getString("info.renter", "Renter [nickname] ([name])");
+	Locale.inforenterstrusted = getLocale().getString("info.renterstrusted", "[Renter's trusted players]");
+	Locale.infoad = getLocale().getString("info.ad", "This district can be leased for [price]");
+	Locale.adminHelpreload = getLocale().getString("adminHelp.reload", "reload configuration from file.");
+	Locale.adminHelpinfo = getLocale().getString("adminHelp.info", "provides info on the district you are in");
+	Locale.reloadconfigReloaded = getLocale().getString("reload.configReloaded", "Configuration reloaded from file.");
+	Locale.admininfoerror = getLocale().getString("admininfo.error", "District info only available in-game");
+	Locale.admininfoerror2 = getLocale().getString("admininfo.error2", "Put yourself in a district to see info.");
+	Locale.admininfoflags = getLocale().getString("admininfo.flags", "[District Flags]");
+	Locale.newsheadline = getLocale().getString("news.headline", "[District News]");
+	Locale.controlpaneltitle = getLocale().getString("controlpanel.title", "&ADistrict Control Panel");
+
+	
+	
+	
 	// Assign settings
 	Settings.allowPvP = getConfig().getBoolean("districts.allowPvP",false);
 	Settings.allowBreakBlocks = getConfig().getBoolean("districts.allowbreakblocks", false);
@@ -1059,7 +1153,7 @@ public class Districts extends JavaPlugin {
 	    // Make sure size is a multiple of 9
 	    int size = cp.size() +8;
 	    size -= (size % 9);
-	    Inventory newPanel = Bukkit.createInventory(player, size, Locale.controlPanelTitle);
+	    Inventory newPanel = Bukkit.createInventory(player, size, Locale.controlpaneltitle);
 	    // Fill the inventory and return
 	    for (CPItem i : cp) {
 		newPanel.addItem(i.getItem());
