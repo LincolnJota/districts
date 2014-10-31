@@ -1,5 +1,8 @@
 package com.wasteofplastic.districts;
 
+import org.bukkit.ChatColor;
+
+
 
 
 /**
@@ -121,6 +124,14 @@ public class Locale {
     public static String leasecannotpay;
     public static String leasecannotpayowner;
     public static String leaseleaseended;
-    public static String leaseleaseendedowner;   
-   
+    public static String leaseleaseendedowner;
+    public static String adminHelpbalance;
+    public static String adminHelpinfo2;
+    public static String adminHelpgive;
+    public static String adminHelptake;
+    public static String adminHelpset;
+    public static String adminHelpevict;
+    public static String errorInGameCommand;
+    public static String infoMove;   
+    public static String eventsrenterEvicted;
 }

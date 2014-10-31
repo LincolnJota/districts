@@ -82,7 +82,7 @@ public class ConversationBlocks implements Prompt {
 		    context.getForWhom().sendRawMessage(ChatColor.YELLOW + "You bought " + blocks + " blocks for " + VaultHelper.econ.format(cost));
 		    return END_OF_CONVERSATION;
 		}
-		context.getForWhom().sendRawMessage(ChatColor.RED + "You do not have enough money to buy that many blocks!");
+		context.getForWhom().sendRawMessage(ChatColor.RED + Locale.errortooexpensive.replace("[price]",VaultHelper.econ.format(cost)));
 		context.getForWhom().sendRawMessage(ChatColor.RED + "Blocks cost " + VaultHelper.econ.format(Settings.blockPrice));
 		context.getForWhom().sendRawMessage(ChatColor.RED + "You have " + VaultHelper.econ.format(balance));
 		return this;

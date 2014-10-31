@@ -44,6 +44,7 @@ error:
    tooexpensive: "You cannot afford [price]" 
    alreadyexists: "District already exists!"
    noPVP: "Target is in a no-PVP district!"
+   ingamecommand: "This command only available in-game"
 
 ### Commands
 trust:
@@ -103,6 +104,7 @@ info:
    renter: "Renter: [nickname] ([name])"
    renterstrusted: "[Renter's trusted players]"
    ad: "This district can be leased for [price]"
+   move: "Move to a district to see its info"
 
 lease:
    rentpaid: "You paid a rent of [price] to [owner]."
@@ -118,12 +120,14 @@ lease:
 
 #Help
 adminHelp:
-   #/dadmin reload:
    reload: "reload configuration from file."
-   #/dadmin delete
-   delete: "deletes the district you are standing in."
-   #/dadmin info <player>:
+   balance: "show how many blocks player has."
    info: "display information for the given player."
+   info2: "provides info on the district you are in."
+   give: "give player some blocks."
+   take: "take blocks from player."
+   set: "set blocks player has."
+   evict: "removes renter from this district."
 
 #reload
 reload:
@@ -135,3 +139,6 @@ delete:
 
 news:
    headline: "[District News]"
+
+events:
+   evicted: "Renter evicted"

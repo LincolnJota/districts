@@ -55,13 +55,13 @@ public class ConversaionSellBuy implements Prompt {
 	    }
 	    switch (type) {
 	    case RENT:
-		context.getForWhom().sendRawMessage(ChatColor.GOLD + "Putting district up for rent for " + VaultHelper.econ.format(price));
+		context.getForWhom().sendRawMessage(ChatColor.GOLD + Locale.rentforrent.replace("[price]", VaultHelper.econ.format(price)));
 		d.setForRent(true);
 		d.setForSale(false);
 		d.setPrice(price);
 		break;
 	    case SELL:
-		context.getForWhom().sendRawMessage(ChatColor.GOLD + "Putting district up for sale for " + VaultHelper.econ.format(price));
+		context.getForWhom().sendRawMessage(ChatColor.GOLD + Locale.sellforsale.replace("[price]", VaultHelper.econ.format(price)));
 		d.setForSale(true);
 		d.setPrice(price);
 		d.setForRent(false);

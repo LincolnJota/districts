@@ -267,8 +267,16 @@ public class Districts extends JavaPlugin {
 	Locale.newsheadline = getLocale().getString("news.headline", "[District News]");
 	Locale.controlpaneltitle = getLocale().getString("controlpanel.title", "&ADistrict Control Panel");
 
-	
-	
+	Locale.infoMove = getLocale().getString("info.move","Move to a district to see its info");
+	Locale.adminHelpbalance = getLocale().getString("adminHelp.balance", "show how many blocks player has.");
+	Locale.adminHelpinfo = getLocale().getString("adminHelp.info", "display information for the given player.");
+	Locale.adminHelpinfo2 = getLocale().getString("adminHelp.info2", "provides info on the district you are in.");
+	Locale.adminHelpgive = getLocale().getString("adminHelp.give", "give player some blocks.");
+	Locale.adminHelptake = getLocale().getString("adminHelp.take", "take blocks from player.");
+	Locale.adminHelpset = getLocale().getString("adminHelp.set", "set blocks player has.");
+	Locale.adminHelpevict = getLocale().getString("adminHelp.evict", "removes renter from this district.");
+	Locale.errorInGameCommand = getLocale().getString("error.ingamecommands", "This command only available in-game");
+	Locale.eventsrenterEvicted = getLocale().getString("events.renterevicted", "Renter evicted");
 	
 	// Assign settings
 	Settings.allowPvP = getConfig().getBoolean("districts.allowPvP",false);
