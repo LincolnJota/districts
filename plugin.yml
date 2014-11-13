@@ -1,6 +1,6 @@
 name: Districts
 main: com.wasteofplastic.districts.Districts
-version: 0.8
+version: 0.8pre
 description: Districts
 author: Tastybento
 depend: [Vault]
