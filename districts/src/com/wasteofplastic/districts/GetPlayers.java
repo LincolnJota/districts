@@ -91,7 +91,7 @@ public class GetPlayers implements Prompt {
 		//((Player)context.getForWhom()).performCommand("district untrust " + input);
 		//return this;
 		// Untrust individual players
-		if (d.getOwner().equals(playerUUID) || d.getRenter().equals(playerUUID)) {
+		if (d.getOwner().equals(playerUUID) || (d.getRenter() != null && d.getRenter().equals(playerUUID))) {
 		    // Check that we know this person
 		    UUID trusted = plugin.players.getUUID(input);
 		    if (trusted == null) {

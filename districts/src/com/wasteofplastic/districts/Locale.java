@@ -1,6 +1,6 @@
 package com.wasteofplastic.districts;
 
-import org.bukkit.ChatColor;
+
 
 
 
@@ -134,4 +134,42 @@ public class Locale {
     public static String errorInGameCommand;
     public static String infoMove;   
     public static String eventsrenterEvicted;
+    public static String conversationsenterrent;
+    public static String conversationsenterprice;
+    public static String conversationsenteramount;
+    public static String conversationsmustbemore;
+    public static String conversationshowmuch;
+    public static String conversationsenterblocknum;
+    public static String conversationsenterradius;
+    public static String conversationsenterblocks;
+    public static String conversationsended;
+    public static String conversationsmove;
+    public static String conversationshowmany;
+    public static String conversationsyoubought;
+    public static String conversationsblockscost;
+    public static String conversationsyouhave;
+    public static String conversationsnotenoughblocks;
+    public static String conversationsblocksavailable;
+    public static String conversationsblocksrequired;
+    public static String conversationsminimumradius;
+    public static String conversationsdistrictcreated;
+    public static String conversationsyounowhave;
+    public static String conversationsoverlap;
+    public static String conversationsentername;
+    public static String conversationssettingownerdefault;
+    public static String conversationssettingrenterdefault;
+    public static String conversationsnomessage;
+    public static String conversationssettingto;
+    public static String conversationsentermessage;
+    public static String conversationsleavingmessage;
+    public static String cpallowed;
+    public static String cpdisallowed;
+    public static String cpclicktobuy;
+    public static String cpclicktotoggle;
+    public static String cpclicktoenter;
+    public static String cpclicktoenteramount;
+    public static String cpclicktocancel;
+    public static String cpvisible;
+    public static String cpinvisible;
+
 }

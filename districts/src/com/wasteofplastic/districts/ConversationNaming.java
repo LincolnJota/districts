@@ -20,7 +20,7 @@ public class ConversationNaming implements Prompt {
 
     @Override
     public String getPromptText(ConversationContext context) {
-	return ChatColor.AQUA + "Enter the name of this district, 'none' or 'default' to use the default";
+	return ChatColor.AQUA + Locale.conversationsentername;
     }
 
     @Override
@@ -40,32 +40,32 @@ public class ConversationNaming implements Prompt {
 	    if (input.equalsIgnoreCase("default")) {
 		// No renter, just owner
 		if (r == null) {
-		    context.getForWhom().sendRawMessage(ChatColor.GOLD + "Setting to the default owner's message");
+		    context.getForWhom().sendRawMessage(ChatColor.GOLD + Locale.conversationssettingownerdefault);
 		    if (owner != null) {
-			d.setEnterMessage("Entering " + owner.getDisplayName() + "'s district!");
-			d.setFarewellMessage("Now leaving " + owner.getDisplayName() + "'s district.");
+			d.setEnterMessage(Locale.messagesenter.replace("[owner]", owner.getDisplayName()));
+			d.setFarewellMessage(Locale.messagesleave.replace("[owner]", owner.getDisplayName()));
 		    } else {
-			d.setEnterMessage("Entering " + plugin.players.getName(o) + "'s district!");
-			d.setFarewellMessage("Now leaving " + plugin.players.getName(o)  + "'s district.");			
+			d.setEnterMessage(Locale.messagesenter.replace("[owner]", plugin.players.getName(o)));
+			d.setFarewellMessage(Locale.messagesleave.replace("[owner]", plugin.players.getName(o)));			
 		    }
 		} else {
-		    context.getForWhom().sendRawMessage(ChatColor.GOLD + "Setting to the default renter's message");
+		    context.getForWhom().sendRawMessage(ChatColor.GOLD + Locale.conversationssettingrenterdefault);
 		    if (renter != null) {
-			d.setEnterMessage("Entering " + renter.getDisplayName() + "'s rented district!");
-			d.setFarewellMessage("Now leaving " + renter.getDisplayName() + "'s rented district.");
+			d.setEnterMessage(Locale.messagesenter.replace("[renter]", renter.getDisplayName()));
+			d.setFarewellMessage(Locale.messagesleave.replace("[renter]", renter.getDisplayName()));
 		    } else {
-			d.setEnterMessage("Entering " + plugin.players.getName(r) + "'s rented district!");
-			d.setFarewellMessage("Now leaving " + plugin.players.getName(r)  + "'s rented district.");			
+			d.setEnterMessage(Locale.messagesenter.replace("[renter]", plugin.players.getName(r)));
+			d.setFarewellMessage(Locale.messagesleave.replace("[renter]", plugin.players.getName(r)));			
 		    }   
 		}
 	    } else if (input.equalsIgnoreCase("none")) {
-		context.getForWhom().sendRawMessage(ChatColor.GOLD + "No messsage will be shown when entering or leaving.");
+		context.getForWhom().sendRawMessage(ChatColor.GOLD + Locale.conversationsnomessage);
 		d.setEnterMessage("");
 		d.setFarewellMessage("");
 	    } else {
-		context.getForWhom().sendRawMessage(ChatColor.GOLD + "Setting to: " + input);
-		d.setEnterMessage(ChatColor.GOLD + "Entering \"" + ChatColor.WHITE + input + ChatColor.GOLD +"\"");
-		d.setFarewellMessage(ChatColor.GOLD + "Leaving \""+ ChatColor.WHITE + input + ChatColor.GOLD + "\"");
+		context.getForWhom().sendRawMessage(ChatColor.GOLD + Locale.conversationssettingto.replace("[name]", input));
+		d.setEnterMessage(ChatColor.translateAlternateColorCodes('&', Locale.conversationsentermessage.replace("[name]", input)));
+		d.setFarewellMessage(ChatColor.translateAlternateColorCodes('&', Locale.conversationsleavingmessage.replace("[name]", input)));
 	    }
 	}
 	return END_OF_CONVERSATION;

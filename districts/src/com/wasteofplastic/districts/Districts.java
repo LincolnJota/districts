@@ -176,9 +176,9 @@ public class Districts extends JavaPlugin {
 	Locale.reloadconfigReloaded = getLocale().getString("reload.configurationReloaded", "Configuration reloaded from file.");	//delete
 	Locale.deleteremoving = getLocale().getString("delete.removing","District removed.");
 	Locale.controlPanelTitle = getLocale().getString("general.controlpaneltitle", "District Control Panel");
-	*/
+	 */
 	Locale.infoPanelTitle = getLocale().getString("general.infopaneltitle", "District Info");
-	
+
 	Locale.generalnotavailable = getLocale().getString("general.notavailable", "Districts are not available in this world");
 	Locale.generaldistricts = getLocale().getString("general.districts", "Districts");
 	Locale.generalowner = getLocale().getString("general.owner", "Owner");
@@ -249,6 +249,7 @@ public class Districts extends JavaPlugin {
 	Locale.cancelcancelmessage = getLocale().getString("cancel.cancelmessage", "[owner] ended a lease you have on a district. It will end in [time] days.");
 	Locale.cancelleaserenewalcancelled = getLocale().getString("cancel.leaserenewalcancelled", "Lease renewal cancelled. Lease term finishes in [time] days.");
 	Locale.cancelrenewalcancelmessage = getLocale().getString("cancel.renewalcancelmessage", "[renter] canceled a lease with you. It will end in [time] days.");
+
 	Locale.infotitle = getLocale().getString("info.title", "&A[District Construction]");
 	Locale.infoinfo = getLocale().getString("info.info", "[District Info]");
 	Locale.infoownerstrusted = getLocale().getString("info.ownerstrusted", "[Owner's trusted players]");
@@ -258,6 +259,8 @@ public class Districts extends JavaPlugin {
 	Locale.inforenter = getLocale().getString("info.renter", "Renter [nickname] ([name])");
 	Locale.inforenterstrusted = getLocale().getString("info.renterstrusted", "[Renter's trusted players]");
 	Locale.infoad = getLocale().getString("info.ad", "This district can be leased for [price]");
+	Locale.infoMove = getLocale().getString("info.move","Move to a district to see its info");
+
 	Locale.adminHelpreload = getLocale().getString("adminHelp.reload", "reload configuration from file.");
 	Locale.adminHelpinfo = getLocale().getString("adminHelp.info", "provides info on the district you are in");
 	Locale.reloadconfigReloaded = getLocale().getString("reload.configReloaded", "Configuration reloaded from file.");
@@ -267,7 +270,6 @@ public class Districts extends JavaPlugin {
 	Locale.newsheadline = getLocale().getString("news.headline", "[District News]");
 	Locale.controlpaneltitle = getLocale().getString("controlpanel.title", "&ADistrict Control Panel");
 
-	Locale.infoMove = getLocale().getString("info.move","Move to a district to see its info");
 	Locale.adminHelpbalance = getLocale().getString("adminHelp.balance", "show how many blocks player has.");
 	Locale.adminHelpinfo = getLocale().getString("adminHelp.info", "display information for the given player.");
 	Locale.adminHelpinfo2 = getLocale().getString("adminHelp.info2", "provides info on the district you are in.");
@@ -277,7 +279,57 @@ public class Districts extends JavaPlugin {
 	Locale.adminHelpevict = getLocale().getString("adminHelp.evict", "removes renter from this district.");
 	Locale.errorInGameCommand = getLocale().getString("error.ingamecommands", "This command only available in-game");
 	Locale.eventsrenterEvicted = getLocale().getString("events.renterevicted", "Renter evicted");
+	// Lease
+	Locale.leaserentpaid = getLocale().getString("lease.rentpaid", "You paid a rent of [price] to [owner].");
+	Locale.leaserentpaidowner = getLocale().getString("lease.rentpaidowner",  "[player] paid you a rent of [price].");
+	Locale.leasecannotpay = getLocale().getString("lease.cannot pay",  "You could not pay a rent of [price] so you were evicted from [owner]'s district");
+	Locale.leasecannotpayowner = getLocale().getString("lease.cannotpayowner",  "[player] could not pay rent of [price] so was evicted");
+	Locale.leaseleaseended = getLocale().getString("lease.leaseended",  "The lease on a district you were renting from [owner] ended.");
+	Locale.leaseleaseendedowner = getLocale().getString("lease.leaseendedowner",  "[player]'s lease ended.");
+
+
+	// Conversations
+	Locale.conversationsenterrent = getLocale().getString("conversations.enterrent","Enter the rent amount");
+	Locale.conversationsenterprice = getLocale().getString("conversations.enterprice","Enter the district price");
+	Locale.conversationsenteramount = getLocale().getString("conversations.enteramount","Enter the amount");
+	Locale.conversationsmustbemore = getLocale().getString("conversations.mustbemore","Amount must be more than [price]");
+	Locale.conversationshowmuch = getLocale().getString("conversations.howmuch","How much?");
+	Locale.conversationsenterblocknum = getLocale().getString("conversations.enterblocknum", "Enter the number of blocks to buy ([price] each)");
+	Locale.conversationsenterradius = getLocale().getString("conversations.enterradius","Enter the radius to claim");
+	Locale.conversationsenterblocks = getLocale().getString("conversations.enterblocks","Enter the number of blocks");
+	Locale.conversationsended = getLocale().getString("conversations.ended","Ended");
+	Locale.conversationsmove = getLocale().getString("conversations.move","Move out of a district to claim an area");
+	Locale.conversationshowmany = getLocale().getString("conversations.howmany","How many?");
+	Locale.conversationsyoubought = getLocale().getString("conversations.youbought","You bought [number] blocks for [cost]");
+	Locale.conversationsblockscost = getLocale().getString("conversations.blockscost","Blocks cost [price]");
+	Locale.conversationsyouhave = getLocale().getString("conversations.youhave","You have [balance]");
+	Locale.conversationsnotenoughblocks = getLocale().getString("conversations.notenoughblocks","You do not have enough blocks!");
+	Locale.conversationsblocksavailable = getLocale().getString("conversations.blocksavailable","Blocks available: [number]");
+	Locale.conversationsblocksrequired = getLocale().getString("conversations.blocksrequired","Blocks required: [number]");
+	Locale.conversationsminimumradius = getLocale().getString("conversations.minimumradius", "The minimum radius is 2 blocks");
+	Locale.conversationsdistrictcreated= getLocale().getString("conversations.districtcreated",  "District created!");
+	Locale.conversationsyounowhave= getLocale().getString("conversations.younowhave",  "You now have [number] blocks left.");
+	Locale.conversationsoverlap= getLocale().getString("conversations.overlap",  "That size would overlaps another district");
+	Locale.conversationsentername= getLocale().getString("conversations.entername",  "Enter the name of this district, 'none' or 'default' to use the default");
+	Locale.conversationssettingownerdefault= getLocale().getString("conversations.settingownerdefault",  "Setting to the default owner's message");
+	Locale.conversationssettingrenterdefault= getLocale().getString("conversations.settingrenterdefault",  "Setting to the default renter's message");
+	Locale.conversationsnomessage= getLocale().getString("conversations.nomessage",  "No message will be shown when entering or leaving.");
+	Locale.conversationssettingto= getLocale().getString("conversations.settingto",  "Setting to: [name]");
+	Locale.conversationsentermessage= getLocale().getString("conversations.entermessage",  "&6Entering '&f[name]&6'");
+	Locale.conversationsleavingmessage= getLocale().getString("conversations.leavingmessage", "&6Leaving '&f[name]&6'");
+
 	
+	// Control panel
+	Locale.cpallowed = getLocale().getString("cp.allowed","Allowed by anyone");
+	Locale.cpdisallowed = getLocale().getString("cp.disallowed","Disallowed for outsiders");
+	Locale.cpclicktobuy = getLocale().getString("cp.clicktobuy","Click to buy");
+	Locale.cpclicktotoggle = getLocale().getString("cp.clicktotoggle", "Click to change");
+	Locale.cpclicktoenter = getLocale().getString("cp.clicktoenter","Click to enter text");
+	Locale.cpclicktoenteramount = getLocale().getString("cp.clicktoenteramount","Click to enter amount");
+	Locale.cpclicktocancel = getLocale().getString("cp.cancel","Click to cancel");
+	Locale.cpvisible = getLocale().getString("cp.visible","Visible");
+	Locale.cpinvisible = getLocale().getString("cp.invisible","Invisible");
+
 	// Assign settings
 	Settings.allowPvP = getConfig().getBoolean("districts.allowPvP",false);
 	Settings.allowBreakBlocks = getConfig().getBoolean("districts.allowbreakblocks", false);
@@ -1075,6 +1127,7 @@ public class Districts extends JavaPlugin {
 	    cp.add(new CPItem(Material.GOLD_HOE, 0, "Claim", plugin.players.getVisualize(player.getUniqueId()), slot++, null, CPItem.Type.CLAIM));
 	} else {
 	    // Put naming in the first few slots
+	    // TODO: Fix it so that Ops and Admins can change claims
 	    // If this is a rented district, then owner can only look at the name
 	    if (d.getOwner().equals(player.getUniqueId()) && d.getRenter() != null) {
 		cp.add(new CPItem(Material.BOOK_AND_QUILL, 0, "Rented District",false,slot++, chop(ChatColor.WHITE,d.getEnterMessage(),20), CPItem.Type.INFO));
@@ -1082,12 +1135,13 @@ public class Districts extends JavaPlugin {
 		cp.add(new CPItem(Material.BOOK_AND_QUILL, 0, "Name district",false,slot++, null, CPItem.Type.TEXT));
 	    }
 	    // Add other commands here
-	    if (d.getOwner().equals(player.getUniqueId()) && d.getRenter() == null) {
+	    if ((d.getOwner().equals(player.getUniqueId()) && d.getRenter() == null)
+		    || player.isOp() || VaultHelper.checkPerm(player, "districts.admin") ){
 		cp.add(new CPItem(Material.IRON_DOOR, 0, "Remove District", false, slot++, null, CPItem.Type.REMOVE));
 	    }
-	    if (VaultHelper.checkPerm(player, "districts.advancedplayer") || player.isOp()) {
+	    if (VaultHelper.checkPerm(player, "districts.advancedplayer") || player.isOp() || VaultHelper.checkPerm(player, "districts.admin")) {
 		// Owner
-		if (d.getOwner().equals(player.getUniqueId())) {
+		if (d.getOwner().equals(player.getUniqueId()) || player.isOp() || VaultHelper.checkPerm(player, "districts.admin")) {
 		    List<String> trusted = d.getOwnerTrusted();
 		    if (!trusted.isEmpty()) {
 			trusted.add(0, ChatColor.GREEN + "Owner's trusted players:");
@@ -1161,7 +1215,7 @@ public class Districts extends JavaPlugin {
 	    // Make sure size is a multiple of 9
 	    int size = cp.size() +8;
 	    size -= (size % 9);
-	    Inventory newPanel = Bukkit.createInventory(player, size, Locale.controlpaneltitle);
+	    Inventory newPanel = Bukkit.createInventory(player, size, ChatColor.translateAlternateColorCodes('&', Locale.controlpaneltitle));
 	    // Fill the inventory and return
 	    for (CPItem i : cp) {
 		newPanel.addItem(i.getItem());

@@ -188,8 +188,9 @@ public class PlayerCache {
      * @param playerUUID
      */
     public void save(UUID playerUUID) {
-	addPlayer(playerUUID);
-	playerCache.get(playerUUID).save();
+	if (playerCache.containsKey(playerUUID)) {
+	    playerCache.get(playerUUID).save();
+	}
     }
 
     /**

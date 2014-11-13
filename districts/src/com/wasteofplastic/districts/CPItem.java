@@ -38,56 +38,56 @@ public class CPItem {
 	case TOGGLEINFO:
 	    meta.setDisplayName(name.substring(5));
 	    if (flagValue) {
-		description.add(ChatColor.GREEN + "Allowed by anyone");
+		description.add(ChatColor.GREEN + Locale.cpallowed);
 	    } else {
-		description.add(ChatColor.RED + "Disallowed for outsiders");	    
+		description.add(ChatColor.RED + Locale.cpdisallowed);	    
 	    }
 	    meta.setLore(description);
 	    item.setItemMeta(meta);
 	    break;
 	case BUYBLOCKS:
 	    meta.setDisplayName(name);
-	    description.add(ChatColor.GOLD + "Blocks cost " + VaultHelper.econ.format(Settings.blockPrice) + " each");
-	    description.add(ChatColor.GREEN + "Click to enter how many you want to buy");
+	    description.add(ChatColor.GOLD + Locale.conversationsenterblocknum.replace("[price]", VaultHelper.econ.format(Settings.blockPrice)));
+	    description.add(ChatColor.GREEN + Locale.cpclicktobuy);
 	    break;
 	case SELL:
 	case RENT:
 	    meta.setDisplayName(name);
-	    description.add(ChatColor.GREEN + "Click to enter amount");
+	    description.add(ChatColor.GREEN + Locale.cpclicktoenteramount);
 	    break;
 	case CLAIM:
 	    meta.setDisplayName(name);
-	    description.add(ChatColor.GREEN + "Click to enter the box radius");
+	    description.add(ChatColor.GREEN + Locale.cpclicktoenter);
 	    break;
 	case CANCEL:
 	    meta.setDisplayName(name);
 	    if (desc != null)
 		description = desc;
-	    description.add(ChatColor.GREEN + "Click to cancel");
+	    description.add(ChatColor.GREEN + Locale.cpclicktocancel);
 	    break;	    
 	case TEXT:
 	    meta.setDisplayName(name);
-	    description.add(ChatColor.GREEN + "Click to enter text");
+	    description.add(ChatColor.GREEN + Locale.cpclicktoenter);
 	    break;
 	case VISUALIZE:
 	    meta.setDisplayName(name);
 	    if (flagValue) {
-		description.add(ChatColor.GREEN + "Visible");
-		description.add(ChatColor.RED + "Click to make invisible");
+		description.add(ChatColor.GREEN + Locale.cpvisible);
+		description.add(ChatColor.RED + Locale.cpclicktotoggle);
 	    } else {
-		description.add(ChatColor.RED + "Invisible");
-		description.add(ChatColor.GREEN + "Click to make visible");	    
+		description.add(ChatColor.RED + Locale.cpinvisible);
+		description.add(ChatColor.GREEN + Locale.cpclicktotoggle);	    
 	    }
 	    break;
 
 	case TOGGLE:
 	    meta.setDisplayName(name.substring(5));
 	    if (flagValue) {
-		description.add(ChatColor.GREEN + "Allowed by anyone");
-		description.add(ChatColor.RED + "Click to disallow");
+		description.add(ChatColor.GREEN + Locale.cpallowed);
+		description.add(ChatColor.RED + Locale.cpclicktotoggle);
 	    } else {
-		description.add(ChatColor.RED + "Disallowed for outsiders");
-		description.add(ChatColor.GREEN + "Click to allow");	    
+		description.add(ChatColor.RED + Locale.cpdisallowed);
+		description.add(ChatColor.GREEN + Locale.cpclicktotoggle);	    
 	    }
 	    break;
 	default:
@@ -134,21 +134,21 @@ public class CPItem {
 	switch (type) {
 	case TOGGLE:
 	    if (flagValue) {
-		description.add(ChatColor.GREEN + "Allowed by anyone");
-		description.add(ChatColor.RED + "Click to disallow");
+		description.add(ChatColor.GREEN + Locale.cpallowed);
+		description.add(ChatColor.RED + Locale.cpclicktotoggle);
 	    } else {
-		description.add(ChatColor.RED + "Disallowed for outsiders");
-		description.add(ChatColor.GREEN + "Click to allow");	    
+		description.add(ChatColor.RED + Locale.cpdisallowed);
+		description.add(ChatColor.GREEN + Locale.cpclicktotoggle);	    
 	    }
 
 	    break;
 	case VISUALIZE:
 	    if (flagValue) {
-		description.add(ChatColor.GREEN + "Visible");
-		description.add(ChatColor.RED + "Click to make invisible");
+		description.add(ChatColor.GREEN + Locale.cpvisible);
+		description.add(ChatColor.RED + Locale.cpclicktotoggle);
 	    } else {
-		description.add(ChatColor.RED + "Invisible");
-		description.add(ChatColor.GREEN + "Click to make visible");	    
+		description.add(ChatColor.RED + Locale.cpinvisible);
+		description.add(ChatColor.GREEN + Locale.cpclicktotoggle);	    
 	    }
 	    break;
 	default:

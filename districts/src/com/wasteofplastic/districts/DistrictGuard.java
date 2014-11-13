@@ -914,7 +914,7 @@ public class DistrictGuard implements Listener {
     public void onControlPanelClick(final InventoryClickEvent e) {
 	// Check that it is a control panel
 	Inventory panel = e.getInventory();
-	if (!panel.getName().equals(Locale.controlpaneltitle)) {
+	if (!panel.getName().equals(ChatColor.translateAlternateColorCodes('&', Locale.controlpaneltitle))) {
 	    return;
 	}
 	// Check the right worlds

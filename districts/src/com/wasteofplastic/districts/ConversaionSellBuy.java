@@ -22,12 +22,12 @@ public class ConversaionSellBuy implements Prompt {
     public String getPromptText(ConversationContext context) {
 	switch (type) {
 	case RENT:
-	    return ChatColor.AQUA + "Enter the rent amount";
+	    return ChatColor.AQUA + Locale.conversationsenterrent;
 	case SELL:
-	    return ChatColor.AQUA + "Enter the district price";
+	    return ChatColor.AQUA + Locale.conversationsenterprice;
 	default:
 	}
-	return ChatColor.AQUA + "Enter the amount";
+	return ChatColor.AQUA + Locale.conversationsenteramount;
     }
 
     @Override
@@ -46,11 +46,11 @@ public class ConversaionSellBuy implements Prompt {
 	    try {
 		price = Double.valueOf(input);
 		if (price <= 1D) {
-		    context.getForWhom().sendRawMessage(ChatColor.RED + "Amount must be more than " + VaultHelper.econ.format(1D));
+		    context.getForWhom().sendRawMessage(ChatColor.RED + Locale.conversationsmustbemore.replace("[price]",VaultHelper.econ.format(1D)));
 		    return this;
 		}
 	    } catch (Exception e) {
-		context.getForWhom().sendRawMessage(ChatColor.RED + "How much?");
+		context.getForWhom().sendRawMessage(ChatColor.RED + Locale.conversationshowmuch);
 		return this;
 	    }
 	    switch (type) {

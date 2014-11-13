@@ -88,6 +88,7 @@ messages:
    youarein: "You are now in [owner]'s district!"
    removed: "This district is no more..."
    removedmessage: "A district of yours is no more!"
+cancel:
    cancelled: "District is no longer for sale or rent."
    leasestatus1: "District is currently leased by [player]."
    leasestatus2: "Lease will not renew and will terminate in [time] days."
@@ -113,6 +114,51 @@ lease:
    cannotpayowner: "[player] could not pay rent of [price] so was evicted"
    leaseended: "The lease on a district you were renting from [owner] ended."
    leaseendedowner: "[player]'s lease ended."
+
+conversations:
+   enterrent: "Enter the rent amount"
+   enterprice: "Enter the district price"
+   enteramount: "Enter the amount"
+   mustbemore: "Amount must be more than [price]"
+   howmuch: "How much?"
+   enterblocknum: "Enter the number of blocks to buy ([price] each)"
+   enterradius: "Enter the radius to claim"
+   enterblocks: "Enter the number of blocks"
+   ended: "Ended"
+   move: "Move out of a district to claim an area"
+   howmany: "How many?"
+   youbought: "You bought [number] blocks for [cost]"
+   blockscost: "Blocks cost [price]"
+   youhave: "You have [balance]"
+   notenoughblocks: "You do not have enough blocks!"
+   blocksavailable: "Blocks available: [number]"
+   blocksrequired: "Blocks required: [number]"
+   minimumradius: "The minimum radius is 2 blocks"
+   districtcreated: "District created!"
+   younowhave: "You now have [number] blocks left."
+   overlap: "That size would overlaps another district"
+   entername: "Enter the name of this district, 'none' or 'default' to use the default"
+   settingownerdefault: "Setting to the default owner's message"
+   settingrenterdefault: "Setting to the default renter's message"
+   nomessage: "No message will be shown when entering or leaving."
+   settingto: "Setting to: [name]"
+   #Color codes okay with these two messages
+   entermessage: "&6Entering '&f[name]&6'"
+   leavingmessage: "&6Leaving '&f[name]&6'"
+
+# Control panels
+cp:
+   allowed: "Allowed by anyone"
+   disallowed: "Disallowed for outsiders"
+   clicktobuy: "Click to buy"
+   clicktotoggle: "Click to toggle"
+   clicktoenter: "Click to enter text"
+   clocktoenteramount: "Click to enter amount"
+   clicktocancel: "Click to cancel"
+   visible: "Visible"
+   invisible: "Invisible"
+
+
 
 ##################################
 #Admin commands that use /dadmin #
@@ -142,3 +188,4 @@ news:
 
 events:
    evicted: "Renter evicted"
+
