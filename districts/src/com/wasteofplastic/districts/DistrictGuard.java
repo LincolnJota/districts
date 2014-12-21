@@ -94,69 +94,6 @@ public class DistrictGuard implements Listener {
     }
 
 
-    // Armor stand events
-    @EventHandler(priority = EventPriority.LOWEST)
-    void placeArmorStandEvent(PlayerInteractEvent e){
-	Player p = e.getPlayer();
-	if (debug) {
-	    plugin.getLogger().info(e.getEventName());
-	}
-	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(p.getWorld().getName())) {
-	    return;
-	}
-	// Get the district that this block is in (if any)
-	DistrictRegion d = plugin.getInDistrict(e.getPlayer().getLocation());
-	//DistrictRegion d = plugin.players.getInDistrict(e.getPlayer().getUniqueId());
-	if (d == null || e.getPlayer().isOp()) {
-	    // Not in a district
-	    return;
-	}
-	// Check if they are holding armor stand
-	ItemStack inHand = e.getPlayer().getItemInHand();
-	if (inHand != null && inHand.getType().equals(Material.ARMOR_STAND)) {
-	    //plugin.getLogger().info("DEBUG: stand place cancelled");
-	    if (!d.getAllowPlaceBlocks(e.getPlayer().getUniqueId())) {
-		e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
-		e.setCancelled(true);
-		e.getPlayer().updateInventory();
-	    }
-	}
-
-    }
-
-    @EventHandler(priority = EventPriority.LOW)
-    public void ArmorStandDestroy(EntityDamageByEntityEvent e){
-	if (debug) {
-	    plugin.getLogger().info(e.getEventName());
-	}
-	if (!(e.getEntity() instanceof LivingEntity)) {
-	    return;
-	}
-	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getEntity().getWorld().getName())) {
-	    return;
-	}
-	final LivingEntity livingEntity = (LivingEntity)e.getEntity();
-	if(!livingEntity.getType().equals(EntityType.ARMOR_STAND)){
-	    return;
-	}
-	if(e.getDamager() instanceof Player){
-	    Player p = (Player) e.getDamager();
-	    if (p.isOp()) {
-		return;
-	    }
-		// Get the district that this block is in (if any)
-		DistrictRegion d = plugin.getInDistrict(e.getEntity().getLocation());
-		//DistrictRegion d = plugin.players.getInDistrict(e.getPlayer().getUniqueId());
-		if (d == null) {
-		    // Not in a district
-		    return;
-		}
-		if (!d.getAllowBreakBlocks(p.getUniqueId())) {
-		    p.sendMessage(ChatColor.RED + Locale.errordistrictProtected);
-		    e.setCancelled(true);
-		}
-	}
-    }
 
     /**
      * Tracks player movement
