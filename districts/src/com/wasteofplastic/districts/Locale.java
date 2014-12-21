@@ -148,8 +148,8 @@ public class Locale {
     public static String conversationsyoubought;
     public static String conversationsblockscost;
     public static String conversationsyouhave;
-    public static String conversationsnotenoughblocks;
-    public static String conversationsblocksavailable;
+    public static String notenoughblocks;
+    public static String blocksavailable;
     public static String conversationsblocksrequired;
     public static String conversationsminimumradius;
     public static String conversationsdistrictcreated;

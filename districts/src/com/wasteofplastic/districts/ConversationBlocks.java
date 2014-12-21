@@ -94,8 +94,8 @@ public class ConversationBlocks implements Prompt {
 	    // Check if they have enough blocks	
 	    int blocksRequired = (blocks*2+1)*(blocks*2+1);
 	    if (blocksRequired > plugin.players.getBlockBalance(playerUUID)) {
-		context.getForWhom().sendRawMessage(ChatColor.RED + Locale.conversationsnotenoughblocks);
-		context.getForWhom().sendRawMessage(ChatColor.RED + Locale.conversationsblocksavailable.replace("[number]", String.valueOf(plugin.players.getBlockBalance(playerUUID))));
+		context.getForWhom().sendRawMessage(ChatColor.RED + Locale.notenoughblocks);
+		context.getForWhom().sendRawMessage(ChatColor.RED + Locale.blocksavailable.replace("[number]", String.valueOf(plugin.players.getBlockBalance(playerUUID))));
 		context.getForWhom().sendRawMessage(ChatColor.RED + Locale.conversationsblocksrequired.replace("[number]", String.valueOf(blocksRequired)));
 		return this;  
 	    }

@@ -200,7 +200,7 @@ public class DistrictCmd implements CommandExecutor {
 		    }
 		    return true;
 		} else {
-		    player.sendMessage(ChatColor.RED + "You must be the owner or renter of this district to do that.");
+		    player.sendMessage(ChatColor.RED + Locale.errornotowner);
 		    return true;
 		}
 
@@ -230,7 +230,7 @@ public class DistrictCmd implements CommandExecutor {
 
 		    // Check if they have enough blocks
 		    if (blocks > players.getBlockBalance(playerUUID)) {
-			player.sendMessage(ChatColor.RED + "You do not have enough blocks!");
+			player.sendMessage(ChatColor.RED + Locale.notenoughblocks);
 			player.sendMessage(ChatColor.RED + "Blocks available: " + players.getBlockBalance(playerUUID));
 			player.sendMessage(ChatColor.RED + "Blocks required: " + blocks);
 			return true;  
@@ -635,22 +635,24 @@ public class DistrictCmd implements CommandExecutor {
 			}
 		    }
 		    players.save(d.getOwner());
-		    player.sendMessage(ChatColor.GOLD + "[District Trusted Players]");
+		    player.sendMessage(ChatColor.GOLD + Locale.trusttitle);
 		    player.sendMessage(ChatColor.GREEN + "[Owner's]");
 		    if (d.getOwnerTrusted().isEmpty()) {
 			player.sendMessage(Locale.trustnone);
 		    } else for (String name : d.getOwnerTrusted()) {
 			player.sendMessage(name);
 		    }
-		    player.sendMessage(ChatColor.GREEN + "[Renter's]");
-		    if (d.getRenterTrusted().isEmpty()) {
-			player.sendMessage(Locale.trustnone);
-		    } else for (String name : d.getRenterTrusted()) {
-			player.sendMessage(name);
-		    }	
+		    if (VaultHelper.checkPerm(player, "districts.advancedplayer")) { 
+			player.sendMessage(ChatColor.GREEN + "[Renter's]");
+			if (d.getRenterTrusted().isEmpty()) {
+			    player.sendMessage(Locale.trustnone);
+			} else for (String name : d.getRenterTrusted()) {
+			    player.sendMessage(name);
+			}	
+		    }
 		    return true;
 		} else {
-		    player.sendMessage(ChatColor.RED + "You must be the owner or renter of this district to do that.");
+		    player.sendMessage(ChatColor.RED + Locale.errornotowner);
 		    return true;
 		}
 
@@ -736,8 +738,8 @@ public class DistrictCmd implements CommandExecutor {
 		// Check if they have enough blocks
 		int blocksRequired = (blocks*2+1)*(blocks*2+1);
 		if (blocksRequired > players.getBlockBalance(playerUUID)) {
-		    player.sendMessage(ChatColor.RED + "You do not have enough blocks!");
-		    player.sendMessage(ChatColor.RED + "Blocks available: " + players.getBlockBalance(playerUUID));
+		    player.sendMessage(ChatColor.RED + Locale.notenoughblocks);
+		    player.sendMessage(ChatColor.RED + Locale.blocksavailable.replace("[number]", String.valueOf(players.getBlockBalance(playerUUID))));
 		    player.sendMessage(ChatColor.RED + "Blocks required: " + blocksRequired);
 		    return true;  
 		}

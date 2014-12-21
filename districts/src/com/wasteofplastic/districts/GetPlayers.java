@@ -125,22 +125,24 @@ public class GetPlayers implements Prompt {
 			}
 		    }
 		    plugin.players.save(d.getOwner());
-		    context.getForWhom().sendRawMessage(ChatColor.GOLD + "[District Trusted Players]");
-		    context.getForWhom().sendRawMessage(ChatColor.GREEN + "[Owner's]");
+		    context.getForWhom().sendRawMessage(ChatColor.GOLD + Locale.trusttitle);
+		    context.getForWhom().sendRawMessage(ChatColor.GREEN + Locale.trustowners);
 		    if (d.getOwnerTrusted().isEmpty()) {
-			context.getForWhom().sendRawMessage("None");
+			context.getForWhom().sendRawMessage(Locale.trustnone);
 		    } else for (String name : d.getOwnerTrusted()) {
 			context.getForWhom().sendRawMessage(name);
 		    }
-		    context.getForWhom().sendRawMessage(ChatColor.GREEN + "[Renter's]");
-		    if (d.getRenterTrusted().isEmpty()) {
-			context.getForWhom().sendRawMessage("None");
-		    } else for (String name : d.getRenterTrusted()) {
-			context.getForWhom().sendRawMessage(name);
-		    }	
+		    if (VaultHelper.checkPerm((Player)context.getForWhom(), "districts.advancedplayer")) { 
+			context.getForWhom().sendRawMessage(ChatColor.GREEN + Locale.trustrenters);
+			if (d.getRenterTrusted().isEmpty()) {
+			    context.getForWhom().sendRawMessage(Locale.trustnone);
+			} else for (String name : d.getRenterTrusted()) {
+			    context.getForWhom().sendRawMessage(name);
+			}
+		    }
 		    return this;
 		} else {
-		    context.getForWhom().sendRawMessage(ChatColor.RED + "You must be the owner or renter of this district to do that.");
+		    context.getForWhom().sendRawMessage(ChatColor.RED + Locale.errornotowner);
 		    return END_OF_CONVERSATION;
 		}
 	    }
@@ -178,18 +180,20 @@ public class GetPlayers implements Prompt {
 			p.sendMessage(ChatColor.RED + ((Player)context.getForWhom()).getDisplayName() + " trusts you in a district.");
 		    }
 		    plugin.players.save(d.getOwner());
-		    context.getForWhom().sendRawMessage(ChatColor.GOLD + "[District Info]");
-		    context.getForWhom().sendRawMessage(ChatColor.GREEN + "[Owner's trusted players]");
+		    context.getForWhom().sendRawMessage(ChatColor.GOLD + Locale.infotitle);
+		    context.getForWhom().sendRawMessage(ChatColor.GREEN + Locale.infoownerstrusted);
 		    if (d.getOwnerTrusted().isEmpty()) {
-			context.getForWhom().sendRawMessage("None");
+			context.getForWhom().sendRawMessage(Locale.infonone);
 		    } else for (String name : d.getOwnerTrusted()) {
 			context.getForWhom().sendRawMessage(name);
 		    }
-		    context.getForWhom().sendRawMessage(ChatColor.GREEN + "[Renter's trusted players]");
-		    if (d.getRenterTrusted().isEmpty()) {
-			context.getForWhom().sendRawMessage("None");
-		    } else for (String name : d.getRenterTrusted()) {
-			context.getForWhom().sendRawMessage(name);
+		    if (VaultHelper.checkPerm((Player)context.getForWhom(), "districts.advancedplayer")) {
+			context.getForWhom().sendRawMessage(ChatColor.GREEN + Locale.inforenterstrusted);
+			if (d.getRenterTrusted().isEmpty()) {
+			    context.getForWhom().sendRawMessage(Locale.infonone);
+			} else for (String name : d.getRenterTrusted()) {
+			    context.getForWhom().sendRawMessage(name);
+			}
 		    }
 		    return this;
 		} else {

@@ -303,8 +303,8 @@ public class Districts extends JavaPlugin {
 	Locale.conversationsyoubought = getLocale().getString("conversations.youbought","You bought [number] blocks for [cost]");
 	Locale.conversationsblockscost = getLocale().getString("conversations.blockscost","Blocks cost [price]");
 	Locale.conversationsyouhave = getLocale().getString("conversations.youhave","You have [balance]");
-	Locale.conversationsnotenoughblocks = getLocale().getString("conversations.notenoughblocks","You do not have enough blocks!");
-	Locale.conversationsblocksavailable = getLocale().getString("conversations.blocksavailable","Blocks available: [number]");
+	Locale.notenoughblocks = getLocale().getString("conversations.notenoughblocks","You do not have enough blocks!");
+	Locale.blocksavailable = getLocale().getString("conversations.blocksavailable","Blocks available: [number]");
 	Locale.conversationsblocksrequired = getLocale().getString("conversations.blocksrequired","Blocks required: [number]");
 	Locale.conversationsminimumradius = getLocale().getString("conversations.minimumradius", "The minimum radius is 2 blocks");
 	Locale.conversationsdistrictcreated= getLocale().getString("conversations.districtcreated",  "District created!");
@@ -1142,7 +1142,7 @@ public class Districts extends JavaPlugin {
 	List<CPItem> cp = new ArrayList<CPItem>();
 	int slot = 0;
 	// Common options
-	cp.add(new CPItem(Material.SKULL_ITEM, 3,  "Blocks available: " + plugin.players.getBlockBalance(player.getUniqueId()), false, slot++, null, CPItem.Type.INFO ));
+	cp.add(new CPItem(Material.SKULL_ITEM, 3,  Locale.blocksavailable.replace("[number]", String.valueOf(plugin.players.getBlockBalance(player.getUniqueId()))), false, slot++, null, CPItem.Type.INFO ));
 	// Check if buying blocks is allowed
 	if (Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
 	    cp.add(new CPItem(Material.GOLD_INGOT, 0, "Buy Blocks", false, slot++, null, CPItem.Type.BUYBLOCKS));
@@ -1167,7 +1167,8 @@ public class Districts extends JavaPlugin {
 		    || player.isOp() || VaultHelper.checkPerm(player, "districts.admin") ){
 		cp.add(new CPItem(Material.IRON_DOOR, 0, "Remove District", false, slot++, null, CPItem.Type.REMOVE));
 	    }
-	    if (VaultHelper.checkPerm(player, "districts.advancedplayer") || player.isOp() || VaultHelper.checkPerm(player, "districts.admin")) {
+	    if (VaultHelper.checkPerm(player, "districts.advancedplayer") || player.isOp() || VaultHelper.checkPerm(player, "districts.admin")
+		    || VaultHelper.checkPerm(player, "districts.trustplayer")) {
 		// Owner
 		if (d.getOwner().equals(player.getUniqueId()) || player.isOp() || VaultHelper.checkPerm(player, "districts.admin")) {
 		    List<String> trusted = d.getOwnerTrusted();
@@ -1179,7 +1180,7 @@ public class Districts extends JavaPlugin {
 			trusted.addAll(chop(ChatColor.YELLOW,"Trusting allows full access to district",20));
 			cp.add(new CPItem(Material.SKULL_ITEM, 3, "Trust players", false, slot++, trusted, CPItem.Type.TRUST));
 		    }    
-		} else if (d.getRenter() != null) {
+		} else if (d.getRenter() != null && VaultHelper.checkPerm(player, "districts.advancedplayer") || player.isOp() || VaultHelper.checkPerm(player, "districts.admin")) {
 		    List<String> trusted = d.getRenterTrusted();
 		    if (!trusted.isEmpty()) {
 			trusted.add(0, ChatColor.GREEN + "Renter's trusted players:");
@@ -1189,35 +1190,37 @@ public class Districts extends JavaPlugin {
 			trusted.addAll(chop(ChatColor.YELLOW,"Trusting allows full access to district",20));
 			cp.add(new CPItem(Material.SKULL_ITEM, 3, "Trust players", false, slot++, trusted, CPItem.Type.TRUST));
 		    }
-		}	
-		// Only allow these if there is no renter and the owner is doing it and they are not already on sale or rent
-		if (!d.isForSale() && !d.isForRent() && d.getOwner().equals(player.getUniqueId()) && d.getRenter() == null) {
-		    cp.add(new CPItem(Material.EMPTY_MAP, 0, "Sell District", false, slot++, null, CPItem.Type.SELL));
-		    cp.add(new CPItem(Material.IRON_INGOT, 0, "Rent District", false, slot++, null, CPItem.Type.RENT));
-		} else {
-		    // Renter options:
-		    if (d.getRenter() != null && d.getRenter().equals(player.getUniqueId())) {
-			if (d.isForRent()) {
-			    cp.add(new CPItem(Material.LAVA, 0, "Cancel your lease", false, slot++, chop(ChatColor.RED,"Lease will end in " + plugin.daysToEndOfLease(d) + " days", 20), CPItem.Type.CANCEL));
-			} else {
-			    cp.add(new CPItem(Material.LAVA, 0, "Lease canceled!", false, slot++, chop(ChatColor.RED,"Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), CPItem.Type.INFO));
-			}
-		    } else if (d.getOwner().equals(player.getUniqueId())) {
-			// Owner options
-			// If there is a renter, they can cancel the lease
-			if (d.getRenter() != null) {
+		}
+		if (VaultHelper.checkPerm(player, "districts.advancedplayer") || player.isOp() || VaultHelper.checkPerm(player, "districts.admin")) {
+		    // Only allow these if there is no renter and the owner is doing it and they are not already on sale or rent
+		    if (!d.isForSale() && !d.isForRent() && d.getOwner().equals(player.getUniqueId()) && d.getRenter() == null) {
+			cp.add(new CPItem(Material.EMPTY_MAP, 0, "Sell District", false, slot++, null, CPItem.Type.SELL));
+			cp.add(new CPItem(Material.IRON_INGOT, 0, "Rent District", false, slot++, null, CPItem.Type.RENT));
+		    } else {
+			// Renter options:
+			if (d.getRenter() != null && d.getRenter().equals(player.getUniqueId())) {
 			    if (d.isForRent()) {
-				cp.add(new CPItem(Material.LAVA, 0, "Cancel lease with renter", false, slot++, chop(ChatColor.WHITE,"Lease will renew in " + plugin.daysToEndOfLease(d) + " days", 20), CPItem.Type.CANCEL));
+				cp.add(new CPItem(Material.LAVA, 0, "Cancel your lease", false, slot++, chop(ChatColor.RED,"Lease will end in " + plugin.daysToEndOfLease(d) + " days", 20), CPItem.Type.CANCEL));
 			    } else {
-				cp.add(new CPItem(Material.LAVA, 0, "Lease cancelled with renter", false, slot++, chop(ChatColor.GREEN,"Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), CPItem.Type.INFO));
+				cp.add(new CPItem(Material.LAVA, 0, "Lease canceled!", false, slot++, chop(ChatColor.RED,"Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), CPItem.Type.INFO));
 			    }
-			} else {
-			    // No renter - remove for rent option
-			    if (d.isForRent()) {
-				cp.add(new CPItem(Material.LAVA, 0, "Cancel For Rent", false, slot++, null, CPItem.Type.CANCEL));
-			    } else if (d.isForSale()) {
-				// Remove for sale option
-				cp.add(new CPItem(Material.LAVA, 0, "Cancel For Sale", false, slot++, null, CPItem.Type.CANCEL));
+			} else if (d.getOwner().equals(player.getUniqueId())) {
+			    // Owner options
+			    // If there is a renter, they can cancel the lease
+			    if (d.getRenter() != null) {
+				if (d.isForRent()) {
+				    cp.add(new CPItem(Material.LAVA, 0, "Cancel lease with renter", false, slot++, chop(ChatColor.WHITE,"Lease will renew in " + plugin.daysToEndOfLease(d) + " days", 20), CPItem.Type.CANCEL));
+				} else {
+				    cp.add(new CPItem(Material.LAVA, 0, "Lease cancelled with renter", false, slot++, chop(ChatColor.GREEN,"Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), CPItem.Type.INFO));
+				}
+			    } else {
+				// No renter - remove for rent option
+				if (d.isForRent()) {
+				    cp.add(new CPItem(Material.LAVA, 0, "Cancel For Rent", false, slot++, null, CPItem.Type.CANCEL));
+				} else if (d.isForSale()) {
+				    // Remove for sale option
+				    cp.add(new CPItem(Material.LAVA, 0, "Cancel For Sale", false, slot++, null, CPItem.Type.CANCEL));
+				}
 			    }
 			}
 		    }

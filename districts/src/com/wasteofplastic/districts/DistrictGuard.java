@@ -786,6 +786,11 @@ public class DistrictGuard implements Listener {
 
 	    switch (e.getClickedBlock().getType()) {
 	    case WOODEN_DOOR:
+	    case SPRUCE_DOOR:
+	    case ACACIA_DOOR:
+	    case DARK_OAK_DOOR:
+	    case BIRCH_DOOR:
+	    case JUNGLE_DOOR:
 	    case TRAP_DOOR:
 		if (!d.getAllowDoorUse(e.getPlayer().getUniqueId())) {
 		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
@@ -794,6 +799,11 @@ public class DistrictGuard implements Listener {
 		}
 		break;
 	    case FENCE_GATE:
+	    case SPRUCE_FENCE_GATE:
+	    case ACACIA_FENCE_GATE:
+	    case DARK_OAK_FENCE_GATE:
+	    case BIRCH_FENCE_GATE:
+	    case JUNGLE_FENCE_GATE:
 		if (!d.getAllowGateUse(e.getPlayer().getUniqueId())) {
 		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
 		    e.setCancelled(true);
