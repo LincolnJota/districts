@@ -41,6 +41,9 @@ districts:
    # Blocks stop being given when the player maxes out.
    blocktick: 1
 
+   # Maximum Blocks
+
+
    # How often to check leases in hours. If this is 0, then leases will be checked
    # once when the plugin is loaded. If your server is automatically reset every day
    # this may be sufficient. The smaller this number, the quicker a lease will expire

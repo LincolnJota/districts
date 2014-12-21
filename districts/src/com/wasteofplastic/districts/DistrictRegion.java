@@ -27,11 +27,13 @@ public class DistrictRegion {
     private Double price = 0D;
     private Date lastPayment;
     private HashMap<String,Object> flags = new HashMap<String,Object>();
+    private int area;
 
     public DistrictRegion(Districts plugin, Location pos1, Location pos2, UUID owner) {
 	this.plugin = plugin;
 	this.pos1 = new Vector(pos1.getBlockX(),0,pos1.getBlockZ());
 	this.pos2 = new Vector(pos2.getBlockX(),0,pos2.getBlockZ());
+	this.area = Math.abs((pos2.getBlockX()-pos1.getBlockX() + 1) * (pos2.getBlockZ()-pos1.getBlockZ() + 1));
 	this.world = pos1.getWorld();
 	if (!pos1.getWorld().equals(pos2.getWorld())) {
 	    plugin.getLogger().severe("Pos 1 and Pos 2 are not in the same world!");
@@ -66,11 +68,11 @@ public class DistrictRegion {
 
 
     public boolean intersectsDistrict(Location loc) {
-	//plugin.getLogger().info("Checking intersection");
+	//plugin.logger(2,"Checking intersection");
 	Vector v = new Vector(loc.getBlockX(),0,loc.getBlockZ());
-	//plugin.getLogger().info("Pos 1 = " + pos1.toString());
-	//plugin.getLogger().info("Pos 2 = " + pos2.toString());
-	//plugin.getLogger().info("V = " + v.toString());
+	//plugin.logger(2,"Pos 1 = " + pos1.toString());
+	//plugin.logger(2,"Pos 2 = " + pos2.toString());
+	//plugin.logger(2,"V = " + v.toString());
 	return v.isInAABB(Vector.getMinimum(pos1,  pos2), Vector.getMaximum(pos1, pos2));
     }
 
@@ -178,16 +180,16 @@ public class DistrictRegion {
 
     private Boolean checkOwnerTenants(UUID uuid) {
 	if (plugin.getServer().getPlayer(uuid).isOp()) {
-	    //plugin.getLogger().info("Op");
+	    //plugin.logger(2,"Op");
 	    return true;
 	} else 	if (owner != null && owner.equals(uuid)) {
-	    //plugin.getLogger().info("Owner");
+	    //plugin.logger(2,"Owner");
 	    return true;
 	} else if (renter != null && renter.equals(uuid)) {
-	    //plugin.getLogger().info("Renter");
+	    //plugin.logger(2,"Renter");
 	    return true;
 	} else if (ownerTrusted.contains(uuid) || renterTrusted.contains(uuid)) {
-	    //plugin.getLogger().info("Trusted");
+	    //plugin.logger(2,"Trusted");
 	    return true;
 	}
 	return false;
@@ -673,6 +675,14 @@ public class DistrictRegion {
      */
     public void setRenterTrusted(List<UUID> renterTrusted) {
         this.renterTrusted = renterTrusted;
+    }
+
+
+    /**
+     * @return the area
+     */
+    public int getArea() {
+        return area;
     }
 
 

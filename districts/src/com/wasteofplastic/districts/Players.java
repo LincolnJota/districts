@@ -65,7 +65,7 @@ public class Players {
 		playerName = "";		
 	    }
 	}
-	//plugin.getLogger().info("Loading player..." + playerName);
+	//plugin.logger(2,"Loading player..." + playerName);
 	this.hasDistricts = playerInfo.getBoolean("hasDistricts", false);
 	this.visualize = playerInfo.getBoolean("visualize",true);
 	// Get how many blocks I have to use
@@ -80,7 +80,7 @@ public class Players {
 		    Location pos2 = getLocationString(playerInfo.getString("districts." + key + ".pos-two"));
 		    // Check if this district already exists
 		    if (!plugin.checkDistrictIntersection(pos1, pos2)) {
-			//plugin.getLogger().info("DEBUG: District already exists or overlaps - ignoring");
+			//plugin.logger(2,"DEBUG: District already exists or overlaps - ignoring");
 
 		    //} else {
 			DistrictRegion d = new DistrictRegion(plugin, pos1, pos2, uuid);
@@ -141,14 +141,14 @@ public class Players {
 		}
 		
 	    }
-	    plugin.getLogger().info("Loaded " + plugin.getDistricts().size() + " districts.");
+	    plugin.logger(2,"Loaded " + plugin.getDistricts().size() + " districts.");
 	}
     }
     /**
      * Saves the player info to the file system
      */
     public void save() {
-	plugin.getLogger().info("Saving player..." + playerName);
+	plugin.logger(2,"Saving player..." + playerName);
 	// Save the variables
 	playerInfo.set("playerName", playerName);
 	playerInfo.set("hasDistricts", hasDistricts);

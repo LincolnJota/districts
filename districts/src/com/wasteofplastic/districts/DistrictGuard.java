@@ -16,7 +16,10 @@ import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.conversations.ExactMatchConversationCanceller;
 import org.bukkit.conversations.InactivityConversationCanceller;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Boat;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -37,6 +40,7 @@ import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
+import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.Potion;
@@ -47,9 +51,111 @@ import org.bukkit.potion.Potion;
  */
 public class DistrictGuard implements Listener {
     private final Districts plugin;
+    private final boolean debug = false;
     public DistrictGuard(final Districts plugin) {
 	this.plugin = plugin;
 
+    }
+
+    // Vehicle damage
+    @EventHandler(priority = EventPriority.LOW)
+    void vehicleDamageEvent(VehicleDamageEvent e){
+	if (debug) {
+	    plugin.getLogger().info(e.getEventName());
+	}
+	if (e.getVehicle() instanceof Boat) {
+	    // Boats can always be hit
+	    return;
+	}
+	if (!(e.getAttacker() instanceof Player)) {
+	    return;
+	}
+	Player p = (Player)e.getAttacker();
+
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(p.getWorld().getName())) {
+	    return;
+	}
+	if (p.isOp()) {
+	    // You can do anything if you are Op
+	    return;
+	}
+	// Get the district that this block is in (if any)
+	DistrictRegion d = plugin.getInDistrict(e.getVehicle().getLocation());
+	//DistrictRegion d = plugin.players.getInDistrict(e.getPlayer().getUniqueId());
+	if (d == null) {
+	    // Not in a district
+	    return;
+	}
+	if (!d.getAllowBreakBlocks(p.getUniqueId())) {
+	    p.sendMessage(ChatColor.RED + Locale.errordistrictProtected);
+	    e.setCancelled(true);
+	}
+
+    }
+
+
+    // Armor stand events
+    @EventHandler(priority = EventPriority.LOWEST)
+    void placeArmorStandEvent(PlayerInteractEvent e){
+	Player p = e.getPlayer();
+	if (debug) {
+	    plugin.getLogger().info(e.getEventName());
+	}
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(p.getWorld().getName())) {
+	    return;
+	}
+	// Get the district that this block is in (if any)
+	DistrictRegion d = plugin.getInDistrict(e.getPlayer().getLocation());
+	//DistrictRegion d = plugin.players.getInDistrict(e.getPlayer().getUniqueId());
+	if (d == null || e.getPlayer().isOp()) {
+	    // Not in a district
+	    return;
+	}
+	// Check if they are holding armor stand
+	ItemStack inHand = e.getPlayer().getItemInHand();
+	if (inHand != null && inHand.getType().equals(Material.ARMOR_STAND)) {
+	    //plugin.getLogger().info("DEBUG: stand place cancelled");
+	    if (!d.getAllowPlaceBlocks(e.getPlayer().getUniqueId())) {
+		e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
+		e.setCancelled(true);
+		e.getPlayer().updateInventory();
+	    }
+	}
+
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void ArmorStandDestroy(EntityDamageByEntityEvent e){
+	if (debug) {
+	    plugin.getLogger().info(e.getEventName());
+	}
+	if (!(e.getEntity() instanceof LivingEntity)) {
+	    return;
+	}
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getEntity().getWorld().getName())) {
+	    return;
+	}
+	final LivingEntity livingEntity = (LivingEntity)e.getEntity();
+	if(!livingEntity.getType().equals(EntityType.ARMOR_STAND)){
+	    return;
+	}
+	if(e.getDamager() instanceof Player){
+	    Player p = (Player) e.getDamager();
+	    if (p.isOp()) {
+		return;
+	    }
+		// Get the district that this block is in (if any)
+		DistrictRegion d = plugin.getInDistrict(e.getEntity().getLocation());
+		//DistrictRegion d = plugin.players.getInDistrict(e.getPlayer().getUniqueId());
+		if (d == null) {
+		    // Not in a district
+		    return;
+		}
+		if (!d.getAllowBreakBlocks(p.getUniqueId())) {
+		    p.sendMessage(ChatColor.RED + Locale.errordistrictProtected);
+		    e.setCancelled(true);
+		}
+	}
     }
 
     /**
@@ -73,7 +179,7 @@ public class DistrictGuard implements Listener {
 		Location closest = plugin.getClosestDistrict(player);
 		if (closest != null) {
 		    player.setCompassTarget(closest);
-		    //plugin.getLogger().info("DEBUG: Compass " + closest.getBlockX() + "," + closest.getBlockZ());
+		    //plugin.logger(2,"DEBUG: Compass " + closest.getBlockX() + "," + closest.getBlockZ());
 		}
 	    }
 	}
@@ -102,7 +208,7 @@ public class DistrictGuard implements Listener {
 		if (d != null) {
 		    plugin.visualize(d,player);
 		} else {
-		    plugin.getLogger().info("Removing viz during move event");
+		    plugin.logger(2,"Removing viz during move event");
 		    plugin.devisualize(player);
 		}
 	    } else {
@@ -113,10 +219,10 @@ public class DistrictGuard implements Listener {
 	}*/
 	// Check if they are wielding a golden hoe
 	if (player.getItemInHand() != null) {
-	    //plugin.getLogger().info("Item in hand");
+	    //plugin.logger(2,"Item in hand");
 	    if (!player.getItemInHand().getType().equals(Material.GOLD_HOE)) {
 		// no longer holding a golden hoe
-		//plugin.getLogger().info("No longer holding hoe");
+		//plugin.logger(2,"No longer holding hoe");
 		if (plugin.getPos1s().containsKey(player.getUniqueId())) {
 		    // Remove the point
 		    player.sendMessage(ChatColor.GOLD + "Cancelling district mark");
@@ -147,18 +253,18 @@ public class DistrictGuard implements Listener {
 	    // No districts yet
 	    return false;
 	}
-	//plugin.getLogger().info("Checking districts");
-	//plugin.getLogger().info("From : " + from.toString());
-	//plugin.getLogger().info("From: " + from.getBlockX() + "," + from.getBlockZ());
-	//plugin.getLogger().info("To: " + to.getBlockX() + "," + to.getBlockZ());
+	//plugin.logger(2,"Checking districts");
+	//plugin.logger(2,"From : " + from.toString());
+	//plugin.logger(2,"From: " + from.getBlockX() + "," + from.getBlockZ());
+	//plugin.logger(2,"To: " + to.getBlockX() + "," + to.getBlockZ());
 	for (DistrictRegion d: plugin.getDistricts()) {
-	    //plugin.getLogger().info("District (" + d.getPos1().getBlockX() + "," + d.getPos1().getBlockZ() + " : " + d.getPos2().getBlockX() + "," + d.getPos2().getBlockZ() + ")");
+	    //plugin.logger(2,"District (" + d.getPos1().getBlockX() + "," + d.getPos1().getBlockZ() + " : " + d.getPos2().getBlockX() + "," + d.getPos2().getBlockZ() + ")");
 	    if (d.intersectsDistrict(to)) {
-		//plugin.getLogger().info("To intersects d!");
+		//plugin.logger(2,"To intersects d!");
 		toDistrict = d;
 	    }
 	    if (d.intersectsDistrict(from)) {
-		//plugin.getLogger().info("From intersects d!");
+		//plugin.logger(2,"From intersects d!");
 		fromDistrict = d;
 	    }
 	    // If player is trying to make a district, then we need to check if the proposed district overlaps with any others
@@ -241,7 +347,7 @@ public class DistrictGuard implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onClick(PlayerInteractEvent e) {
-	//plugin.getLogger().info("On click");
+	//plugin.logger(2,"On click");
 	// Find out who is doing the clicking
 	final Player p = e.getPlayer();
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(p.getWorld().getName())) {
@@ -251,7 +357,7 @@ public class DistrictGuard implements Listener {
 	// Get the item in their hand
 	ItemStack itemInHand = p.getItemInHand();
 	if (itemInHand == null || !itemInHand.getType().equals(Material.GOLD_HOE)) {
-	    //plugin.getLogger().info("No hoe");
+	    //plugin.logger(2,"No hoe");
 	    return;
 	}
 	if (e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
@@ -270,7 +376,7 @@ public class DistrictGuard implements Listener {
 	// Find out what block is being clicked
 	final Block b = e.getClickedBlock();
 	if (b == null) {
-	    //plugin.getLogger().info("No block");
+	    //plugin.logger(2,"No block");
 	    return;
 	}
 	if (plugin.players.getInDistrict(playerUUID) != null) {
@@ -381,10 +487,10 @@ public class DistrictGuard implements Listener {
 	// Get the district that this block is in (if any)
 	DistrictRegion d = plugin.getInDistrict(e.getEntity().getLocation());
 	if (d == null) {
-	    //plugin.getLogger().info("Not in a district");
+	    //plugin.logger(2,"Not in a district");
 	    return;	    
 	}
-	//plugin.getLogger().info("D is something " + d.getEnterMessage());
+	//plugin.logger(2,"D is something " + d.getEnterMessage());
 	// Ops can do anything
 	if (e.getDamager() instanceof Player) {
 	    if (((Player)e.getDamager()).isOp()) {
@@ -416,20 +522,20 @@ public class DistrictGuard implements Listener {
 	if (!(e.getDamager() instanceof Player) && !(e.getDamager() instanceof Projectile)) {
 	    return;
 	}
-	//plugin.getLogger().info("Entity is " + e.getEntity().toString());
+	//plugin.logger(2,"Entity is " + e.getEntity().toString());
 	// Check for player initiated damage
 	if (e.getDamager() instanceof Player) {
-	    //plugin.getLogger().info("Damager is " + ((Player)e.getDamager()).getName());
+	    //plugin.logger(2,"Damager is " + ((Player)e.getDamager()).getName());
 	    // If the target is not a player check if mobs can be hurt
 	    if (!(e.getEntity() instanceof Player)) {
 		if (e.getEntity() instanceof Monster) {
-		    //plugin.getLogger().info("Entity is a monster - ok to hurt"); 
+		    //plugin.logger(2,"Entity is a monster - ok to hurt"); 
 		    return;
 		} else {
-		    //plugin.getLogger().info("Entity is a non-monster - check if ok to hurt"); 
+		    //plugin.logger(2,"Entity is a non-monster - check if ok to hurt"); 
 		    UUID playerUUID = e.getDamager().getUniqueId();
 		    if (playerUUID == null) {
-			//plugin.getLogger().info("player ID is null");
+			//plugin.logger(2,"player ID is null");
 		    }
 		    if (!d.getAllowHurtMobs(playerUUID)) {
 			((Player)e.getDamager()).sendMessage(ChatColor.RED + Locale.errordistrictProtected);
@@ -451,29 +557,29 @@ public class DistrictGuard implements Listener {
 	    }
 	}
 
-	//plugin.getLogger().info("Player attack (or arrow)");
+	//plugin.logger(2,"Player attack (or arrow)");
 	// Only damagers who are players or arrows are left
 	// If the projectile is anything else than an arrow don't worry about it in this listener
 	// Handle splash potions separately.
 	if (e.getDamager() instanceof Arrow) {
-	    //plugin.getLogger().info("Arrow attack");
+	    //plugin.logger(2,"Arrow attack");
 	    Arrow arrow = (Arrow)e.getDamager();
 	    // It really is an Arrow
 	    if (arrow.getShooter() instanceof Player) {
 		Player shooter = (Player)arrow.getShooter();
-		//plugin.getLogger().info("Player arrow attack");
+		//plugin.logger(2,"Player arrow attack");
 		if (e.getEntity() instanceof Player) {
-		    //plugin.getLogger().info("Player vs Player!");
+		    //plugin.logger(2,"Player vs Player!");
 		    // Arrow shot by a player at another player
 		    if (!d.getAllowPVP()) {
-			//plugin.getLogger().info("Target player is in a no-PVP district!");
+			//plugin.logger(2,"Target player is in a no-PVP district!");
 			((Player)arrow.getShooter()).sendMessage("Target is in a no-PVP district!");
 			e.setCancelled(true);
 			return;
 		    } 
 		} else {
 		    if (!(e.getEntity() instanceof Monster)) {
-			//plugin.getLogger().info("Entity is a non-monster - check if ok to hurt"); 
+			//plugin.logger(2,"Entity is a non-monster - check if ok to hurt"); 
 			UUID playerUUID = shooter.getUniqueId();
 			if (!d.getAllowHurtMobs(playerUUID)) {
 			    shooter.sendMessage(ChatColor.RED + Locale.errordistrictProtected);
@@ -485,7 +591,7 @@ public class DistrictGuard implements Listener {
 		}
 	    }
 	} else if (e.getDamager() instanceof Player){
-	    //plugin.getLogger().info("Player attack");
+	    //plugin.logger(2,"Player attack");
 	    // Just a player attack
 	    if (!d.getAllowPVP()) {
 		((Player)e.getDamager()).sendMessage("Target is in a no-PVP district!");
@@ -675,8 +781,8 @@ public class DistrictGuard implements Listener {
 		return;
 	    }
 
-	    //plugin.getLogger().info("DEBUG: clicked block " + e.getClickedBlock());
-	    //plugin.getLogger().info("DEBUG: Material " + e.getMaterial());
+	    //plugin.logger(2,"DEBUG: clicked block " + e.getClickedBlock());
+	    //plugin.logger(2,"DEBUG: Material " + e.getMaterial());
 
 	    switch (e.getClickedBlock().getType()) {
 	    case WOODEN_DOOR:
@@ -804,11 +910,11 @@ public class DistrictGuard implements Listener {
 		return;
 	    } else if (e.getMaterial().equals(Material.POTION) && e.getItem().getDurability() != 0) {
 		// Potion
-		//plugin.getLogger().info("DEBUG: potion");
+		//plugin.logger(2,"DEBUG: potion");
 		try {
 		    Potion p = Potion.fromItemStack(e.getItem());
 		    if (!p.isSplash()) {
-			//plugin.getLogger().info("DEBUG: not a splash potion");
+			//plugin.logger(2,"DEBUG: not a splash potion");
 			return;
 		    } else {
 			// Splash potions are allowed only if PVP is allowed
@@ -845,7 +951,7 @@ public class DistrictGuard implements Listener {
 	DistrictRegion d = plugin.players.getInDistrict(player.getUniqueId());
 	// Get the items in the panel for this player
 	List<IPItem> ipitems = plugin.getInfoPanel((Player)e.getWhoClicked());
-	//plugin.getLogger().info("DEBUG: slot = " + e.getSlot());
+	//plugin.logger(2,"DEBUG: slot = " + e.getSlot());
 	if (e.getSlot() > ipitems.size()) {
 	    e.setCancelled(true);
 	    return;
@@ -854,11 +960,11 @@ public class DistrictGuard implements Listener {
 	IPItem clickedItem = null;
 	for (IPItem item : ipitems) {
 	    if (item.getSlot() == e.getSlot()) {
-		//plugin.getLogger().info("DEBUG: item slot found, item is " + item.getItem().toString());
-		//plugin.getLogger().info("DEBUG: clicked item is " + e.getCurrentItem().toString());
+		//plugin.logger(2,"DEBUG: item slot found, item is " + item.getItem().toString());
+		//plugin.logger(2,"DEBUG: clicked item is " + e.getCurrentItem().toString());
 		// Check it was the same item and not an item in the player's part of the inventory
 		if (e.getCurrentItem().equals(item.getItem())) {
-		    //plugin.getLogger().info("DEBUG: item matched!");
+		    //plugin.logger(2,"DEBUG: item matched!");
 		    clickedItem = item;
 		    break;
 		}
@@ -866,7 +972,7 @@ public class DistrictGuard implements Listener {
 	}
 	if (clickedItem == null) {
 	    // Not one of our items
-	    //plugin.getLogger().info("DEBUG: not a recognized item");
+	    //plugin.logger(2,"DEBUG: not a recognized item");
 	    e.setCancelled(true);
 	    return;
 	}
@@ -932,21 +1038,21 @@ public class DistrictGuard implements Listener {
 	}
 	// Get the items in the panel for this player
 	List<CPItem> cpitems = plugin.getControlPanel((Player)e.getWhoClicked());
-	//plugin.getLogger().info("DEBUG: slot = " + e.getSlot());
+	//plugin.logger(2,"DEBUG: slot = " + e.getSlot());
 	if (e.getSlot() > cpitems.size()) {
 	    e.setCancelled(true);
 	    return;
 	}
-	//plugin.getLogger().info("DEBUG: find out what was clicked");
+	//plugin.logger(2,"DEBUG: find out what was clicked");
 	// Find out which item was clicked
 	CPItem clickedItem = null;
 	for (CPItem item : cpitems) {
 	    if (item.getSlot() == e.getSlot()) {
-		//plugin.getLogger().info("DEBUG: item slot found, item is " + item.getItem().toString());
-		//plugin.getLogger().info("DEBUG: clicked item is " + e.getCurrentItem().toString());
+		//plugin.logger(2,"DEBUG: item slot found, item is " + item.getItem().toString());
+		//plugin.logger(2,"DEBUG: clicked item is " + e.getCurrentItem().toString());
 		// Check it was the same item and not an item in the player's part of the inventory
 		if (e.getCurrentItem().equals(item.getItem())) {
-		    //plugin.getLogger().info("DEBUG: item matched!");
+		    //plugin.logger(2,"DEBUG: item matched!");
 		    clickedItem = item;
 		    break;
 		}
@@ -954,7 +1060,7 @@ public class DistrictGuard implements Listener {
 	}
 	if (clickedItem == null) {
 	    // Not one of our items
-	    //plugin.getLogger().info("DEBUG: not a recognized item");
+	    //plugin.logger(2,"DEBUG: not a recognized item");
 	    e.setCancelled(true);
 	    return;
 	}
@@ -985,7 +1091,7 @@ public class DistrictGuard implements Listener {
 	    player.closeInventory();
 	    break;
 	case TOGGLE:
-	    //plugin.getLogger().info("DEBUG: toggling settings");
+	    //plugin.logger(2,"DEBUG: toggling settings");
 	    // Now toggle the setting
 	    clickedItem.setFlagValue(!clickedItem.isFlagValue());
 	    // Set the district value
@@ -1083,7 +1189,7 @@ public class DistrictGuard implements Listener {
 		/* 
 		    if (event.gracefulExit())
 	            {
-	                plugin.getLogger().info("graceful exit");
+	                plugin.logger(2,"graceful exit");
 	                return;
 	            }*/
 		if (event.getCanceller() instanceof InactivityConversationCanceller) {
