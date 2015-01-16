@@ -294,7 +294,10 @@ public class DistrictCmd implements CommandExecutor {
 			if (owner.equals(playerUUID)) {
 			    // Check to see if the balance is more than it should be
 			    int maxBlocks = plugin.getMaxBlockBalance(player);
-			    int ownedBlocks = plugin.getBlocksInDistricts(player);
+			    int ownedBlocks = 0;
+			    if (Settings.maxBlockLimit) {
+				ownedBlocks = plugin.getBlocksInDistricts(player);
+			    }
 			    if (ownedBlocks > maxBlocks) {
 				// Still too many owned blocks
 				player.sendMessage("You own more blocks that permitted so free block balance is zero");
@@ -305,9 +308,13 @@ public class DistrictCmd implements CommandExecutor {
 				balance += blocks;
 			    }
 			    plugin.players.setBlocks(owner, balance);
+			    if (Settings.maxBlockLimit) {
 			    player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks, " + ChatColor.AQUA + ownedBlocks + " owned blocks, " + ChatColor.GOLD + maxBlocks + " max blocks");
 			    if (ownedBlocks >= maxBlocks){
 				player.sendMessage(ChatColor.RED + "You have used all your blocks! Remove districts to free up blocks!");
+			    }
+			    } else {
+				player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks, " + ChatColor.GOLD + maxBlocks + " max blocks");
 			    }
 			} else {
 			    Player o = plugin.getServer().getPlayer(owner);
@@ -329,12 +336,15 @@ public class DistrictCmd implements CommandExecutor {
 		return true;
 	    } else if (split[0].equalsIgnoreCase("balance")) {
 		int balance = plugin.players.getBlockBalance(playerUUID);
-		int owned = plugin.getBlocksInDistricts(player);
 		int maxBlocks = plugin.getMaxBlockBalance(player);
-		player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks, " + ChatColor.AQUA + owned + " owned blocks, " + ChatColor.GOLD + maxBlocks + " max blocks");
-
-		if (owned >= maxBlocks){
-		    player.sendMessage(ChatColor.RED + "You have used all your blocks! Remove districts to free up blocks!");
+		if (Settings.maxBlockLimit) {
+		    int owned = plugin.getBlocksInDistricts(player);
+		    player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks, " + ChatColor.AQUA + owned + " owned blocks, " + ChatColor.GOLD + maxBlocks + " max blocks");
+		    if (owned >= maxBlocks){
+			player.sendMessage(ChatColor.RED + "You have used all your blocks! Remove districts to free up blocks!");
+		    }
+		} else {
+		    player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks, "+ ChatColor.GOLD + maxBlocks + " max blocks");
 		}
 		return true;
 	    } else if (split[0].equalsIgnoreCase("buy")) {

@@ -39,6 +39,7 @@ public class Settings {
     public static Material visualization;
     public static int blockTick;
     public static double blockPrice;
+    public static boolean maxBlockLimit;
 
    
     

@@ -361,11 +361,13 @@ public class Districts extends JavaPlugin {
 	Settings.blockTick = getConfig().getInt("districts.blocktick",0);
 	if (Settings.blockTick < 0) {
 	    Settings.blockTick = 0;
-	    getLogger().warning("blocktick in config.yml was set to a negative value! Setting to 0. No blocks given out.");	    
-	} else if (Settings.checkLeases > 1440) {
-	    Settings.checkLeases = 1440;
-	    getLogger().warning("Maximum value for Checkleases in config.yml is 1440 minutes (24h). Setting to 1440.");	    
+	    getLogger().warning("blocktick in config.yml was set to a negative value! Setting to 0. No blocks given out.");
+
+
+
 	}
+
+	Settings.maxBlockLimit = getConfig().getBoolean("districts.maxblocklimit",false);
 	Settings.checkLeases = getConfig().getInt("districts.checkleases",12);
 	if (Settings.checkLeases < 0) {
 	    Settings.checkLeases = 0;
@@ -504,7 +506,7 @@ public class Districts extends JavaPlugin {
 		    //logger(1,"Giving out blocks. Will repeat in " + Settings.blockTick + " mins.");
 		    giveBlocks();
 		}
-	    }, 0L, dur);
+	    }, dur, dur);
 
 	} else {
 	    getLogger().warning("Blocks will not be given out automatically. Set blocktick to non-zero to change.");
@@ -544,7 +546,11 @@ public class Districts extends JavaPlugin {
 	for (Player p : getServer().getOnlinePlayers()) {
 	    logger(2,"Trying to give blocks to online player " + p.getName());
 	    int maxBlocks = getMaxBlockBalance(p);
-	    int blocksOwned = getBlocksInDistricts(p);
+	    int blocksOwned = 0;
+	    // Count the blocks a player has?
+	    if (Settings.maxBlockLimit) {
+		blocksOwned = getBlocksInDistricts(p);
+	    }
 	    int blockBalance = players.getBlockBalance(p.getUniqueId());
 	    int bestAdd = 0;
 	    if (blocksOwned > maxBlocks) {
@@ -1429,7 +1435,7 @@ public class Districts extends JavaPlugin {
 	// Check perms
 	int max = -1;
 	for (permBlock pb : permList) {
-	    //logger(1,"DEBUG: checking " + pb.name + " " + pb.numberOfBlocks + ":" + pb.max);
+	    logger(2,"DEBUG: checking " + pb.name + " " + pb.numberOfBlocks + ":" + pb.max);
 	    if (VaultHelper.checkPerm(p, pb.name)) {
 		if (pb.max > max) {
 		    max = pb.max;

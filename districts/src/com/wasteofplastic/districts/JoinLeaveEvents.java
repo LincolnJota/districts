@@ -61,16 +61,18 @@ public class JoinLeaveEvents implements Listener {
 
 	// Check to see how many blocks they have
 	int maxBlocks = plugin.getMaxBlockBalance(p);
-	int actualBlocks = plugin.getBlocksInDistricts(p);
-	int balance = 0;
-	if (actualBlocks > maxBlocks) {
-	    plugin.setMessage(playerUUID, ChatColor.RED + "Your districts area is larger than your maximum allowed blocks ["+maxBlocks+"]! You will have to remove districts before claiming more blocks.");
-	    plugin.getLogger().warning(p.getName() + " has more blocks in their districts [" + actualBlocks + "] than they are allowed by permissions!");
-	} else {
-	    balance =  maxBlocks-actualBlocks;
+	if (Settings.maxBlockLimit) {
+	    int actualBlocks = plugin.getBlocksInDistricts(p);
+	    int balance = 0;
+	    if (actualBlocks > maxBlocks) {
+		p.sendMessage(ChatColor.RED + "Your districts area is larger than your maximum allowed blocks ["+maxBlocks+"]! You will have to remove districts before claiming more blocks.");
+		plugin.getLogger().warning(p.getName() + " has more blocks in their districts [" + actualBlocks + "] than they are allowed by permissions!");
+	    } else {
+		balance =  maxBlocks-actualBlocks;
+	    }
+	    plugin.players.setBlocks(playerUUID, balance);
+	    plugin.logger(2, p.getName() + " logged in and has " + actualBlocks + " blocks inside districts, is allowed " + maxBlocks + " blocks and has a balance of " + balance + " blocks.");
 	}
-	plugin.players.setBlocks(playerUUID, balance);
-	plugin.logger(2, p.getName() + " logged in and has " + actualBlocks + " blocks inside districts, is allowed " + maxBlocks + " blocks and has a balance of " + balance + " blocks.");
 	// Load any messages for the player
 	final List<String> messages = plugin.getMessages(playerUUID);
 	if (!messages.isEmpty()) {
