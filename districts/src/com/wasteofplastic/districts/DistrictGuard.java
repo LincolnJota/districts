@@ -17,9 +17,9 @@ import org.bukkit.conversations.ExactMatchConversationCanceller;
 import org.bukkit.conversations.InactivityConversationCanceller;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Boat;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -37,6 +37,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
@@ -577,7 +578,7 @@ public class DistrictGuard implements Listener {
     }
 
     // Prevent sleeping in other beds
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerBedEnter(final PlayerBedEnterEvent e) {
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
@@ -596,7 +597,7 @@ public class DistrictGuard implements Listener {
      * Prevents the breakage of hanging items
      * @param e
      */
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.LOW)
     public void onBreakHanging(final HangingBreakByEntityEvent e) {
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getRemover().getWorld().getName())) {
 	    return;
@@ -618,7 +619,7 @@ public class DistrictGuard implements Listener {
     }
 
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.LOW)
     public void onBucketEmpty(final PlayerBucketEmptyEvent e) {
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
@@ -633,7 +634,7 @@ public class DistrictGuard implements Listener {
 	    e.setCancelled(true);
 	}
     }
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.LOW)
     public void onBucketFill(final PlayerBucketFillEvent e) {
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
@@ -651,7 +652,7 @@ public class DistrictGuard implements Listener {
     }
 
     // Protect sheep
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.LOW)
     public void onShear(final PlayerShearEntityEvent e) {
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
@@ -668,7 +669,7 @@ public class DistrictGuard implements Listener {
     }
 
     // Stop lava flow or water into a district
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.LOW)
     public void onFlow(final BlockFromToEvent e) {
 	// Flow may be allowed anyway
 	if (Settings.allowFlowIn && Settings.allowFlowOut) {
@@ -703,9 +704,36 @@ public class DistrictGuard implements Listener {
 	e.setCancelled(true);
     }
 
+    @EventHandler(priority = EventPriority.LOW)
+    public void onPlayerInteract(final PlayerInteractEntityEvent e) {
+	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
+	    return;
+	}
+	//plugin.getLogger().info("Frame right click!");
+	Entity entity = e.getRightClicked();
+	//plugin.getLogger().info(entity.getType().toString());
+	if (entity.getType() != EntityType.ITEM_FRAME) {
+	    return;
+	}
+	ItemFrame frame = (ItemFrame)entity;
+	if ((frame.getItem() == null || frame.getItem().getType() == Material.AIR)) {
+	    //plugin.getLogger().info("Nothing in frame!");
+	    return;
+	}
+	// If the offending item is not in a district, forget it!
+	DistrictRegion d = plugin.getInDistrict(entity.getLocation());
+	if (d == null) {
+	    //plugin.getLogger().info("Not in a district!");
+	    return;
+	}
+	if (!d.getAllowChestAccess(e.getPlayer().getUniqueId())) {
+	    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
+	    e.setCancelled(true);
+	}
+    }
 
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerInteract(final PlayerInteractEvent e) {
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
@@ -802,6 +830,11 @@ public class DistrictGuard implements Listener {
 	    case ICE:
 		break;
 	    case ITEM_FRAME:
+		if (!d.getAllowPlaceBlocks(e.getPlayer().getUniqueId())) {
+		    e.getPlayer().sendMessage(ChatColor.RED + Locale.errordistrictProtected);
+		    e.setCancelled(true);
+		    return; 
+		}
 		break;
 	    case JUKEBOX:
 	    case NOTE_BLOCK:
@@ -877,7 +910,7 @@ public class DistrictGuard implements Listener {
 	}
     }
     // Check for inventory clicking (Info Panel)
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.LOW)
     public void onInfoPanelClick(final InventoryClickEvent e) {
 	// Check that it is a control panel
 	Inventory panel = e.getInventory();
@@ -963,7 +996,7 @@ public class DistrictGuard implements Listener {
     /**
      * @param e
      */
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.LOW)
     public void onControlPanelClick(final InventoryClickEvent e) {
 	// Check that it is a control panel
 	Inventory panel = e.getInventory();
