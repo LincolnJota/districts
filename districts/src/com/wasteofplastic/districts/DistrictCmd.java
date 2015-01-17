@@ -290,8 +290,9 @@ public class DistrictCmd implements CommandExecutor {
 				}
 			    }
 			}
-			// Tell the player what happened and fix any overages
+			// Tell the player what happened and fix any overages if applicable
 			if (owner.equals(playerUUID)) {
+			    //plugin.getLogger().info("DEBUG: remove - " + Settings.maxBlockLimit);
 			    // Check to see if the balance is more than it should be
 			    int maxBlocks = plugin.getMaxBlockBalance(player);
 			    int ownedBlocks = 0;
@@ -308,14 +309,7 @@ public class DistrictCmd implements CommandExecutor {
 				balance += blocks;
 			    }
 			    plugin.players.setBlocks(owner, balance);
-			    if (Settings.maxBlockLimit) {
-			    player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks, " + ChatColor.AQUA + ownedBlocks + " owned blocks, " + ChatColor.GOLD + maxBlocks + " max blocks");
-			    if (ownedBlocks >= maxBlocks){
-				player.sendMessage(ChatColor.RED + "You have used all your blocks! Remove districts to free up blocks!");
-			    }
-			    } else {
-				player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks, " + ChatColor.GOLD + maxBlocks + " max blocks");
-			    }
+			    plugin.showBalance(player);
 			} else {
 			    Player o = plugin.getServer().getPlayer(owner);
 			    if (o != null) {
@@ -335,17 +329,7 @@ public class DistrictCmd implements CommandExecutor {
 		}
 		return true;
 	    } else if (split[0].equalsIgnoreCase("balance")) {
-		int balance = plugin.players.getBlockBalance(playerUUID);
-		int maxBlocks = plugin.getMaxBlockBalance(player);
-		if (Settings.maxBlockLimit) {
-		    int owned = plugin.getBlocksInDistricts(player);
-		    player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks, " + ChatColor.AQUA + owned + " owned blocks, " + ChatColor.GOLD + maxBlocks + " max blocks");
-		    if (owned >= maxBlocks){
-			player.sendMessage(ChatColor.RED + "You have used all your blocks! Remove districts to free up blocks!");
-		    }
-		} else {
-		    player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks, "+ ChatColor.GOLD + maxBlocks + " max blocks");
-		}
+		plugin.showBalance(player);
 		return true;
 	    } else if (split[0].equalsIgnoreCase("buy")) {
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {

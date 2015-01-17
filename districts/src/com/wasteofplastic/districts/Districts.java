@@ -452,6 +452,7 @@ public class Districts extends JavaPlugin {
 	// Get the block donation section
 	ConfigurationSection blockgroups = getConfig().getConfigurationSection("districts.blockgroups");
 	if (blockgroups != null) {
+	    permList.clear();
 	    //getLogger().info("DEBUG: Loading blockgroups");
 	    //getLogger().info("DEBUG: There are " + blockgroups.getKeys(true).size());
 	    for (String perm : blockgroups.getKeys(true)) {
@@ -1460,6 +1461,37 @@ public class Districts extends JavaPlugin {
 	return result;
     }
 
+    public void showBalance(Player player) {
+	int balance = players.getBlockBalance(player.getUniqueId());
+	int maxBlocks = getMaxBlockBalance(player);
+	if (Settings.maxBlockLimit) {
+	    int owned = plugin.getBlocksInDistricts(player);
+	    player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks, " + ChatColor.AQUA + owned + " owned blocks, " + ChatColor.GOLD + maxBlocks + " max blocks");
+	    if (owned >= maxBlocks){
+		player.sendMessage(ChatColor.RED + "You have used all your blocks! Remove districts to free up blocks!");
+	    }
+	} else {
+	    // Check perms to see if this player receives blocks over time
+	    boolean receivesBlocks = false;
+	    if (Settings.blockTick == 0) {
+		receivesBlocks = false;
+	    } else {
+		for (permBlock pb : permList) {
+		    if (VaultHelper.checkPerm(player, pb.name)) {
+			if (pb.numberOfBlocks> 0) {
+			    logger(2,"Player has a perm that gives blocks over time");
+			    receivesBlocks = true;
+			}
+		    }
+		}
+	    }
+	    if (receivesBlocks) {
+		player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks, "+ ChatColor.GOLD + maxBlocks + " max blocks");
+	    } else {
+		player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks");
+	    }
+	}
+    }
 
     /**
      * General logger method
