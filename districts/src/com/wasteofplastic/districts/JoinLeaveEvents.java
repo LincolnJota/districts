@@ -48,7 +48,7 @@ public class JoinLeaveEvents implements Listener {
 			@Override
 			public void run() {
 			    //plugin.logger(2,"visualizing tick");
-			    plugin.visualize(dr, p);
+			    Visualization.visualize(dr, p);
 
 			}},20L);
 		}

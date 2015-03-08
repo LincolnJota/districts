@@ -106,7 +106,7 @@ public class DistrictCmd implements CommandExecutor {
 		player.sendMessage(ChatColor.YELLOW + "/" + label + " balance: " + ChatColor.WHITE + "Shows you how many blocks you have to use for districts");
 		player.sendMessage(ChatColor.YELLOW + "/" + label + " remove: " + ChatColor.WHITE + "Removes a district that you are standing in if you are the owner");
 		player.sendMessage(ChatColor.YELLOW + "/" + label + " info: " + ChatColor.WHITE + "Shows info on the district you are in");
-		if (Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
+		if (VaultHelper.setupEconomy() && Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
 		    player.sendMessage(ChatColor.YELLOW + "/" + label + " buyblocks: " + ChatColor.WHITE + "Shows the price of blocks");
 		    player.sendMessage(ChatColor.YELLOW + "/" + label + " buyblocks <number>: " + ChatColor.WHITE + "Tries to buy some blocks");
 		}
@@ -117,11 +117,13 @@ public class DistrictCmd implements CommandExecutor {
 		}
 		if (VaultHelper.checkPerm(player, "districts.advancedplayer")) {
 		    player.sendMessage(ChatColor.YELLOW + "/" + label + " cp: " + ChatColor.WHITE + "Opens the control panel for this district");
-		    player.sendMessage(ChatColor.YELLOW + "/" + label + " buy: " + ChatColor.WHITE + "Attempts to buy the district you are in");
-		    player.sendMessage(ChatColor.YELLOW + "/" + label + " rent: " + ChatColor.WHITE + "Attempts to rent the district you are in");
-		    player.sendMessage(ChatColor.YELLOW + "/" + label + " rent <price>: " + ChatColor.WHITE + "Puts the district you are in up for rent for a weekly rent");
-		    player.sendMessage(ChatColor.YELLOW + "/" + label + " sell <price>: " + ChatColor.WHITE + "Puts the district you are in up for sale");
-		    player.sendMessage(ChatColor.YELLOW + "/" + label + " cancel: " + ChatColor.WHITE + "Cancels a For Sale, For Rent or a Lease");
+		    if (VaultHelper.setupEconomy()) {
+			player.sendMessage(ChatColor.YELLOW + "/" + label + " buy: " + ChatColor.WHITE + "Attempts to buy the district you are in");
+			player.sendMessage(ChatColor.YELLOW + "/" + label + " rent: " + ChatColor.WHITE + "Attempts to rent the district you are in");
+			player.sendMessage(ChatColor.YELLOW + "/" + label + " rent <price>: " + ChatColor.WHITE + "Puts the district you are in up for rent for a weekly rent");
+			player.sendMessage(ChatColor.YELLOW + "/" + label + " sell <price>: " + ChatColor.WHITE + "Puts the district you are in up for sale");
+			player.sendMessage(ChatColor.YELLOW + "/" + label + " cancel: " + ChatColor.WHITE + "Cancels a For Sale, For Rent or a Lease");
+		    }
 		}
 		return true;
 	    } else if (split[0].equalsIgnoreCase("cp")) {
@@ -142,6 +144,9 @@ public class DistrictCmd implements CommandExecutor {
 		    return true;
 		}
 	    } else if (split[0].equalsIgnoreCase("buyblocks")) {
+		if (!VaultHelper.setupEconomy()) {
+		    return false;
+		}
 		if (Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
 		    player.sendMessage(ChatColor.YELLOW + Locale.conversationsblockscost.replace("[cost]", VaultHelper.econ.format(Settings.blockPrice)));
 		    return true;
@@ -207,13 +212,13 @@ public class DistrictCmd implements CommandExecutor {
 	    } else if (split[0].equalsIgnoreCase("view")) {
 		// Toggle the visualization setting
 		if (players.getVisualize(playerUUID)) {
-		    plugin.devisualize(player);
+		    Visualization.devisualize(player);
 		    player.sendMessage(ChatColor.YELLOW + "Switching district boundary off");
 		} else {
 		    player.sendMessage(ChatColor.YELLOW + "Switching district boundary on");
 		    //DistrictRegion d = players.getInDistrict(playerUUID);
 		    if (d != null)
-			plugin.visualize(d, player);
+			Visualization.visualize(d, player);
 		}
 		players.setVisualize(playerUUID, !players.getVisualize(playerUUID));		
 		return true;
@@ -284,7 +289,7 @@ public class DistrictCmd implements CommandExecutor {
 			for (Player p : plugin.getServer().getOnlinePlayers()) {
 			    if (d.intersectsDistrict(p.getLocation())) {
 				players.setInDistrict(p.getUniqueId(), null);
-				plugin.devisualize(p);
+				Visualization.devisualize(p);
 				if (!player.equals(p)) {
 				    p.sendMessage(player.getDisplayName() + ChatColor.RED + " removed the district!");
 				}
@@ -332,6 +337,9 @@ public class DistrictCmd implements CommandExecutor {
 		plugin.showBalance(player);
 		return true;
 	    } else if (split[0].equalsIgnoreCase("buy")) {
+		if (!VaultHelper.setupEconomy()) {
+		    return false;
+		}
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
 		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
@@ -362,7 +370,7 @@ public class DistrictCmd implements CommandExecutor {
 			}
 			// Check if owner is online
 			if (owner.isOnline()) {
-			    plugin.devisualize((Player)owner);
+			    Visualization.devisualize((Player)owner);
 			    ((Player)owner).sendMessage("You successfully sold a district for " + VaultHelper.econ.format(d.getPrice()) + " to " + player.getDisplayName());
 			} else {
 			    plugin.setMessage(owner.getUniqueId(), "You successfully sold a district for " + VaultHelper.econ.format(d.getPrice()) + " to " + player.getDisplayName());
@@ -386,6 +394,9 @@ public class DistrictCmd implements CommandExecutor {
 		}
 		player.sendMessage(ChatColor.RED + Locale.errornotyours);
 	    } else if (split[0].equalsIgnoreCase("rent")) {
+		if (!VaultHelper.setupEconomy()) {
+		    return false;
+		}
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
 		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
@@ -419,7 +430,7 @@ public class DistrictCmd implements CommandExecutor {
 			// Check if owner is online
 			Player owner = plugin.getServer().getPlayer(d.getOwner());
 			if (owner != null) {
-			    plugin.devisualize(owner);
+			    Visualization.devisualize(owner);
 			    owner.sendMessage("You successfully rented a district for " + VaultHelper.econ.format(d.getPrice()) + " to " + player.getDisplayName());
 			} else {
 			    plugin.setMessage(d.getOwner(), "You successfully rented a district for " + VaultHelper.econ.format(d.getPrice()) + " to " + player.getDisplayName());
@@ -447,6 +458,9 @@ public class DistrictCmd implements CommandExecutor {
 		}
 		player.sendMessage(ChatColor.RED + Locale.errornotyours);
 	    } else if (split[0].equalsIgnoreCase("cancel")) {
+		if (!VaultHelper.setupEconomy()) {
+		    return false;
+		}
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer") && !player.isOp()) {
 		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
@@ -557,6 +571,9 @@ public class DistrictCmd implements CommandExecutor {
 	    break;
 	case 2:
 	    if (split[0].equalsIgnoreCase("buyblocks")) {
+		if (!VaultHelper.setupEconomy()) {
+		    return false;
+		}
 		if (Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
 		    int num = 0;
 		    try {
@@ -755,6 +772,9 @@ public class DistrictCmd implements CommandExecutor {
 		}
 		return true;
 	    } else if (split[0].equalsIgnoreCase("sell")) { 
+		if (!VaultHelper.setupEconomy()) {
+		    return false;
+		}
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
 		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;
@@ -791,7 +811,10 @@ public class DistrictCmd implements CommandExecutor {
 		}
 		return true;
 
-	    } else if (split[0].equalsIgnoreCase("rent")) { 
+	    } else if (split[0].equalsIgnoreCase("rent")) {
+		if (!VaultHelper.setupEconomy()) {
+		    return false;
+		}
 		if (!VaultHelper.checkPerm(player, "districts.advancedplayer")) {
 		    player.sendMessage(ChatColor.RED + Locale.errornoPermission);
 		    return true;

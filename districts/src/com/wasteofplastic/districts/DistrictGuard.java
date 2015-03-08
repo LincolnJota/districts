@@ -47,8 +47,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.Potion;
 
 /**
- * @author ben
  * Provides protection to islands
+ * @author tastybento
  */
 public class DistrictGuard implements Listener {
     private final Districts plugin;
@@ -144,14 +144,14 @@ public class DistrictGuard implements Listener {
 		}
 		DistrictRegion d = plugin.players.getInDistrict(player.getUniqueId());
 		if (d != null) {
-		    plugin.visualize(d,player);
+		    Visualization.visualize(d,player);
 		} else {
 		    plugin.logger(2,"Removing viz during move event");
-		    plugin.devisualize(player);
+		    Visualization.devisualize(player);
 		}
 	    } else {
 		if (plugin.getVisualizations().containsKey(player.getUniqueId())) {
-		    plugin.devisualize(player);
+		    Visualization.devisualize(player);
 		}
 	    }
 	}*/
@@ -223,8 +223,6 @@ public class DistrictGuard implements Listener {
 		}
 		return false;
 	    }
-
-
 	}
 	// No district interaction
 	if (fromDistrict == null && toDistrict == null) {
@@ -234,6 +232,10 @@ public class DistrictGuard implements Listener {
 	} else if (fromDistrict == toDistrict) {
 	    // Set the district - needs to be done if the player teleports too (should be done on a teleport event)
 	    plugin.players.setInDistrict(player.getUniqueId(), toDistrict);
+	    // Check player's visualization setting
+	    if (plugin.players.getVisualize(player.getUniqueId())) {
+		Visualization.visualize(toDistrict, player);
+	    }
 	    return false;
 	}
 	if (fromDistrict != null && toDistrict == null) {
@@ -241,7 +243,7 @@ public class DistrictGuard implements Listener {
 	    if (!fromDistrict.getFarewellMessage().isEmpty()) {
 		player.sendMessage(fromDistrict.getFarewellMessage());
 		// Stop visualization
-		plugin.devisualize(player);
+		Visualization.devisualize(player);
 	    }
 	    plugin.players.setInDistrict(player.getUniqueId(), null);
 	} else if (fromDistrict == null && toDistrict != null){
@@ -251,7 +253,7 @@ public class DistrictGuard implements Listener {
 	    }
 	    // Check player's visualization setting
 	    if (plugin.players.getVisualize(player.getUniqueId())) {
-		plugin.visualize(toDistrict, player);
+		Visualization.visualize(toDistrict, player);
 	    }
 	    if (toDistrict.isForSale()) {
 		player.sendMessage("This district is for sale for " + VaultHelper.econ.format(toDistrict.getPrice()) + "!");
@@ -267,7 +269,7 @@ public class DistrictGuard implements Listener {
 	    }
 	    // Check player's visualization setting
 	    if (plugin.players.getVisualize(player.getUniqueId())) {
-		plugin.visualize(toDistrict, player);
+		Visualization.visualize(toDistrict, player);
 	    } 
 	    if (!toDistrict.getEnterMessage().isEmpty()) {
 		player.sendMessage(toDistrict.getEnterMessage());
@@ -349,7 +351,7 @@ public class DistrictGuard implements Listener {
 	    if (to.getBlockX() == origin.getBlockX() && to.getBlockZ()==origin.getBlockZ()) {
 		p.sendMessage("Setting position 1 : " + b.getLocation().getBlockX() + ", " + b.getLocation().getBlockZ());
 		p.sendMessage("Click on the opposite corner of the district");
-		plugin.visualize(b.getLocation(),p);
+		Visualization.visualize(b.getLocation(),p);
 		e.setCancelled(true);
 		return;
 	    }
@@ -382,7 +384,7 @@ public class DistrictGuard implements Listener {
 	    plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
 		@Override
 		public void run() {
-		    plugin.visualize(b.getLocation(),p);
+		    Visualization.visualize(b.getLocation(),p);
 		}
 	    }, 10L);
 	    e.setCancelled(true);
@@ -1134,7 +1136,7 @@ public class DistrictGuard implements Listener {
 	case VISUALIZE:
 	    // Toggle the visualization setting
 	    if (plugin.players.getVisualize(playerUUID)) {
-		plugin.devisualize(player);
+		Visualization.devisualize(player);
 		clickedItem.setFlagValue(false);
 		//player.sendMessage(ChatColor.YELLOW + "Switching district boundary off");
 	    } else {
@@ -1142,7 +1144,7 @@ public class DistrictGuard implements Listener {
 		clickedItem.setFlagValue(true);
 		//DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null)
-		    plugin.visualize(d, player);
+		    Visualization.visualize(d, player);
 	    }
 	    plugin.players.setVisualize(playerUUID, !plugin.players.getVisualize(playerUUID));		
 	    // Change the item in this inventory

@@ -19,7 +19,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -31,14 +30,16 @@ import org.bukkit.util.Vector;
 
 
 /**
- * @author ben
+ * This plugin offers protection for areas of blocks (districts). Districts are rectangular
+ * and created based on how many blocks a player had as a balance.
+ * Players can claim areas using a golden hoe, with a command, or via a GUI
+ * @author tastybento
  */
 public class Districts extends JavaPlugin {
     // This plugin
     private static Districts plugin;
-    private int debug = 1;
-    // The AcidIsland world
-    public static World acidWorld = null;
+    // Debug level. 1 = normal operation. 0 = no console output. 2 and above are for debugging.
+    private static int debug = 1;
     // Player YAMLs
     public YamlConfiguration playerFile;
     public File playersFolder;
@@ -54,8 +55,6 @@ public class Districts extends JavaPlugin {
     private YamlConfiguration messageStore;
     // A map of where pos1's are stored
     private HashMap<UUID,Location> pos1s = new HashMap<UUID,Location>();
-    // Where visualization blocks are kept
-    private static HashMap<UUID, List<Location>> visualizations = new HashMap<UUID, List<Location>>();
     // Perm list
     List<permBlock> permList = new ArrayList<permBlock>();
     // Database of control panels for players
@@ -388,6 +387,11 @@ public class Districts extends JavaPlugin {
 
 	}
 	Settings.visualization = m;
+	Settings.vizRange = getConfig().getInt("districts.visualrange",20);
+	if (Settings.vizRange < 10) {
+	    Settings.vizRange = 10;
+	}
+	
 	Settings.blockPrice = getConfig().getDouble("districts.blockprice", 0D);
 	if (Settings.blockPrice < 0D) {
 	    Settings.blockPrice = 0D;
@@ -432,7 +436,7 @@ public class Districts extends JavaPlugin {
 	} catch (final IOException localIOException) {
 	}
 	if (!VaultHelper.setupEconomy()) {
-	    getLogger().severe("Could not set up economy!");
+	    getLogger().severe("Could not set up economy - will run without one.");
 	}
 	loadPluginConfig();
 	// Set and make the player's directory if it does not exist and then load players into memory
@@ -627,6 +631,9 @@ public class Districts extends JavaPlugin {
     }
 
     protected void checkLeases() {
+	if (!VaultHelper.setupEconomy()) {
+	    return;
+	}
 	// Check all the leases
 	for (DistrictRegion d:districts) {
 	    // Only check rented properties
@@ -857,7 +864,7 @@ public class Districts extends JavaPlugin {
     }
 
     public boolean saveMessages() {
-	plugin.logger(2,"Saving offline messages...");
+	logger(2,"Saving offline messages...");
 	try {
 	    // Convert to a serialized string
 	    final HashMap<String,Object> offlineMessages = new HashMap<String,Object>();
@@ -969,106 +976,12 @@ public class Districts extends JavaPlugin {
 		    p.sendMessage("You are now in " + owner.getDisplayName() + "'s district!");
 		}
 		players.setInDistrict(p.getUniqueId(), d);
-		visualize(d,p);
+		Visualization.visualize(d,p);
 	    }
 	}
 	return d;
     }
 
-    @SuppressWarnings("deprecation") void visualize(DistrictRegion d, Player player) {
-	// Deactivate any previous visualization
-	if (visualizations.containsKey(player.getUniqueId())) {
-	    devisualize(player);
-	}
-	//logger(1,"DEBUG: visualize pos1 = " + d.getPos1() + " pos2 = " + d.getPos2());
-	// Get the four corners
-	int minx = Math.min(d.getPos1().getBlockX(), d.getPos2().getBlockX());
-	int maxx = Math.max(d.getPos1().getBlockX(), d.getPos2().getBlockX());
-	int minz = Math.min(d.getPos1().getBlockZ(), d.getPos2().getBlockZ());
-	int maxz = Math.max(d.getPos1().getBlockZ(), d.getPos2().getBlockZ());
-
-	// Draw the lines - we do not care in what order
-	List<Location> positions = new ArrayList<Location>();
-	/*
-	for (int x = minx; x<= maxx; x++) {
-	    for (int z = minz; z<= maxz; z++) {
-		Location v = new Location(player.getWorld(),x,0,z);
-		v = player.getWorld().getHighestBlockAt(v).getLocation().subtract(new Vector(0,1,0));
-		player.sendBlockChange(v, Material.REDSTONE_BLOCK, (byte)0);
-		positions.add(v);
-	    }
-	}*/
-	for (int x = minx; x<= maxx; x++) {
-	    Location v = new Location(player.getWorld(),x,0,minz);
-	    v = player.getWorld().getHighestBlockAt(v).getLocation().subtract(new Vector(0,1,0));
-	    player.sendBlockChange(v, Settings.visualization, (byte)0);
-	    positions.add(v);
-	}
-	for (int x = minx; x<= maxx; x++) {
-	    Location v = new Location(player.getWorld(),x,0,maxz);
-	    v = player.getWorld().getHighestBlockAt(v).getLocation().subtract(new Vector(0,1,0));
-	    player.sendBlockChange(v, Settings.visualization, (byte)0);
-	    positions.add(v);
-	}
-	for (int z = minz; z<= maxz; z++) {
-	    Location v = new Location(player.getWorld(),minx,0,z);
-	    v = player.getWorld().getHighestBlockAt(v).getLocation().subtract(new Vector(0,1,0));
-	    player.sendBlockChange(v, Settings.visualization, (byte)0);
-	    positions.add(v);
-	}
-	for (int z = minz; z<= maxz; z++) {
-	    Location v = new Location(player.getWorld(),maxx,0,z);
-	    v = player.getWorld().getHighestBlockAt(v).getLocation().subtract(new Vector(0,1,0));
-	    player.sendBlockChange(v, Settings.visualization, (byte)0);
-	    positions.add(v);
-	}
-
-
-	// Save these locations
-	visualizations.put(player.getUniqueId(), positions);
-    }
-
-    @SuppressWarnings("deprecation") void visualize(Location l, Player player) {
-	//plugin.logger(2,"Visualize location");
-	// Deactivate any previous visualization
-	if (visualizations.containsKey(player.getUniqueId())) {
-	    devisualize(player);
-	}
-	player.sendBlockChange(l, Settings.visualization, (byte)0);
-	// Save these locations
-	List<Location> pos = new ArrayList<Location>();
-	pos.add(l);
-	visualizations.put(player.getUniqueId(), pos);
-    }
-
-    @SuppressWarnings("deprecation")
-    public void devisualize(Player player) {
-	//logger(1,"Removing visualization");
-	if (!visualizations.containsKey(player.getUniqueId())) {
-	    return;
-	}
-	for (Location pos: visualizations.get(player.getUniqueId())) {
-	    Block b = pos.getBlock();	    
-	    player.sendBlockChange(pos, b.getType(), b.getData());
-	}
-	visualizations.remove(player.getUniqueId());
-    }
-
-
-    /**
-     * @return A map of blocks being visualized to the player.
-     */
-    public HashMap<UUID, List<Location>> getVisualizations() {
-	return visualizations;
-    }
-
-
-    /**
-     * @param visualizations the visualizations to set
-     */
-    public void setVisualizations(HashMap<UUID, List<Location>> visualizations) {
-	Districts.visualizations = visualizations;
-    }
 
 
     public DistrictRegion getInDistrict(Location location) {
@@ -1151,7 +1064,7 @@ public class Districts extends JavaPlugin {
 	// Common options
 	cp.add(new CPItem(Material.SKULL_ITEM, 3,  Locale.blocksavailable.replace("[number]", String.valueOf(plugin.players.getBlockBalance(player.getUniqueId()))), false, slot++, null, CPItem.Type.INFO ));
 	// Check if buying blocks is allowed
-	if (Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
+	if (VaultHelper.setupEconomy() && Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
 	    cp.add(new CPItem(Material.GOLD_INGOT, 0, "Buy Blocks", false, slot++, null, CPItem.Type.BUYBLOCKS));
 	}
 	// Visualize toggle
@@ -1198,7 +1111,8 @@ public class Districts extends JavaPlugin {
 			cp.add(new CPItem(Material.SKULL_ITEM, 3, "Trust players", false, slot++, trusted, CPItem.Type.TRUST));
 		    }
 		}
-		if (VaultHelper.checkPerm(player, "districts.advancedplayer") || player.isOp() || VaultHelper.checkPerm(player, "districts.admin")) {
+		// Only applicable if there is an economy
+		if (VaultHelper.setupEconomy() && VaultHelper.checkPerm(player, "districts.advancedplayer") || player.isOp() || VaultHelper.checkPerm(player, "districts.admin")) {
 		    // Only allow these if there is no renter and the owner is doing it and they are not already on sale or rent
 		    if (!d.isForSale() && !d.isForRent() && d.getOwner().equals(player.getUniqueId()) && d.getRenter() == null) {
 			cp.add(new CPItem(Material.EMPTY_MAP, 0, "Sell District", false, slot++, null, CPItem.Type.SELL));
@@ -1327,7 +1241,7 @@ public class Districts extends JavaPlugin {
 	}
 
 	// Check if buying blocks is allowed
-	if (Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
+	if (VaultHelper.setupEconomy() && Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
 	    List<String> description = new ArrayList<String>();
 	    description.add(ChatColor.GOLD + "Blocks cost " + VaultHelper.econ.format(Settings.blockPrice) + " each");
 	    description.add(ChatColor.GREEN + "Click to enter how many you want to buy");
@@ -1336,13 +1250,13 @@ public class Districts extends JavaPlugin {
 
 
 	// For sale
-	if (d.isForSale()) {
+	if (VaultHelper.setupEconomy() && d.isForSale()) {
 	    ip.add(new IPItem(Material.EMPTY_MAP, 0,  "District For Sale!", false, slot++, 
 		    Districts.chop(ChatColor.YELLOW, "Click to buy for " + VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.BUY));
 	}
 
 	// Renting
-	if (r != null) {
+	if (VaultHelper.setupEconomy() && r != null) {
 	    List<String> trusted = d.getRenterTrusted();
 	    if (!trusted.isEmpty()) {
 		trusted.add(0, ChatColor.GREEN + "Trusted players:");
@@ -1361,7 +1275,7 @@ public class Districts extends JavaPlugin {
 			Districts.chop(ChatColor.RED, "Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), IPItem.Type.INFO));
 	    }
 	} else {
-	    if (d.isForRent()) {
+	    if (VaultHelper.setupEconomy() && d.isForRent()) {
 		ip.add(new IPItem(Material.GOLD_INGOT, 0,  "District For Rent!", false, slot++, 
 			Districts.chop(ChatColor.YELLOW, "Click to rent for " + VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.RENT));
 	    }
@@ -1498,12 +1412,12 @@ public class Districts extends JavaPlugin {
      * @param level
      * @param message
      */
-    protected void logger(int level, String message) {
+    protected static void logger(int level, String message) {
 	if (debug >= level) {
 	    if (level > 1) {
 		message = "DEBUG["+level+"]:" + message;
 	    }
-	    getLogger().info(message);
+	    Bukkit.getLogger().info(message);
 	}
     }
 }
