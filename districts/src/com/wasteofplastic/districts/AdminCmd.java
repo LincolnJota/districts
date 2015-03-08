@@ -22,7 +22,6 @@ public class AdminCmd implements CommandExecutor {
 	this.players = players;
     }
 
-
     /*
      * (non-Javadoc)
      * 

@@ -7,6 +7,11 @@ import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 
+/**
+ * Handles the naming conversation thread
+ * @author tastybento
+ *
+ */
 public class ConversationNaming implements Prompt {
 
     private Districts plugin;

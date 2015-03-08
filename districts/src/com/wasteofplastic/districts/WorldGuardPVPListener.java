@@ -7,6 +7,11 @@ import org.bukkit.event.Listener;
 
 import com.sk89q.worldguard.protection.events.DisallowedPVPEvent;
 
+/**
+ * Allows WorldGuard to trump District settings
+ * @author tastybento
+ *
+ */
 public class WorldGuardPVPListener implements Listener {
     private Districts plugin;
     
@@ -19,13 +24,13 @@ public class WorldGuardPVPListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void allowPVPEvent(DisallowedPVPEvent event) {
-	plugin.logger(3, event.getEventName());
+	Utils.logger(3, event.getEventName());
 	Player defender = event.getDefender();
 	// We only care about the defender
 	// Find out where the defender is and if they are in a district that allows PVP then allow it
 	DistrictRegion d = plugin.players.getInDistrict(defender.getUniqueId());
 	if (d != null && d.getFlag("allowPVP")) {
-	    plugin.logger(3, "Overriding WorldGuard PVP!");
+	    Utils.logger(3, "Overriding WorldGuard PVP!");
 	    // Override WorldGuard settings
 	    event.setCancelled(true);
 	}

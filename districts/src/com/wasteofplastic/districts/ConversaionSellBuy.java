@@ -4,6 +4,11 @@ import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 
+/**
+ * Handles the conversation to buy/sell
+ * @author tastybento
+ *
+ */
 public class ConversaionSellBuy implements Prompt {
     public enum Type { RENT, SELL };
 

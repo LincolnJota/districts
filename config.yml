@@ -21,6 +21,10 @@ districts:
    # Default is REDSTONE_BLOCK
    visualblock: DIAMOND_BLOCK
 
+   # Visualization range - how far away from the player will visualizations be drawn
+   # Do not make this too large otherwise weird things can happen. Minimum distance
+   # is 10.
+   visualrange: 20
 
    # Who gets blocks and how many
    # permission: <number of blocks>:<max>

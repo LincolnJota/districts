@@ -62,7 +62,7 @@ public class PlayerCache {
 	if (playerCache.containsKey(player)) {
 	    playerCache.get(player).save();
 	    playerCache.remove(player);
-	    plugin.logger(2,"Removing player from cache: " + player);
+	    Utils.logger(2,"Removing player from cache: " + player);
 	}
     }
 

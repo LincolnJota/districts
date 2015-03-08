@@ -50,7 +50,7 @@ public class Players {
      * @param uuid
      */
     public void load(UUID uuid) {
-	playerInfo = Districts.loadYamlFile("players/" + uuid.toString() + ".yml");
+	playerInfo = Utils.loadYamlFile("players/" + uuid.toString() + ".yml");
 	// Load in from YAML file
 	this.playerName = playerInfo.getString("playerName", "");
 	if (playerName.isEmpty()) {
@@ -141,14 +141,14 @@ public class Players {
 		}
 		
 	    }
-	    plugin.logger(2,"Loaded " + plugin.getDistricts().size() + " districts.");
+	    Utils.logger(2,"Loaded " + plugin.getDistricts().size() + " districts.");
 	}
     }
     /**
      * Saves the player info to the file system
      */
     public void save() {
-	plugin.logger(2,"Saving player..." + playerName);
+	Utils.logger(2,"Saving player..." + playerName);
 	// Save the variables
 	playerInfo.set("playerName", playerName);
 	playerInfo.set("hasDistricts", hasDistricts);
@@ -195,7 +195,7 @@ public class Players {
 		}
 	    }
 	}
-	Districts.saveYamlFile(playerInfo, "players/" + uuid.toString() + ".yml");
+	Utils.saveYamlFile(playerInfo, "players/" + uuid.toString() + ".yml");
     }
 
 

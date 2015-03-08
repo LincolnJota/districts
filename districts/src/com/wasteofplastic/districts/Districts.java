@@ -38,8 +38,6 @@ import org.bukkit.util.Vector;
 public class Districts extends JavaPlugin {
     // This plugin
     private static Districts plugin;
-    // Debug level. 1 = normal operation. 0 = no console output. 2 and above are for debugging.
-    private static int debug = 1;
     // Player YAMLs
     public YamlConfiguration playerFile;
     public File playersFolder;
@@ -68,86 +66,7 @@ public class Districts extends JavaPlugin {
     }
 
 
-    /**
-     * Converts a serialized location to a Location
-     * @param s - serialized location in format "world:x:y:z"
-     * @return Location
-     */
-    static public Location getLocationString(final String s) {
-	if (s == null || s.trim() == "") {
-	    return null;
-	}
-	final String[] parts = s.split(":");
-	if (parts.length == 4) {
-	    final World w = Bukkit.getServer().getWorld(parts[0]);
-	    final int x = Integer.parseInt(parts[1]);
-	    final int y = Integer.parseInt(parts[2]);
-	    final int z = Integer.parseInt(parts[3]);
-	    return new Location(w, x, y, z);
-	}
-	return null;
-    }
 
-    /**
-     * Converts a location to a simple string representation
-     * 
-     * @param l
-     * @return
-     */
-    static public String getStringLocation(final Location l) {
-	if (l == null) {
-	    return "";
-	}
-	return l.getWorld().getName() + ":" + l.getBlockX() + ":" + l.getBlockY() + ":" + l.getBlockZ();
-    }
-
-    /**
-     * Saves a YAML file
-     * 
-     * @param yamlFile
-     * @param fileLocation
-     */
-    public static void saveYamlFile(YamlConfiguration yamlFile, String fileLocation) {
-	File dataFolder = plugin.getDataFolder();
-	File file = new File(dataFolder, fileLocation);
-
-	try {
-	    yamlFile.save(file);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-    }
-
-    /**
-     * Loads a YAML file
-     * 
-     * @param file
-     * @return
-     */
-    public static YamlConfiguration loadYamlFile(String file) {
-	File dataFolder = plugin.getDataFolder();
-	File yamlFile = new File(dataFolder, file);
-
-	YamlConfiguration config = null;
-	if (yamlFile.exists()) {
-	    try {
-		config = new YamlConfiguration();
-		config.load(yamlFile);
-	    } catch (Exception e) {
-		e.printStackTrace();
-	    }
-	} else {
-	    // Create the missing file
-	    config = new YamlConfiguration();
-	    Bukkit.getLogger().info("No " + file + " found. Creating it...");
-	    try {
-		config.save(yamlFile);
-	    } catch (Exception e) {
-		Bukkit.getLogger().severe("Could not create the " + file + " file!");
-	    }
-	}
-	return config;
-    }
 
     /**
      * Loads the various settings from the config.yml file into the plugin
@@ -397,7 +316,7 @@ public class Districts extends JavaPlugin {
 	    Settings.blockPrice = 0D;
 	    getLogger().warning("config.yml issue: blockprice cannot be negative, setting to 0 (disabled).");
 	}
-	debug = getConfig().getInt("districts.debug",1);
+	Utils.setDebug(getConfig().getInt("districts.debug",1));
     }
 
     /*
@@ -470,7 +389,7 @@ public class Districts extends JavaPlugin {
 			p.numberOfBlocks = Integer.valueOf(settings[0]);
 			p.max = Integer.valueOf(settings[1]);
 			permList.add(p);
-			logger(2,"Loading block permission " + p.name + " " + p.numberOfBlocks + ":" + p.max);
+			Utils.logger(2,"Loading block permission " + p.name + " " + p.numberOfBlocks + ":" + p.max);
 		    }
 		} catch (Exception e) {
 		    getLogger().severe("Error in config.yml in district.blockgroups section - check it");
@@ -489,12 +408,12 @@ public class Districts extends JavaPlugin {
 	    public void run() {
 		final PluginManager manager = Bukkit.getServer().getPluginManager();
 		if (manager.isPluginEnabled("Vault")) {
-		    logger(1,"Trying to use Vault for permissions...");
+		    Utils.logger(1,"Trying to use Vault for permissions...");
 		    if (!VaultHelper.setupPermissions()) {
 			getLogger().severe("Cannot link with Vault for permissions! Disabling plugin!");
 			manager.disablePlugin(Districts.getPlugin());
 		    } else {
-			logger(1,"Success!");
+			Utils.logger(1,"Success!");
 		    };
 		}
 		// Load players and check leases
@@ -504,11 +423,11 @@ public class Districts extends JavaPlugin {
 	// Kick off give blocks
 	long dur = Settings.blockTick * 60 * 20; // Minutes
 	if (dur > 0) {
-	    logger(1,"Block tick timer started. Will give out blocks every " + Settings.blockTick + " minutes.");
+	    Utils.logger(1,"Block tick timer started. Will give out blocks every " + Settings.blockTick + " minutes.");
 	    getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
 		@Override
 		public void run() {
-		    //logger(1,"Giving out blocks. Will repeat in " + Settings.blockTick + " mins.");
+		    //Utils.logger(1,"Giving out blocks. Will repeat in " + Settings.blockTick + " mins.");
 		    giveBlocks();
 		}
 	    }, dur, dur);
@@ -521,11 +440,11 @@ public class Districts extends JavaPlugin {
 	// Kick off the check leases 
 	long duration = Settings.checkLeases * 60 * 60 * 20; // Server ticks
 	if (duration > 0) {
-	    logger(1,"Check lease timer started. Will check leases every " + Settings.checkLeases + " hours.");
+	    Utils.logger(1,"Check lease timer started. Will check leases every " + Settings.checkLeases + " hours.");
 	    getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
 		@Override
 		public void run() {
-		    logger(1,"Checking leases. Will check leases again in " + Settings.checkLeases + " hours.");
+		    Utils.logger(1,"Checking leases. Will check leases again in " + Settings.checkLeases + " hours.");
 		    checkLeases();
 		}
 	    }, 0L, duration);
@@ -549,7 +468,7 @@ public class Districts extends JavaPlugin {
     protected void giveBlocks() {
 	// Run through all the players and give blocks as appropriate
 	for (Player p : getServer().getOnlinePlayers()) {
-	    logger(2,"Trying to give blocks to online player " + p.getName());
+	    Utils.logger(2,"Trying to give blocks to online player " + p.getName());
 	    int maxBlocks = getMaxBlockBalance(p);
 	    int blocksOwned = 0;
 	    // Count the blocks a player has?
@@ -560,32 +479,32 @@ public class Districts extends JavaPlugin {
 	    int bestAdd = 0;
 	    if (blocksOwned > maxBlocks) {
 		// THis player already has too many blocks. Just set the balance to zero just in case
-		logger(2,"Player too many owned blocks for permission. Set their block balance to zero.");
+		Utils.logger(2,"Player too many owned blocks for permission. Set their block balance to zero.");
 		blockBalance = 0;
 	    } else if ((blocksOwned + blockBalance) > maxBlocks) {
 		// Just reduce the blockBalance by the difference
 		blockBalance = maxBlocks - blocksOwned;
-		logger(2,"Player has too many owned and balance blocks for permission. New balance = " + blockBalance);
+		Utils.logger(2,"Player has too many owned and balance blocks for permission. New balance = " + blockBalance);
 	    } else {
 		// Give some blocks to the player
 		// Check perms
 		for (permBlock pb : permList) {
-		    logger(2,"Checking " + pb.name + " " + pb.numberOfBlocks + ":" + pb.max);
+		    Utils.logger(2,"Checking " + pb.name + " " + pb.numberOfBlocks + ":" + pb.max);
 		    if (VaultHelper.checkPerm(p, pb.name)) {
-			logger(2,"Player has perm");
+			Utils.logger(2,"Player has perm");
 			// Check if they have the max already, if not give them more  
-			logger(2,"Balance = " + blockBalance);
+			Utils.logger(2,"Balance = " + blockBalance);
 			if ((blockBalance+pb.numberOfBlocks+blocksOwned) <= pb.max && pb.numberOfBlocks > bestAdd) {
-			    logger(2,"Giving blocks!");
+			    Utils.logger(2,"Giving blocks!");
 			    bestAdd = pb.numberOfBlocks;
 			} else if ((pb.max - (blockBalance+blocksOwned)) > bestAdd) {
-			    logger(2,"Maxed out!");
+			    Utils.logger(2,"Maxed out!");
 			    bestAdd = pb.max - (blockBalance+blocksOwned);
 			}
 		    }
 		}
 	    }
-	    logger(2,"Adding " + bestAdd);
+	    Utils.logger(2,"Adding " + bestAdd);
 	    players.setBlocks(p.getUniqueId(), bestAdd + blockBalance);
 	}
     }
@@ -615,16 +534,16 @@ public class Districts extends JavaPlugin {
 	lease.set(Calendar.SECOND, 0);                 // set second in minute
 	lease.set(Calendar.MILLISECOND, 0);            // set millisecond in second
 
-	logger(2,"DEBUG: Last week = " + lastWeek.getTime().toString());
-	logger(2,"DEBUG: Last payment = " + lease.getTime().toString());
+	Utils.logger(2,"DEBUG: Last week = " + lastWeek.getTime().toString());
+	Utils.logger(2,"DEBUG: Last payment = " + lease.getTime().toString());
 	int daysBetween = 0;
 	while (lastWeek.before(lease)) {
 	    lastWeek.add(Calendar.DAY_OF_MONTH, 1);
 	    daysBetween++;
 	}
-	logger(2,"DEBUG: days left on lease = " + daysBetween);
+	Utils.logger(2,"DEBUG: days left on lease = " + daysBetween);
 	if (daysBetween < 1) {
-	    logger(2,"Lease expired");
+	    Utils.logger(2,"Lease expired");
 	    return 0;
 	}
 	return daysBetween;
@@ -639,15 +558,15 @@ public class Districts extends JavaPlugin {
 	    // Only check rented properties
 	    if (d.getLastPayment() != null && d.getRenter() != null) {
 		if (daysToEndOfLease(d) == 0) {
-		    logger(2,"Debug: Check to see if the lease is renewable");
+		    Utils.logger(2,"Debug: Check to see if the lease is renewable");
 		    // Check to see if the lease is renewable
 		    if (d.isForRent()) {
-			logger(2,"Debug: District is still for rent");
+			Utils.logger(2,"Debug: District is still for rent");
 			// Try to deduct rent
-			logger(2,"Debug: Withdrawing rent from renters account");
+			Utils.logger(2,"Debug: Withdrawing rent from renters account");
 			EconomyResponse r = VaultHelper.econ.withdrawPlayer(getServer().getOfflinePlayer(d.getRenter()), d.getPrice());
 			if (r.transactionSuccess()) {
-			    logger(2,"Successfully withdrew rent of " + VaultHelper.econ.format(d.getPrice()) + " from " + getServer().getOfflinePlayer(d.getRenter()).getName() + " account.");
+			    Utils.logger(2,"Successfully withdrew rent of " + VaultHelper.econ.format(d.getPrice()) + " from " + getServer().getOfflinePlayer(d.getRenter()).getName() + " account.");
 
 			    Calendar currentDate = Calendar.getInstance();
 			    // Only work in days
@@ -669,7 +588,7 @@ public class Districts extends JavaPlugin {
 			    }
 			} else {
 			    // evict!
-			    logger(2,"Could not withdraw rent of " + VaultHelper.econ.format(d.getPrice()) + " from " + getServer().getOfflinePlayer(d.getRenter()).getName() + " account.");
+			    Utils.logger(2,"Could not withdraw rent of " + VaultHelper.econ.format(d.getPrice()) + " from " + getServer().getOfflinePlayer(d.getRenter()).getName() + " account.");
 
 			    if (getServer().getPlayer(d.getRenter()) != null) {
 				getServer().getPlayer(d.getRenter()).sendMessage("You could not pay a rent of " + VaultHelper.econ.format(d.getPrice()) + " so you were evicted from " + getServer().getOfflinePlayer(d.getOwner()).getName() + "'s district!");
@@ -688,7 +607,7 @@ public class Districts extends JavaPlugin {
 			}
 		    } else {
 			// No longer for rent
-			logger(2,"District is no longer for rent - evicting " + getServer().getOfflinePlayer(d.getRenter()).getName());
+			Utils.logger(2,"District is no longer for rent - evicting " + getServer().getOfflinePlayer(d.getRenter()).getName());
 
 			// evict!
 			if (getServer().getPlayer(d.getRenter()) != null) {
@@ -723,7 +642,7 @@ public class Districts extends JavaPlugin {
 		    final UUID playerUUID = UUID.fromString(fileName.substring(0, fileName.length() - 4));
 		    if (playerUUID == null) {
 			getLogger().warning("Player file contains erroneous UUID data.");
-			logger(2,"Looking at " + fileName.substring(0, fileName.length() - 4));
+			Utils.logger(2,"Looking at " + fileName.substring(0, fileName.length() - 4));
 		    }
 		    new Players(this, playerUUID);    
 		} catch (Exception e) {
@@ -830,7 +749,7 @@ public class Districts extends JavaPlugin {
      * @return true if player is offline, false if online
      */
     public boolean setMessage(UUID playerUUID, String message) {
-	//logger(2,"DEBUG: received message - " + message);
+	//Utils.logger(2,"DEBUG: received message - " + message);
 	Player player = getServer().getPlayer(playerUUID);
 	// Check if player is online
 	if (player != null) {
@@ -864,7 +783,7 @@ public class Districts extends JavaPlugin {
     }
 
     public boolean saveMessages() {
-	logger(2,"Saving offline messages...");
+	Utils.logger(2,"Saving offline messages...");
 	try {
 	    // Convert to a serialized string
 	    final HashMap<String,Object> offlineMessages = new HashMap<String,Object>();
@@ -873,7 +792,7 @@ public class Districts extends JavaPlugin {
 	    }
 	    // Convert to YAML
 	    messageStore.set("messages", offlineMessages);
-	    saveYamlFile(messageStore, "messages.yml");
+	    Utils.saveYamlFile(messageStore, "messages.yml");
 	    return true;
 	} catch (Exception e) {
 	    e.printStackTrace();
@@ -882,9 +801,9 @@ public class Districts extends JavaPlugin {
     }
 
     public boolean loadMessages() {
-	logger(1,"Loading offline messages...");
+	Utils.logger(1,"Loading offline messages...");
 	try {
-	    messageStore = loadYamlFile("messages.yml");
+	    messageStore = Utils.loadYamlFile("messages.yml");
 	    if (messageStore.getConfigurationSection("messages") == null) {
 		messageStore.createSection("messages"); // This is only used to create
 	    }
@@ -1003,13 +922,13 @@ public class Districts extends JavaPlugin {
 	    UUID renter = d.getRenter();
 
 	    if ((owner !=null && owner.equals(player.getUniqueId())) || (renter !=null && renter.equals(player.getUniqueId()))) {
-		//plugin.logger(2,owner + "  -  " + renter);
+		//plugin.Utils.logger(2,owner + "  -  " + renter);
 		if (closest == null) {
-		    //plugin.logger(2,owner + "  -  " + renter);
+		    //plugin.Utils.logger(2,owner + "  -  " + renter);
 		    Vector mid = d.getPos1().toVector().midpoint(d.getPos2().toVector());
 		    closest = mid.toLocation(d.getPos1().getWorld());
 		    distance = player.getLocation().distanceSquared(closest);
-		    //logger(1,"DEBUG: first district found at " + d.getPos1().toString() + " distance " + distance);
+		    //Utils.logger(1,"DEBUG: first district found at " + d.getPos1().toString() + " distance " + distance);
 		} else {
 		    // Find out if this location is closer to player
 		    Double newDist = player.getLocation().distanceSquared(d.getPos1());
@@ -1017,12 +936,12 @@ public class Districts extends JavaPlugin {
 			Vector mid = d.getPos1().toVector().midpoint(d.getPos2().toVector());
 			closest = mid.toLocation(d.getPos1().getWorld());
 			distance = player.getLocation().distanceSquared(closest);
-			//logger(1,"DEBUG: closer district found at " + d.getPos1().toString() + " distance " + distance);
+			//Utils.logger(1,"DEBUG: closer district found at " + d.getPos1().toString() + " distance " + distance);
 		    }
 		}
 	    }
 	}
-	//logger(1,"DEBUG: District " + closest.getBlockX() + "," + closest.getBlockY() + "," + closest.getBlockZ() + " distance " + distance);
+	//Utils.logger(1,"DEBUG: District " + closest.getBlockX() + "," + closest.getBlockY() + "," + closest.getBlockZ() + " distance " + distance);
 	return closest;
 
     }
@@ -1078,7 +997,7 @@ public class Districts extends JavaPlugin {
 	    // TODO: Fix it so that Ops and Admins can change claims
 	    // If this is a rented district, then owner can only look at the name
 	    if (d.getOwner().equals(player.getUniqueId()) && d.getRenter() != null) {
-		cp.add(new CPItem(Material.BOOK_AND_QUILL, 0, "Rented District",false,slot++, chop(ChatColor.WHITE,d.getEnterMessage(),20), CPItem.Type.INFO));
+		cp.add(new CPItem(Material.BOOK_AND_QUILL, 0, "Rented District",false,slot++, Utils.chop(ChatColor.WHITE,d.getEnterMessage(),20), CPItem.Type.INFO));
 	    } else {
 		cp.add(new CPItem(Material.BOOK_AND_QUILL, 0, "Name district",false,slot++, null, CPItem.Type.TEXT));
 	    }
@@ -1097,7 +1016,7 @@ public class Districts extends JavaPlugin {
 			cp.add(new CPItem(Material.SKULL_ITEM, 3, "Trust players", false, slot++, trusted, CPItem.Type.TRUST));
 			cp.add(new CPItem(Material.SKULL_ITEM, 4, "Untrust players", false, slot++, null, CPItem.Type.UNTRUST));
 		    } else {
-			trusted.addAll(chop(ChatColor.YELLOW,"Trusting allows full access to district",20));
+			trusted.addAll(Utils.chop(ChatColor.YELLOW,"Trusting allows full access to district",20));
 			cp.add(new CPItem(Material.SKULL_ITEM, 3, "Trust players", false, slot++, trusted, CPItem.Type.TRUST));
 		    }    
 		} else if (d.getRenter() != null && VaultHelper.checkPerm(player, "districts.advancedplayer") || player.isOp() || VaultHelper.checkPerm(player, "districts.admin")) {
@@ -1107,7 +1026,7 @@ public class Districts extends JavaPlugin {
 			cp.add(new CPItem(Material.SKULL_ITEM, 3, "Trust players", false, slot++, trusted, CPItem.Type.TRUST));
 			cp.add(new CPItem(Material.SKULL_ITEM, 4, "Untrust players", false, slot++, null, CPItem.Type.UNTRUST));
 		    } else {
-			trusted.addAll(chop(ChatColor.YELLOW,"Trusting allows full access to district",20));
+			trusted.addAll(Utils.chop(ChatColor.YELLOW,"Trusting allows full access to district",20));
 			cp.add(new CPItem(Material.SKULL_ITEM, 3, "Trust players", false, slot++, trusted, CPItem.Type.TRUST));
 		    }
 		}
@@ -1121,18 +1040,18 @@ public class Districts extends JavaPlugin {
 			// Renter options:
 			if (d.getRenter() != null && d.getRenter().equals(player.getUniqueId())) {
 			    if (d.isForRent()) {
-				cp.add(new CPItem(Material.LAVA, 0, "Cancel your lease", false, slot++, chop(ChatColor.RED,"Lease will end in " + plugin.daysToEndOfLease(d) + " days", 20), CPItem.Type.CANCEL));
+				cp.add(new CPItem(Material.LAVA, 0, "Cancel your lease", false, slot++, Utils.chop(ChatColor.RED,"Lease will end in " + plugin.daysToEndOfLease(d) + " days", 20), CPItem.Type.CANCEL));
 			    } else {
-				cp.add(new CPItem(Material.LAVA, 0, "Lease canceled!", false, slot++, chop(ChatColor.RED,"Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), CPItem.Type.INFO));
+				cp.add(new CPItem(Material.LAVA, 0, "Lease canceled!", false, slot++, Utils.chop(ChatColor.RED,"Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), CPItem.Type.INFO));
 			    }
 			} else if (d.getOwner().equals(player.getUniqueId())) {
 			    // Owner options
 			    // If there is a renter, they can cancel the lease
 			    if (d.getRenter() != null) {
 				if (d.isForRent()) {
-				    cp.add(new CPItem(Material.LAVA, 0, "Cancel lease with renter", false, slot++, chop(ChatColor.WHITE,"Lease will renew in " + plugin.daysToEndOfLease(d) + " days", 20), CPItem.Type.CANCEL));
+				    cp.add(new CPItem(Material.LAVA, 0, "Cancel lease with renter", false, slot++, Utils.chop(ChatColor.WHITE,"Lease will renew in " + plugin.daysToEndOfLease(d) + " days", 20), CPItem.Type.CANCEL));
 				} else {
-				    cp.add(new CPItem(Material.LAVA, 0, "Lease cancelled with renter", false, slot++, chop(ChatColor.GREEN,"Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), CPItem.Type.INFO));
+				    cp.add(new CPItem(Material.LAVA, 0, "Lease cancelled with renter", false, slot++, Utils.chop(ChatColor.GREEN,"Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), CPItem.Type.INFO));
 				}
 			    } else {
 				// No renter - remove for rent option
@@ -1150,7 +1069,7 @@ public class Districts extends JavaPlugin {
 		for (String flagName : d.getFlags().keySet()) {
 		    // Get the icon
 		    if (icons.containsKey(flagName)) {
-			//logger(1,"DEBUG:" + flagName + " : " + d.getFlag(flagName) + " slot " + slot);
+			//Utils.logger(1,"DEBUG:" + flagName + " : " + d.getFlag(flagName) + " slot " + slot);
 			if (d.getRenter() != null && d.getRenter().equals(player.getUniqueId())) {
 			    cp.add(new CPItem(icons.get(flagName), 0, flagName, d.getFlag(flagName), slot++, null, CPItem.Type.TOGGLEINFO));
 			} else {
@@ -1220,8 +1139,8 @@ public class Districts extends JavaPlugin {
 	// Put the owner's name
 	UUID o = d.getOwner();
 	UUID r = d.getRenter();
-	//logger(1,"Owner ID = " + o.toString());
-	//logger(1,"Renter ID = " + r.toString());
+	//Utils.logger(1,"Owner ID = " + o.toString());
+	//Utils.logger(1,"Renter ID = " + r.toString());
 
 	// Find out if these guys are online
 	Player owner = plugin.getServer().getPlayer(o);
@@ -1252,7 +1171,7 @@ public class Districts extends JavaPlugin {
 	// For sale
 	if (VaultHelper.setupEconomy() && d.isForSale()) {
 	    ip.add(new IPItem(Material.EMPTY_MAP, 0,  "District For Sale!", false, slot++, 
-		    Districts.chop(ChatColor.YELLOW, "Click to buy for " + VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.BUY));
+		    Utils.chop(ChatColor.YELLOW, "Click to buy for " + VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.BUY));
 	}
 
 	// Renting
@@ -1269,22 +1188,22 @@ public class Districts extends JavaPlugin {
 	    }
 	    if (d.isForRent()) {
 		ip.add(new IPItem(Material.GOLD_INGOT, 0,  "Rent: " + VaultHelper.econ.format(d.getPrice()), false, slot++, 
-			Districts.chop(ChatColor.YELLOW, "Due in " + plugin.daysToEndOfLease(d) + " days.", 20), IPItem.Type.INFO));
+			Utils.chop(ChatColor.YELLOW, "Due in " + plugin.daysToEndOfLease(d) + " days.", 20), IPItem.Type.INFO));
 	    } else {
 		ip.add(new IPItem(Material.GOLD_INGOT, 0,  "Lease Cancelled!", false, slot++, 
-			Districts.chop(ChatColor.RED, "Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), IPItem.Type.INFO));
+			Utils.chop(ChatColor.RED, "Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), IPItem.Type.INFO));
 	    }
 	} else {
 	    if (VaultHelper.setupEconomy() && d.isForRent()) {
 		ip.add(new IPItem(Material.GOLD_INGOT, 0,  "District For Rent!", false, slot++, 
-			Districts.chop(ChatColor.YELLOW, "Click to rent for " + VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.RENT));
+			Utils.chop(ChatColor.YELLOW, "Click to rent for " + VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.RENT));
 	    }
 	}	
 	// Loop through district flags for this player
 	for (String flagName : d.getFlags().keySet()) {
 	    // Get the icon
 	    if (icons.containsKey(flagName)) {
-		//logger(1,"DEBUG:" + flagName + " : " + d.getFlag(flagName) + " slot " + slot);
+		//Utils.logger(1,"DEBUG:" + flagName + " : " + d.getFlag(flagName) + " slot " + slot);
 		ip.add(new IPItem(icons.get(flagName), 0, flagName, d.getFlag(flagName), slot++));
 		// Put all the items into the store for this player so when they click on items we know what to do
 		infoPanel.put(player.getUniqueId(),ip);
@@ -1306,42 +1225,6 @@ public class Districts extends JavaPlugin {
     }
 
     /**
-     * Chops up a long string into a list of strings, with a color
-     * @param color
-     * @param longLine
-     * @param length
-     * @return
-     */
-    public static List<String> chop(ChatColor color, String longLine, int length) {
-	List<String> result = new ArrayList<String>();
-	//int multiples = longLine.length() / length;
-	int i = 0;
-	for (i = 0; i< longLine.length(); i += length) {
-	    //for (int i = 0; i< (multiples*length); i += length) {
-	    int endIndex = Math.min(i + length, longLine.length());
-	    String line = longLine.substring(i, endIndex);
-	    // Do the following only if i+length is not the end of the string
-	    if (endIndex < longLine.length()) {
-		// Check if last character in this string is not a space
-		if (!line.substring(line.length()-1).equals(" ")) {
-		    // If it is not a space, check to see if the next character in long line is a space.
-		    if (!longLine.substring(endIndex,endIndex+1).equals(" ")) {
-			// If it is not, then we are cutting a word in two and need to backtrack to the last space if possible
-			int lastSpace = line.lastIndexOf(" ");
-			if (lastSpace < line.length()) {
-			    line = line.substring(0, lastSpace);
-			    i -= (length - lastSpace -1);
-			}
-		    }
-		} 
-	    }
-	    //}
-	    result.add(color + line);
-	}
-	//result.add(color + longLine.substring(i, longLine.length()));
-	return result;
-    }
-    /**
      * Returns the maximum number of blocks this player can have per their permission
      * @param p
      * @return amount or -1 if no permission applies
@@ -1350,7 +1233,7 @@ public class Districts extends JavaPlugin {
 	// Check perms
 	int max = -1;
 	for (permBlock pb : permList) {
-	    logger(2,"DEBUG: checking " + pb.name + " " + pb.numberOfBlocks + ":" + pb.max);
+	    Utils.logger(2,"DEBUG: checking " + pb.name + " " + pb.numberOfBlocks + ":" + pb.max);
 	    if (VaultHelper.checkPerm(p, pb.name)) {
 		if (pb.max > max) {
 		    max = pb.max;
@@ -1393,7 +1276,7 @@ public class Districts extends JavaPlugin {
 		for (permBlock pb : permList) {
 		    if (VaultHelper.checkPerm(player, pb.name)) {
 			if (pb.numberOfBlocks> 0) {
-			    logger(2,"Player has a perm that gives blocks over time");
+			    Utils.logger(2,"Player has a perm that gives blocks over time");
 			    receivesBlocks = true;
 			}
 		    }
@@ -1404,20 +1287,6 @@ public class Districts extends JavaPlugin {
 	    } else {
 		player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks");
 	    }
-	}
-    }
-
-    /**
-     * General logger method
-     * @param level
-     * @param message
-     */
-    protected static void logger(int level, String message) {
-	if (debug >= level) {
-	    if (level > 1) {
-		message = "DEBUG["+level+"]:" + message;
-	    }
-	    Bukkit.getLogger().info(message);
 	}
     }
 }

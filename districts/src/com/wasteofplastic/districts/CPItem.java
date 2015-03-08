@@ -8,6 +8,11 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+/**
+ * Holds all the control panel item info
+ * @author tastybento
+ *
+ */
 public class CPItem {
     private ItemStack item;
     private List<String> description = new ArrayList<String>();

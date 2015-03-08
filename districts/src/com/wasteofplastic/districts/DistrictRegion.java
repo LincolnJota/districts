@@ -12,6 +12,12 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+/**
+ * This class holds all the data on one district.
+ * 
+ * @author tastybento
+ *
+ */
 public class DistrictRegion {
     private Districts plugin;
     private UUID id;
@@ -67,6 +73,11 @@ public class DistrictRegion {
     }
 
 
+    /**
+     * Checks if a location is inside this district
+     * @param loc
+     * @return true if it is, false otherwise
+     */
     public boolean intersectsDistrict(Location loc) {
 	//plugin.logger(2,"Checking intersection");
 	Vector v = new Vector(loc.getBlockX(),0,loc.getBlockZ());
@@ -77,6 +88,7 @@ public class DistrictRegion {
     }
 
     /**
+     * Districts are defined by two points at opposite corners of a bounding box. This is point 1.
      * @return the pos1
      */
     public Location getPos1() {
@@ -84,11 +96,11 @@ public class DistrictRegion {
     }
 
     /**
+     * Districts are defined by two points at opposite corners of a bounding box. This is point 2.
      * @return the pos2
      */
     public Location getPos2() {
 	return new Location (world, pos2.getBlockX(), pos2.getBlockY(), pos2.getBlockZ());
-
     }
 
     /**
@@ -135,7 +147,7 @@ public class DistrictRegion {
 
     
     /**
-     * @return the flags
+     * @return the region flags
      */
     public HashMap<String, Object> getFlags() {
         return flags;
@@ -149,6 +161,11 @@ public class DistrictRegion {
         this.flags = flags;
     }
 
+    /**
+     * Obtain a specific region flag
+     * @param flagName
+     * @return
+     */
     public boolean getFlag(String flagName) {
 	if (!flags.containsKey(flagName)) {
 	    return false;
@@ -156,6 +173,11 @@ public class DistrictRegion {
 	return (Boolean)flags.get(flagName);
     }
 
+    /**
+     * Set a specific region flag
+     * @param flagName
+     * @param value
+     */
     public void setFlag(String flagName, Boolean value) {
 	flags.put(flagName,value);
     }
@@ -178,6 +200,11 @@ public class DistrictRegion {
 	return (Boolean)flags.get("allowBreakBlocks");
     }
 
+    /**
+     * Check if this player (uuid) is associated with this district
+     * @param uuid
+     * @return
+     */
     private Boolean checkOwnerTenants(UUID uuid) {
 	if (plugin.getServer().getPlayer(uuid).isOp()) {
 	    //plugin.logger(2,"Op");

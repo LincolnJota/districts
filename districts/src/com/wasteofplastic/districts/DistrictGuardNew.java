@@ -1,18 +1,18 @@
 /*******************************************************************************
- * This file is part of ASkyBlock.
+ * This file is part of Districts.
  *
- *     ASkyBlock is free software: you can redistribute it and/or modify
+ *     Districts is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
  *
- *     ASkyBlock is distributed in the hope that it will be useful,
+ *     Districts is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU General Public License for more details.
  *
  *     You should have received a copy of the GNU General Public License
- *     along with ASkyBlock.  If not, see <http://www.gnu.org/licenses/>.
+ *     along with Districts.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
 package com.wasteofplastic.districts;
 
@@ -32,12 +32,10 @@ import org.bukkit.inventory.ItemStack;
 
 
 /**
- * @author ben
  * Provides protection to districts - handles newer events that may not exist in older servers
  */
 public class DistrictGuardNew implements Listener {
     private final Districts plugin;
-    private final boolean debug = false;
 
     protected DistrictGuardNew(final Districts plugin) {
 	this.plugin = plugin;
@@ -50,9 +48,7 @@ public class DistrictGuardNew implements Listener {
      */
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerInteract(final PlayerInteractAtEntityEvent e) {
-	if (debug) {
-	    plugin.getLogger().info(e.getEventName());
-	}
+	Utils.logger(3,e.getEventName());
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
@@ -79,10 +75,8 @@ public class DistrictGuardNew implements Listener {
     // Armor stand events
     @EventHandler(priority = EventPriority.LOWEST)
     void placeArmorStandEvent(PlayerInteractEvent e){
+	Utils.logger(3,e.getEventName());
 	Player p = e.getPlayer();
-	if (debug) {
-	    plugin.getLogger().info(e.getEventName());
-	}
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(p.getWorld().getName())) {
 	    return;
 	}
@@ -108,9 +102,7 @@ public class DistrictGuardNew implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void ArmorStandDestroy(EntityDamageByEntityEvent e){
-	if (debug) {
-	    plugin.getLogger().info(e.getEventName());
-	}
+	Utils.logger(3,e.getEventName());
 	if (!(e.getEntity() instanceof LivingEntity)) {
 	    return;
 	}

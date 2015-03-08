@@ -52,7 +52,7 @@ import org.bukkit.potion.Potion;
  */
 public class DistrictGuard implements Listener {
     private final Districts plugin;
-    private final boolean debug = false;
+
     public DistrictGuard(final Districts plugin) {
 	this.plugin = plugin;
 
@@ -61,9 +61,8 @@ public class DistrictGuard implements Listener {
     // Vehicle damage
     @EventHandler(priority = EventPriority.LOW)
     void vehicleDamageEvent(VehicleDamageEvent e){
-	if (debug) {
-	    plugin.getLogger().info(e.getEventName());
-	}
+	Utils.logger(3,e.getEventName());
+	
 	if (e.getVehicle() instanceof Boat) {
 	    // Boats can always be hit
 	    return;
@@ -100,8 +99,9 @@ public class DistrictGuard implements Listener {
      * Tracks player movement
      * @param event
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerMove(PlayerMoveEvent event) {
+	Utils.logger(3,event.getEventName());
 	Player player = event.getPlayer();
 	World world = player.getWorld();
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(world.getName())) {
@@ -117,7 +117,7 @@ public class DistrictGuard implements Listener {
 		Location closest = plugin.getClosestDistrict(player);
 		if (closest != null) {
 		    player.setCompassTarget(closest);
-		    //plugin.logger(2,"DEBUG: Compass " + closest.getBlockX() + "," + closest.getBlockZ());
+		    Utils.logger(2,"DEBUG: Compass " + closest.getBlockX() + "," + closest.getBlockZ());
 		}
 	    }
 	}
@@ -157,10 +157,10 @@ public class DistrictGuard implements Listener {
 	}*/
 	// Check if they are wielding a golden hoe
 	if (player.getItemInHand() != null) {
-	    //plugin.logger(2,"Item in hand");
+	    Utils.logger(2,"Item in hand");
 	    if (!player.getItemInHand().getType().equals(Material.GOLD_HOE)) {
 		// no longer holding a golden hoe
-		//plugin.logger(2,"No longer holding hoe");
+		Utils.logger(2,"No longer holding hoe");
 		if (plugin.getPos1s().containsKey(player.getUniqueId())) {
 		    // Remove the point
 		    player.sendMessage(ChatColor.GOLD + "Cancelling district mark");
@@ -191,18 +191,18 @@ public class DistrictGuard implements Listener {
 	    // No districts yet
 	    return false;
 	}
-	//plugin.logger(2,"Checking districts");
-	//plugin.logger(2,"From : " + from.toString());
-	//plugin.logger(2,"From: " + from.getBlockX() + "," + from.getBlockZ());
-	//plugin.logger(2,"To: " + to.getBlockX() + "," + to.getBlockZ());
+	Utils.logger(2,"Checking districts");
+	Utils.logger(2,"From : " + from.toString());
+	Utils.logger(2,"From: " + from.getBlockX() + "," + from.getBlockZ());
+	Utils.logger(2,"To: " + to.getBlockX() + "," + to.getBlockZ());
 	for (DistrictRegion d: plugin.getDistricts()) {
-	    //plugin.logger(2,"District (" + d.getPos1().getBlockX() + "," + d.getPos1().getBlockZ() + " : " + d.getPos2().getBlockX() + "," + d.getPos2().getBlockZ() + ")");
+	    Utils.logger(2,"District (" + d.getPos1().getBlockX() + "," + d.getPos1().getBlockZ() + " : " + d.getPos2().getBlockX() + "," + d.getPos2().getBlockZ() + ")");
 	    if (d.intersectsDistrict(to)) {
-		//plugin.logger(2,"To intersects d!");
+		Utils.logger(2,"To intersects d!");
 		toDistrict = d;
 	    }
 	    if (d.intersectsDistrict(from)) {
-		//plugin.logger(2,"From intersects d!");
+		Utils.logger(2,"From intersects d!");
 		fromDistrict = d;
 	    }
 	    // If player is trying to make a district, then we need to check if the proposed district overlaps with any others
@@ -285,9 +285,9 @@ public class DistrictGuard implements Listener {
     }
 
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onClick(PlayerInteractEvent e) {
-	//plugin.logger(2,"On click");
+	Utils.logger(3,e.getEventName());
 	// Find out who is doing the clicking
 	final Player p = e.getPlayer();
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(p.getWorld().getName())) {
@@ -297,7 +297,7 @@ public class DistrictGuard implements Listener {
 	// Get the item in their hand
 	ItemStack itemInHand = p.getItemInHand();
 	if (itemInHand == null || !itemInHand.getType().equals(Material.GOLD_HOE)) {
-	    //plugin.logger(2,"No hoe");
+	    Utils.logger(2,"No hoe");
 	    return;
 	}
 	if (e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
@@ -316,7 +316,7 @@ public class DistrictGuard implements Listener {
 	// Find out what block is being clicked
 	final Block b = e.getClickedBlock();
 	if (b == null) {
-	    //plugin.logger(2,"No block");
+	    Utils.logger(2,"No block");
 	    return;
 	}
 	if (plugin.players.getInDistrict(playerUUID) != null) {
@@ -397,8 +397,9 @@ public class DistrictGuard implements Listener {
      * Prevents blocks from being broken
      * @param e
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.LOW)
     public void onBlockBreak(final BlockBreakEvent e) {
+	Utils.logger(3,e.getEventName());
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
@@ -419,18 +420,19 @@ public class DistrictGuard implements Listener {
      * This method protects players from PVP if it is not allowed and from arrows fired by other players
      * @param e
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.LOW)
     public void onEntityDamage(final EntityDamageByEntityEvent e) {
+	Utils.logger(3,e.getEventName());
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getEntity().getWorld().getName())) {
 	    return;
 	}
 	// Get the district that this block is in (if any)
 	DistrictRegion d = plugin.getInDistrict(e.getEntity().getLocation());
 	if (d == null) {
-	    //plugin.logger(2,"Not in a district");
+	    Utils.logger(2,"Not in a district");
 	    return;	    
 	}
-	//plugin.logger(2,"D is something " + d.getEnterMessage());
+	Utils.logger(2,"D is something " + d.getEnterMessage());
 	// Ops can do anything
 	if (e.getDamager() instanceof Player) {
 	    if (((Player)e.getDamager()).isOp()) {
@@ -462,20 +464,20 @@ public class DistrictGuard implements Listener {
 	if (!(e.getDamager() instanceof Player) && !(e.getDamager() instanceof Projectile)) {
 	    return;
 	}
-	//plugin.logger(2,"Entity is " + e.getEntity().toString());
+	Utils.logger(2,"Entity is " + e.getEntity().toString());
 	// Check for player initiated damage
 	if (e.getDamager() instanceof Player) {
-	    //plugin.logger(2,"Damager is " + ((Player)e.getDamager()).getName());
+	    Utils.logger(2,"Damager is " + ((Player)e.getDamager()).getName());
 	    // If the target is not a player check if mobs can be hurt
 	    if (!(e.getEntity() instanceof Player)) {
 		if (e.getEntity() instanceof Monster) {
-		    //plugin.logger(2,"Entity is a monster - ok to hurt"); 
+		    Utils.logger(2,"Entity is a monster - ok to hurt"); 
 		    return;
 		} else {
-		    //plugin.logger(2,"Entity is a non-monster - check if ok to hurt"); 
+		    Utils.logger(2,"Entity is a non-monster - check if ok to hurt"); 
 		    UUID playerUUID = e.getDamager().getUniqueId();
 		    if (playerUUID == null) {
-			//plugin.logger(2,"player ID is null");
+			Utils.logger(2,"player ID is null");
 		    }
 		    if (!d.getAllowHurtMobs(playerUUID)) {
 			((Player)e.getDamager()).sendMessage(ChatColor.RED + Locale.errordistrictProtected);
@@ -489,37 +491,37 @@ public class DistrictGuard implements Listener {
 		// If PVP is okay then return
 		// Target is in a district
 		if (d.getAllowPVP()) {
-		    plugin.logger(2,"PVP allowed");
+		    Utils.logger(2,"PVP allowed");
 		    return;
 		}
-		plugin.logger(2,"PVP not allowed");
+		Utils.logger(2,"PVP not allowed");
 
 	    }
 	}
 
-	//plugin.logger(2,"Player attack (or arrow)");
+	Utils.logger(2,"Player attack (or arrow)");
 	// Only damagers who are players or arrows are left
 	// If the projectile is anything else than an arrow don't worry about it in this listener
 	// Handle splash potions separately.
 	if (e.getDamager() instanceof Arrow) {
-	    //plugin.logger(2,"Arrow attack");
+	    Utils.logger(2,"Arrow attack");
 	    Arrow arrow = (Arrow)e.getDamager();
 	    // It really is an Arrow
 	    if (arrow.getShooter() instanceof Player) {
 		Player shooter = (Player)arrow.getShooter();
-		//plugin.logger(2,"Player arrow attack");
+		Utils.logger(2,"Player arrow attack");
 		if (e.getEntity() instanceof Player) {
-		    //plugin.logger(2,"Player vs Player!");
+		    Utils.logger(2,"Player vs Player!");
 		    // Arrow shot by a player at another player
 		    if (!d.getAllowPVP()) {
-			//plugin.logger(2,"Target player is in a no-PVP district!");
+			Utils.logger(2,"Target player is in a no-PVP district!");
 			((Player)arrow.getShooter()).sendMessage("Target is in a no-PVP district!");
 			e.setCancelled(true);
 			return;
 		    } 
 		} else {
 		    if (!(e.getEntity() instanceof Monster)) {
-			//plugin.logger(2,"Entity is a non-monster - check if ok to hurt"); 
+			Utils.logger(2,"Entity is a non-monster - check if ok to hurt"); 
 			UUID playerUUID = shooter.getUniqueId();
 			if (!d.getAllowHurtMobs(playerUUID)) {
 			    shooter.sendMessage(ChatColor.RED + Locale.errordistrictProtected);
@@ -531,7 +533,7 @@ public class DistrictGuard implements Listener {
 		}
 	    }
 	} else if (e.getDamager() instanceof Player){
-	    //plugin.logger(2,"Player attack");
+	    Utils.logger(2,"Player attack");
 	    // Just a player attack
 	    if (!d.getAllowPVP()) {
 		((Player)e.getDamager()).sendMessage("Target is in a no-PVP district!");
@@ -547,8 +549,9 @@ public class DistrictGuard implements Listener {
      * Prevents placing of blocks
      * @param e
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerBlockPlace(final BlockPlaceEvent e) {
+	Utils.logger(3,e.getEventName());
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
@@ -563,8 +566,9 @@ public class DistrictGuard implements Listener {
 	}
 
     }
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerBlockPlace(final HangingPlaceEvent e) {
+	Utils.logger(3,e.getEventName());
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
@@ -582,6 +586,7 @@ public class DistrictGuard implements Listener {
     // Prevent sleeping in other beds
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerBedEnter(final PlayerBedEnterEvent e) {
+	Utils.logger(3,e.getEventName());
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
@@ -601,6 +606,7 @@ public class DistrictGuard implements Listener {
      */
     @EventHandler(priority = EventPriority.LOW)
     public void onBreakHanging(final HangingBreakByEntityEvent e) {
+	Utils.logger(3,e.getEventName());
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getRemover().getWorld().getName())) {
 	    return;
 	}
@@ -623,6 +629,7 @@ public class DistrictGuard implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onBucketEmpty(final PlayerBucketEmptyEvent e) {
+	Utils.logger(3,e.getEventName());
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
@@ -636,8 +643,10 @@ public class DistrictGuard implements Listener {
 	    e.setCancelled(true);
 	}
     }
+    
     @EventHandler(priority = EventPriority.LOW)
     public void onBucketFill(final PlayerBucketFillEvent e) {
+	Utils.logger(3,e.getEventName());
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
@@ -656,6 +665,7 @@ public class DistrictGuard implements Listener {
     // Protect sheep
     @EventHandler(priority = EventPriority.LOW)
     public void onShear(final PlayerShearEntityEvent e) {
+	Utils.logger(3,e.getEventName());
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
@@ -673,6 +683,7 @@ public class DistrictGuard implements Listener {
     // Stop lava flow or water into a district
     @EventHandler(priority = EventPriority.LOW)
     public void onFlow(final BlockFromToEvent e) {
+	Utils.logger(3,e.getEventName());
 	// Flow may be allowed anyway
 	if (Settings.allowFlowIn && Settings.allowFlowOut) {
 	    return;
@@ -708,24 +719,25 @@ public class DistrictGuard implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerInteract(final PlayerInteractEntityEvent e) {
+	Utils.logger(3,e.getEventName());
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
-	//plugin.getLogger().info("Frame right click!");
+	Utils.logger(3,"Frame right click!");
 	Entity entity = e.getRightClicked();
-	//plugin.getLogger().info(entity.getType().toString());
+	Utils.logger(3,entity.getType().toString());
 	if (entity.getType() != EntityType.ITEM_FRAME) {
 	    return;
 	}
 	ItemFrame frame = (ItemFrame)entity;
 	if ((frame.getItem() == null || frame.getItem().getType() == Material.AIR)) {
-	    //plugin.getLogger().info("Nothing in frame!");
+	    Utils.logger(3,"Nothing in frame!");
 	    return;
 	}
 	// If the offending item is not in a district, forget it!
 	DistrictRegion d = plugin.getInDistrict(entity.getLocation());
 	if (d == null) {
-	    //plugin.getLogger().info("Not in a district!");
+	    Utils.logger(3,"Not in a district!");
 	    return;
 	}
 	if (!d.getAllowChestAccess(e.getPlayer().getUniqueId())) {
@@ -748,8 +760,8 @@ public class DistrictGuard implements Listener {
 		return;
 	    }
 
-	    //plugin.logger(2,"DEBUG: clicked block " + e.getClickedBlock());
-	    //plugin.logger(2,"DEBUG: Material " + e.getMaterial());
+	    Utils.logger(2,"DEBUG: clicked block " + e.getClickedBlock());
+	    Utils.logger(2,"DEBUG: Material " + e.getMaterial());
 
 	    switch (e.getClickedBlock().getType()) {
 	    case WOODEN_DOOR:
@@ -892,11 +904,11 @@ public class DistrictGuard implements Listener {
 		return;
 	    } else if (e.getMaterial().equals(Material.POTION) && e.getItem().getDurability() != 0) {
 		// Potion
-		//plugin.logger(2,"DEBUG: potion");
+		Utils.logger(2,"DEBUG: potion");
 		try {
 		    Potion p = Potion.fromItemStack(e.getItem());
 		    if (!p.isSplash()) {
-			//plugin.logger(2,"DEBUG: not a splash potion");
+			Utils.logger(2,"DEBUG: not a splash potion");
 			return;
 		    } else {
 			// Splash potions are allowed only if PVP is allowed
@@ -929,11 +941,9 @@ public class DistrictGuard implements Listener {
 	    player.closeInventory();
 	    return;
 	}
-	UUID playerUUID = player.getUniqueId();
-	DistrictRegion d = plugin.players.getInDistrict(player.getUniqueId());
 	// Get the items in the panel for this player
 	List<IPItem> ipitems = plugin.getInfoPanel((Player)e.getWhoClicked());
-	//plugin.logger(2,"DEBUG: slot = " + e.getSlot());
+	Utils.logger(2,"DEBUG: slot = " + e.getSlot());
 	if (e.getSlot() > ipitems.size()) {
 	    e.setCancelled(true);
 	    return;
@@ -942,11 +952,11 @@ public class DistrictGuard implements Listener {
 	IPItem clickedItem = null;
 	for (IPItem item : ipitems) {
 	    if (item.getSlot() == e.getSlot()) {
-		//plugin.logger(2,"DEBUG: item slot found, item is " + item.getItem().toString());
-		//plugin.logger(2,"DEBUG: clicked item is " + e.getCurrentItem().toString());
+		Utils.logger(2,"DEBUG: item slot found, item is " + item.getItem().toString());
+		Utils.logger(2,"DEBUG: clicked item is " + e.getCurrentItem().toString());
 		// Check it was the same item and not an item in the player's part of the inventory
 		if (e.getCurrentItem().equals(item.getItem())) {
-		    //plugin.logger(2,"DEBUG: item matched!");
+		    Utils.logger(2,"DEBUG: item matched!");
 		    clickedItem = item;
 		    break;
 		}
@@ -954,7 +964,7 @@ public class DistrictGuard implements Listener {
 	}
 	if (clickedItem == null) {
 	    // Not one of our items
-	    //plugin.logger(2,"DEBUG: not a recognized item");
+	    Utils.logger(2,"DEBUG: not a recognized item");
 	    e.setCancelled(true);
 	    return;
 	}
@@ -1020,21 +1030,21 @@ public class DistrictGuard implements Listener {
 	}
 	// Get the items in the panel for this player
 	List<CPItem> cpitems = plugin.getControlPanel((Player)e.getWhoClicked());
-	//plugin.logger(2,"DEBUG: slot = " + e.getSlot());
+	Utils.logger(2,"DEBUG: slot = " + e.getSlot());
 	if (e.getSlot() > cpitems.size()) {
 	    e.setCancelled(true);
 	    return;
 	}
-	//plugin.logger(2,"DEBUG: find out what was clicked");
+	Utils.logger(2,"DEBUG: find out what was clicked");
 	// Find out which item was clicked
 	CPItem clickedItem = null;
 	for (CPItem item : cpitems) {
 	    if (item.getSlot() == e.getSlot()) {
-		//plugin.logger(2,"DEBUG: item slot found, item is " + item.getItem().toString());
-		//plugin.logger(2,"DEBUG: clicked item is " + e.getCurrentItem().toString());
+		Utils.logger(2,"DEBUG: item slot found, item is " + item.getItem().toString());
+		Utils.logger(2,"DEBUG: clicked item is " + e.getCurrentItem().toString());
 		// Check it was the same item and not an item in the player's part of the inventory
 		if (e.getCurrentItem().equals(item.getItem())) {
-		    //plugin.logger(2,"DEBUG: item matched!");
+		    Utils.logger(2,"DEBUG: item matched!");
 		    clickedItem = item;
 		    break;
 		}
@@ -1042,7 +1052,7 @@ public class DistrictGuard implements Listener {
 	}
 	if (clickedItem == null) {
 	    // Not one of our items
-	    //plugin.logger(2,"DEBUG: not a recognized item");
+	    Utils.logger(2,"DEBUG: not a recognized item");
 	    e.setCancelled(true);
 	    return;
 	}
@@ -1073,7 +1083,7 @@ public class DistrictGuard implements Listener {
 	    player.closeInventory();
 	    break;
 	case TOGGLE:
-	    //plugin.logger(2,"DEBUG: toggling settings");
+	    Utils.logger(2,"DEBUG: toggling settings");
 	    // Now toggle the setting
 	    clickedItem.setFlagValue(!clickedItem.isFlagValue());
 	    // Set the district value

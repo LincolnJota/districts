@@ -17,6 +17,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
+/**
+ * Handles the /d command
+ * @author tastybento
+ *
+ */
 public class DistrictCmd implements CommandExecutor {
     public boolean busyFlag = true;
     public Location Islandlocation;
@@ -26,13 +31,13 @@ public class DistrictCmd implements CommandExecutor {
     /**
      * Constructor
      * 
-     * @param acidIsland
+     * @param plugin
      * @param players 
      */
-    public DistrictCmd(Districts acidIsland, PlayerCache players) {
+    public DistrictCmd(Districts plugin, PlayerCache players) {
 
 	// Plugin instance
-	this.plugin = acidIsland;
+	this.plugin = plugin;
 	this.players = players;
     }
     /*

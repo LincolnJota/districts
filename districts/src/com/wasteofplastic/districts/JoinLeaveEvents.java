@@ -31,7 +31,7 @@ public class JoinLeaveEvents implements Listener {
 	// Set the player's name (it may have changed)
 	players.setPlayerName(playerUUID, p.getName());
 	players.save(playerUUID);
-	plugin.logger(2,"Cached " + p.getName());
+	Utils.logger(2,"Cached " + p.getName());
 	// TODO: Check leases and expire any old ones.
 	// Check to see if the player is in a district - one may have cropped up around them while they were logged off
 	for (DistrictRegion d: plugin.getDistricts()) {
@@ -71,7 +71,7 @@ public class JoinLeaveEvents implements Listener {
 		balance =  maxBlocks-actualBlocks;
 	    }
 	    plugin.players.setBlocks(playerUUID, balance);
-	    plugin.logger(2, p.getName() + " logged in and has " + actualBlocks + " blocks inside districts, is allowed " + maxBlocks + " blocks and has a balance of " + balance + " blocks.");
+	    Utils.logger(2, p.getName() + " logged in and has " + actualBlocks + " blocks inside districts, is allowed " + maxBlocks + " blocks and has a balance of " + balance + " blocks.");
 	}
 	// Load any messages for the player
 	final List<String> messages = plugin.getMessages(playerUUID);
