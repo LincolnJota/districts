@@ -35,12 +35,16 @@ public class DistrictRegion {
     private HashMap<String,Object> flags = new HashMap<String,Object>();
     private int area;
 
-    public DistrictRegion(Districts plugin, Location pos1, Location pos2, UUID owner) {
+    public DistrictRegion(Districts plugin, Location pos1, Location pos2, UUID owner) throws IllegalArgumentException {
 	this.plugin = plugin;
 	this.pos1 = new Vector(pos1.getBlockX(),0,pos1.getBlockZ());
 	this.pos2 = new Vector(pos2.getBlockX(),0,pos2.getBlockZ());
 	this.area = Math.abs((pos2.getBlockX()-pos1.getBlockX() + 1) * (pos2.getBlockZ()-pos1.getBlockZ() + 1));
 	this.world = pos1.getWorld();
+	if (world == null) {
+	    // The world does not exist
+	    throw new IllegalArgumentException();
+	}
 	if (!pos1.getWorld().equals(pos2.getWorld())) {
 	    plugin.getLogger().severe("Pos 1 and Pos 2 are not in the same world!");
 	}
