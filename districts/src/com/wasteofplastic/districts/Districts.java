@@ -310,7 +310,7 @@ public class Districts extends JavaPlugin {
 	if (Settings.vizRange < 10) {
 	    Settings.vizRange = 10;
 	}
-	
+
 	Settings.blockPrice = getConfig().getDouble("districts.blockprice", 0D);
 	if (Settings.blockPrice < 0D) {
 	    Settings.blockPrice = 0D;
@@ -1258,7 +1258,13 @@ public class Districts extends JavaPlugin {
 	return result;
     }
 
+    /**
+     * Displays the player's balance to them
+     * @param player
+     */
     public void showBalance(Player player) {
+	// Adding zero blocks will check if the player's balance is more than it should be
+	players.addBlocks(player.getUniqueId(), 0);
 	int balance = players.getBlockBalance(player.getUniqueId());
 	int maxBlocks = getMaxBlockBalance(player);
 	if (Settings.maxBlockLimit) {

@@ -349,7 +349,7 @@ public class DistrictGuard implements Listener {
 	    }
 	    // If they hit the same place twice
 	    if (to.getBlockX() == origin.getBlockX() && to.getBlockZ()==origin.getBlockZ()) {
-		p.sendMessage("Setting position 1 : " + b.getLocation().getBlockX() + ", " + b.getLocation().getBlockZ());
+		p.sendMessage("Setting position 1 : " + to.getBlockX() + ", " + to.getBlockZ());
 		p.sendMessage("Click on the opposite corner of the district");
 		Visualization.visualize(b.getLocation(),p);
 		e.setCancelled(true);
@@ -359,21 +359,28 @@ public class DistrictGuard implements Listener {
 	    // Check the player has enough blocks
 	    // TODO
 	    // Check minimum size
-	    int side1 = Math.abs(b.getLocation().getBlockX()-pos.getBlockX());
-	    int side2 = Math.abs(b.getLocation().getBlockZ()-pos.getBlockZ());
-	    int balance = plugin.players.removeBlocks(playerUUID, (side1*side2));
-	    if (balance < 0) {
-		p.sendMessage(ChatColor.RED + "You need " + Math.abs(balance) + " more blocks to make that district.");
+	    int side1 = Math.abs(to.getBlockX()-pos.getBlockX()) + 1;
+	    //p.sendMessage("Side 1 is " + side1);
+	    int side2 = Math.abs(to.getBlockZ()-pos.getBlockZ()) + 1;
+	    //p.sendMessage("Side 2 is " + side2);
+	    if (side1 < 5 || side2 < 5) {
+		p.sendMessage("Minimum district size is 5 x 5");
 		e.setCancelled(true);
 		return;		
 	    }
-	    if (side1 < 5 || side2 < 5) {
-		p.sendMessage("Minimum district size is 5 x 5");
+	    int balance = plugin.players.removeBlocks(playerUUID, (side1*side2));
+	    if (balance < 0) {
+		p.sendMessage(ChatColor.RED + Locale.notenoughblocks);
+		p.sendMessage(ChatColor.RED + Locale.conversationsblocksrequired.replace("[number]", String.valueOf(Math.abs(balance))));
+		e.setCancelled(true);
 		return;		
+	    } else {
+		p.sendMessage("Setting position 2 : " + to.getBlockX() + ", " + to.getBlockZ());
+		p.sendMessage(ChatColor.GREEN + Locale.conversationsyounowhave.replace("[number]", String.valueOf(balance)));
 	    }
-	    p.sendMessage("Position 1 : " + pos.getBlockX() + ", " + pos.getBlockZ());
-	    p.sendMessage("Position 2 : " + b.getLocation().getBlockX() + ", " + b.getLocation().getBlockZ());
-	    p.sendMessage("Creating district!");
+	    //p.sendMessage("Position 1 : " + pos.getBlockX() + ", " + pos.getBlockZ());
+	    //p.sendMessage("Position 2 : " + to.getBlockX() + ", " + to.getBlockZ());
+	    p.sendMessage(Locale.conversationsdistrictcreated);
 	    plugin.createNewDistrict(pos, b.getLocation(), p);
 	    e.setCancelled(true);
 	} else {

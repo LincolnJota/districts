@@ -324,38 +324,57 @@ public class Players {
      * @return the player's balance
      */
     public int addBlocks(int blocks) {
-	this.blocks += blocks;
-	return this.blocks;
-    }
-
-    /**
-     * Removes a number of blocks from a player's balance.
-     * If the balance becomes negative, the blocks are not removed
-     * and instead the number required are returned as a negative number
-     * @param blocks
-     * @return
-     */
-    public int removeBlocks(int blocks) {
-	int balance = this.blocks - blocks;
-	if (balance < 0) {
-	    return balance;
+	// If they are online - do not add if they are at the maximum allowed
+	Player o = plugin.getServer().getPlayer(uuid);
+	int balance = this.blocks;
+	if (o != null) {
+	    // Online player
+	    int maxBalance = plugin.getMaxBlockBalance(o);
+	    int blocksInDistricts = 0;
+	    if (Settings.maxBlockLimit) {
+		// Increase the balance by how many blocks they have in districts
+		blocksInDistricts = plugin.getBlocksInDistricts(o);
+	    }
+	    if (balance + blocks + blocksInDistricts > maxBalance) {
+		this.blocks = Math.max(maxBalance - blocksInDistricts, 0);
+	    } else {
+		this.blocks += blocks;
+	    }
+	} else {
+	    // Offline - any overage will be handled at login
+	    this.blocks += blocks;
 	}
-	this.blocks -= blocks;
-	return this.blocks;
-    }
+	    return this.blocks;
+	}
 
-    /**
-     * @return the visualize
-     */
-    public boolean isVisualize() {
-	return visualize;
-    }
+	/**
+	 * Removes a number of blocks from a player's balance.
+	 * If the balance becomes negative, the blocks are not removed
+	 * and instead the number required are returned as a negative number
+	 * @param blocks
+	 * @return
+	 */
+	public int removeBlocks(int blocks) {
+	    int balance = this.blocks - blocks;
+	    if (balance < 0) {
+		return balance;
+	    }
+	    this.blocks -= blocks;
+	    return this.blocks;
+	}
 
-    /**
-     * @param visualize the visualize to set
-     */
-    public void setVisualize(boolean visualize) {
-	this.visualize = visualize;
-    }
+	/**
+	 * @return the visualize
+	 */
+	public boolean isVisualize() {
+	    return visualize;
+	}
 
-}
+	/**
+	 * @param visualize the visualize to set
+	 */
+	public void setVisualize(boolean visualize) {
+	    this.visualize = visualize;
+	}
+
+    }

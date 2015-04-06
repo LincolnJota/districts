@@ -270,7 +270,7 @@ public class DistrictCmd implements CommandExecutor {
 
 		//DistrictRegion d = players.getInDistrict(playerUUID);
 		if (d != null) {
-		    if (d.getOwner().equals(playerUUID) || player.isOp()) {
+		    if (d.getOwner().equals(playerUUID) || player.isOp() || VaultHelper.checkPerm(player, "districts.admin")) {
 			UUID owner = d.getOwner();
 			// If this is an Op or Admin load up the owner
 			if (!owner.equals(playerUUID)) {
@@ -302,35 +302,24 @@ public class DistrictCmd implements CommandExecutor {
 			}
 			// Tell the player what happened and fix any overages if applicable
 			if (owner.equals(playerUUID)) {
-			    //plugin.getLogger().info("DEBUG: remove - " + Settings.maxBlockLimit);
-			    // Check to see if the balance is more than it should be
-			    int maxBlocks = plugin.getMaxBlockBalance(player);
-			    int ownedBlocks = 0;
-			    if (Settings.maxBlockLimit) {
-				ownedBlocks = plugin.getBlocksInDistricts(player);
-			    }
-			    if (ownedBlocks > maxBlocks) {
-				// Still too many owned blocks
-				player.sendMessage("You own more blocks that permitted so free block balance is zero");
-				balance = 0;
-			    } else if ((ownedBlocks + blocks) > maxBlocks) {
-				balance = maxBlocks - ownedBlocks;
-			    } else {
-				balance += blocks;
-			    }
-			    plugin.players.setBlocks(owner, balance);
+			    // Owner removing their own district
+			    plugin.players.addBlocks(playerUUID, blocks);
 			    plugin.showBalance(player);
 			} else {
+			    // Admin removing district
 			    Player o = plugin.getServer().getPlayer(owner);
 			    if (o != null) {
-				o.sendMessage(ChatColor.RED + "Admin removed a district of yours. Your balance is " + balance);	    
+				// Online player
+				o.sendMessage(ChatColor.RED + "Admin removed a district of yours.");
+				plugin.players.addBlocks(playerUUID, blocks);
+				plugin.showBalance(o);	    
 			    } else {
-				plugin.setMessage(owner, "Admin removed a district of yours. Your balance is " + balance);
+				plugin.setMessage(owner, "Admin removed a district of yours.");
+				plugin.players.addBlocks(owner, blocks);
 			    }
 			}
 			// Save owner
 			plugin.players.save(owner);
-
 			return true;
 		    }
 		    player.sendMessage(ChatColor.RED + Locale.errornotyours);
