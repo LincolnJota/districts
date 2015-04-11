@@ -6,11 +6,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+/**
+ * This class holds all the data on one district.
+ * 
+ * @author tastybento
+ *
+ */
 public class DistrictRegion {
     private Districts plugin;
     private UUID id;
@@ -27,11 +34,15 @@ public class DistrictRegion {
     private Date lastPayment;
     private HashMap<String,Object> flags = new HashMap<String,Object>();
 
-    public DistrictRegion(Districts plugin, Location pos1, Location pos2, UUID owner) {
+    public DistrictRegion(Districts plugin, Location pos1, Location pos2, UUID owner) throws IllegalArgumentException {
 	this.plugin = plugin;
 	this.pos1 = new Vector(pos1.getBlockX(),0,pos1.getBlockZ());
 	this.pos2 = new Vector(pos2.getBlockX(),0,pos2.getBlockZ());
 	this.world = pos1.getWorld();
+	if (world == null) {
+	    // The world does not exist
+	    throw new IllegalArgumentException();
+	}
 	if (!pos1.getWorld().equals(pos2.getWorld())) {
 	    plugin.getLogger().severe("Pos 1 and Pos 2 are not in the same world!");
 	}
@@ -64,16 +75,22 @@ public class DistrictRegion {
     }
 
 
+    /**
+     * Checks if a location is inside this district
+     * @param loc
+     * @return true if it is, false otherwise
+     */
     public boolean intersectsDistrict(Location loc) {
-	//plugin.getLogger().info("Checking intersection");
+	//plugin.logger(2,"Checking intersection");
 	Vector v = new Vector(loc.getBlockX(),0,loc.getBlockZ());
-	//plugin.getLogger().info("Pos 1 = " + pos1.toString());
-	//plugin.getLogger().info("Pos 2 = " + pos2.toString());
-	//plugin.getLogger().info("V = " + v.toString());
+	//plugin.logger(2,"Pos 1 = " + pos1.toString());
+	//plugin.logger(2,"Pos 2 = " + pos2.toString());
+	//plugin.logger(2,"V = " + v.toString());
 	return v.isInAABB(Vector.getMinimum(pos1,  pos2), Vector.getMaximum(pos1, pos2));
     }
 
     /**
+     * Districts are defined by two points at opposite corners of a bounding box. This is point 1.
      * @return the pos1
      */
     public Location getPos1() {
@@ -81,11 +98,11 @@ public class DistrictRegion {
     }
 
     /**
+     * Districts are defined by two points at opposite corners of a bounding box. This is point 2.
      * @return the pos2
      */
     public Location getPos2() {
 	return new Location (world, pos2.getBlockX(), pos2.getBlockY(), pos2.getBlockZ());
-
     }
 
     /**
@@ -132,7 +149,7 @@ public class DistrictRegion {
 
     
     /**
-     * @return the flags
+     * @return the region flags
      */
     public HashMap<String, Object> getFlags() {
         return flags;
@@ -146,6 +163,11 @@ public class DistrictRegion {
         this.flags = flags;
     }
 
+    /**
+     * Obtain a specific region flag
+     * @param flagName
+     * @return
+     */
     public boolean getFlag(String flagName) {
 	if (!flags.containsKey(flagName)) {
 	    return false;
@@ -153,6 +175,11 @@ public class DistrictRegion {
 	return (Boolean)flags.get(flagName);
     }
 
+    /**
+     * Set a specific region flag
+     * @param flagName
+     * @param value
+     */
     public void setFlag(String flagName, Boolean value) {
 	flags.put(flagName,value);
     }
@@ -175,18 +202,23 @@ public class DistrictRegion {
 	return (Boolean)flags.get("allowBreakBlocks");
     }
 
+    /**
+     * Check if this player (uuid) is associated with this district
+     * @param uuid
+     * @return
+     */
     private Boolean checkOwnerTenants(UUID uuid) {
 	if (plugin.getServer().getPlayer(uuid).isOp()) {
-	    //plugin.getLogger().info("Op");
+	    //plugin.logger(2,"Op");
 	    return true;
 	} else 	if (owner != null && owner.equals(uuid)) {
-	    //plugin.getLogger().info("Owner");
+	    //plugin.logger(2,"Owner");
 	    return true;
 	} else if (renter != null && renter.equals(uuid)) {
-	    //plugin.getLogger().info("Renter");
+	    //plugin.logger(2,"Renter");
 	    return true;
 	} else if (ownerTrusted.contains(uuid) || renterTrusted.contains(uuid)) {
-	    //plugin.getLogger().info("Trusted");
+	    //plugin.logger(2,"Trusted");
 	    return true;
 	}
 	return false;
@@ -612,6 +644,9 @@ public class DistrictRegion {
      * @return the enterMessage
      */
     public String getEnterMessage() {
+	if ((Boolean)flags.get("allowPVP")) {
+	    return (ChatColor.RED + "[PVP] " + (String)flags.get("enterMessage"));
+	}
 	return (String)flags.get("enterMessage");
     }
 
@@ -669,6 +704,14 @@ public class DistrictRegion {
      */
     public void setRenterTrusted(List<UUID> renterTrusted) {
         this.renterTrusted = renterTrusted;
+    }
+
+
+    /**
+     * @return the area
+     */
+    public int getArea() {
+	return (Math.abs(pos2.getBlockX()-pos1.getBlockX()) + 1) * (Math.abs(pos2.getBlockZ()-pos1.getBlockZ()) + 1);
     }
 
 

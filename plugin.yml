@@ -1,9 +1,10 @@
 name: Districts
 main: com.wasteofplastic.districts.Districts
-version: 0.7
+version: 0.9
 description: Districts
 author: Tastybento
 depend: [Vault]
+softdepend: [WorldGuard]
 commands:
     district:
         description: Main player command
@@ -18,6 +19,9 @@ permissions:
   districts.player:
      description: Gives access to basic player commands
      default: true
+  districts.trustplayer:
+     description: Basic commands plus player trusting
+     default: false
   districts.advancedplayer:
      description: Gives access to advanced player commands (buy, sell, rent)
      default: false  

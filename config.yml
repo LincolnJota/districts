@@ -21,10 +21,17 @@ districts:
    # Default is REDSTONE_BLOCK
    visualblock: DIAMOND_BLOCK
 
+   # Visualization range - how far away from the player will visualizations be drawn
+   # Do not make this too large otherwise weird things can happen. Minimum distance
+   # is 10.
+   visualrange: 20
 
    # Who gets blocks and how many
    # permission: <number of blocks>:<max>
-   # List permission and how many blocks they get every tick and the maximum #
+   # List permission and how many blocks they get every tick and the maximum
+   # number of free blocks they can hold at any one time. If you want this to be
+   # the maximum number of blocks they can claim in total plus free blocks then
+   # set maxlocks to true below. 
    # The permission can be anything you like, but you have to add it to the
    # players using a permissions plugin or other plugin.
    blockgroups:
@@ -36,16 +43,31 @@ districts:
      districts.vip: 3:300
      districts.donor: 20:500
      districts.superdonor: 100:1000
+
    # How often to give out the blocks in minutes, if zero, blocks will never be given
    # Players must be *online* to receive blocks, so a small number is okay.
    # Blocks stop being given when the player maxes out.
    blocktick: 1
+
+   # Maximum claim blocks
+   # The above allows players to build and claim indefinitely.
+   # If you would like to limit players to an absolute maximum number of blocks they
+   # can claim, set this to true and increase the maximum block sizes accordingly
+   # e.g., districts.player: 1:10000  <-- sets the global limit on claims
+   # and balance blocks to 10000
+   maxblocklimit: false
 
    # How often to check leases in hours. If this is 0, then leases will be checked
    # once when the plugin is loaded. If your server is automatically reset every day
    # this may be sufficient. The smaller this number, the quicker a lease will expire
    # after the deadline. 12 hours should be sufficient.
    checkleases: 12
+
+   #Debug level
+   #Setting to 0 will result in Districts being very quiet, except for errors
+   #1 = normal
+   #2 or higher show debug messages in the console and will get very noisy
+   debug: 1
 
    ### Global settings for districts
    ### Players cannot customize these settings

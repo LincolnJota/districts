@@ -50,7 +50,7 @@ public class Players {
      * @param uuid
      */
     public void load(UUID uuid) {
-	playerInfo = Districts.loadYamlFile("players/" + uuid.toString() + ".yml");
+	playerInfo = Utils.loadYamlFile("players/" + uuid.toString() + ".yml");
 	// Load in from YAML file
 	this.playerName = playerInfo.getString("playerName", "");
 	if (playerName.isEmpty()) {
@@ -65,7 +65,7 @@ public class Players {
 		playerName = "";		
 	    }
 	}
-	//plugin.getLogger().info("Loading player..." + playerName);
+	//plugin.logger(2,"Loading player..." + playerName);
 	this.hasDistricts = playerInfo.getBoolean("hasDistricts", false);
 	this.visualize = playerInfo.getBoolean("visualize",true);
 	// Get how many blocks I have to use
@@ -78,77 +78,93 @@ public class Players {
 		    // Load all the values
 		    Location pos1 = getLocationString(playerInfo.getString("districts." + key + ".pos-one"));
 		    Location pos2 = getLocationString(playerInfo.getString("districts." + key + ".pos-two"));
-		    // Check if this district already exists
-		    if (!plugin.checkDistrictIntersection(pos1, pos2)) {
-			//plugin.getLogger().info("DEBUG: District already exists or overlaps - ignoring");
+		    if (pos1 == null || pos2 == null) {
+			// We have a problem with the district
+			plugin.getLogger().severe("Problem loading a district owned by " + playerName);
+			plugin.getLogger().severe("District " + key + " location has a location reference that does not exist:");
+			if (pos1 == null) {
+			    plugin.getLogger().severe("Something is wrong in this: '" + playerInfo.getString("districts." + key + ".pos-one") + "'");
+			}
+			if (pos2 == null) {
+			    plugin.getLogger().severe("Something is wrong in this: '" + playerInfo.getString("districts." + key + ".pos-two") + "'");
+			}		
+		    } else {
+			// Check if this district already exists
+			if (!plugin.checkDistrictIntersection(pos1, pos2)) {
+			    //plugin.logger(2,"DEBUG: District already exists or overlaps - ignoring");
 
-		    //} else {
-			DistrictRegion d = new DistrictRegion(plugin, pos1, pos2, uuid);
-			d.setId(UUID.fromString(playerInfo.getString("districts." + key + ".id")));
-			// Load all the flags
-			HashMap<String,Object> flags = (HashMap<String, Object>) playerInfo.getConfigurationSection("districts." + key + ".flags").getValues(false);
-			//d.setEnterMessage(playerInfo.getString("districts." + key + ".entermessage",""));
-			//d.setFarewellMessage(playerInfo.getString("districts." + key + ".farewellmessage",""));
-			d.setFlags(flags);
-			// Load the various other flags here
-			String tempUUID = playerInfo.getString("districts." + key + ".renter");
-			if (tempUUID != null) {
-			    d.setRenter(UUID.fromString(tempUUID));
-			}
-			d.setForSale(playerInfo.getBoolean("districts." + key + ".forSale", false));
-			d.setForRent(playerInfo.getBoolean("districts." + key + ".forRent", false));
-			d.setPrice(playerInfo.getDouble("districts." + key + ".price", 0D));
-			SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-			String dateInString = playerInfo.getString("districts." + key + ".lastPayment");
-			if (dateInString != null) {		 
-			    try {		 
-				Date date = formatter.parse(dateInString);
-				d.setLastPayment(date);
-			    } catch (ParseException e) {
-				e.printStackTrace();
+			    //} else {
+			    DistrictRegion d = new DistrictRegion(plugin, pos1, pos2, uuid);
+			    d.setId(UUID.fromString(playerInfo.getString("districts." + key + ".id")));
+			    // Load all the flags
+			    HashMap<String,Object> flags = (HashMap<String, Object>) playerInfo.getConfigurationSection("districts." + key + ".flags").getValues(false);
+			    //d.setEnterMessage(playerInfo.getString("districts." + key + ".entermessage",""));
+			    //d.setFarewellMessage(playerInfo.getString("districts." + key + ".farewellmessage",""));
+			    d.setFlags(flags);
+			    // Load the various other flags here
+			    String tempUUID = playerInfo.getString("districts." + key + ".renter");
+			    if (tempUUID != null) {
+				d.setRenter(UUID.fromString(tempUUID));
 			    }
-			}
-			// Get the trusted players
-			List<UUID> ownerTrustedUUID = new ArrayList<UUID>();
-			List<String> ownerTrusted = playerInfo.getStringList("districts." + key + ".ownerTrusted");
-			if (ownerTrusted != null) {
-			    for (String temp : ownerTrusted) {
-				try {
-				    ownerTrustedUUID.add(UUID.fromString(temp));
-				} catch (Exception e) {
+			    d.setForSale(playerInfo.getBoolean("districts." + key + ".forSale", false));
+			    d.setForRent(playerInfo.getBoolean("districts." + key + ".forRent", false));
+			    d.setPrice(playerInfo.getDouble("districts." + key + ".price", 0D));
+			    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+			    String dateInString = playerInfo.getString("districts." + key + ".lastPayment");
+			    if (dateInString != null) {		 
+				try {		 
+				    Date date = formatter.parse(dateInString);
+				    d.setLastPayment(date);
+				} catch (ParseException e) {
 				    e.printStackTrace();
 				}
 			    }
-			    d.setOwnerTrusted(ownerTrustedUUID);
-			} 
-			List<UUID> renterTrustedUUID = new ArrayList<UUID>();
-			List<String> renterTrusted = playerInfo.getStringList("districts." + key + ".renterTrusted");
-			if (renterTrusted != null) {
-			    for (String temp : renterTrusted) {
-				try {
-				    renterTrustedUUID.add(UUID.fromString(temp));
-				} catch (Exception e) {
-				    e.printStackTrace();
+			    // Get the trusted players
+			    List<UUID> ownerTrustedUUID = new ArrayList<UUID>();
+			    List<String> ownerTrusted = playerInfo.getStringList("districts." + key + ".ownerTrusted");
+			    if (ownerTrusted != null) {
+				for (String temp : ownerTrusted) {
+				    try {
+					ownerTrustedUUID.add(UUID.fromString(temp));
+				    } catch (Exception e) {
+					e.printStackTrace();
+				    }
 				}
-			    }
-			    d.setRenterTrusted(renterTrustedUUID);
-			}	    
-			plugin.getDistricts().add(d);
+				d.setOwnerTrusted(ownerTrustedUUID);
+			    } 
+			    List<UUID> renterTrustedUUID = new ArrayList<UUID>();
+			    List<String> renterTrusted = playerInfo.getStringList("districts." + key + ".renterTrusted");
+			    if (renterTrusted != null) {
+				for (String temp : renterTrusted) {
+				    try {
+					renterTrustedUUID.add(UUID.fromString(temp));
+				    } catch (Exception e) {
+					e.printStackTrace();
+				    }
+				}
+				d.setRenterTrusted(renterTrustedUUID);
+			    }	    
+			    plugin.getDistricts().add(d);
+			}
 		    }
-		} catch (Exception e) {
+		} catch (IllegalArgumentException iae) { 
+		    plugin.getLogger().severe("Problem loading the district owned by " + playerName);
+		    plugin.getLogger().severe("District " + key + " location has a world reference that does not exist."); 
+		}
+		catch (Exception e) {
 		    plugin.getLogger().severe("Problem loading player files");
 		    e.printStackTrace();
 		}
-		
+
 	    }
-	    plugin.getLogger().info("Loaded " + plugin.getDistricts().size() + " districts.");
+	    Utils.logger(2,"Loaded " + plugin.getDistricts().size() + " districts.");
 	}
     }
     /**
      * Saves the player info to the file system
      */
     public void save() {
-	plugin.getLogger().info("Saving player..." + playerName);
+	Utils.logger(2,"Saving player..." + playerName);
 	// Save the variables
 	playerInfo.set("playerName", playerName);
 	playerInfo.set("hasDistricts", hasDistricts);
@@ -195,7 +211,7 @@ public class Players {
 		}
 	    }
 	}
-	Districts.saveYamlFile(playerInfo, "players/" + uuid.toString() + ".yml");
+	Utils.saveYamlFile(playerInfo, "players/" + uuid.toString() + ".yml");
     }
 
 
@@ -217,6 +233,9 @@ public class Players {
 	final String[] parts = s.split(":");
 	if (parts.length == 4) {
 	    final World w = Bukkit.getServer().getWorld(parts[0]);
+	    if (w == null) {
+		return null;
+	    }
 	    final int x = Integer.parseInt(parts[1]);
 	    final int y = Integer.parseInt(parts[2]);
 	    final int z = Integer.parseInt(parts[3]);
@@ -305,38 +324,57 @@ public class Players {
      * @return the player's balance
      */
     public int addBlocks(int blocks) {
-	this.blocks += blocks;
-	return this.blocks;
-    }
-
-    /**
-     * Removes a number of blocks from a player's balance.
-     * If the balance becomes negative, the blocks are not removed
-     * and instead the number required are returned as a negative number
-     * @param blocks
-     * @return
-     */
-    public int removeBlocks(int blocks) {
-	int balance = this.blocks - blocks;
-	if (balance < 0) {
-	    return balance;
+	// If they are online - do not add if they are at the maximum allowed
+	Player o = plugin.getServer().getPlayer(uuid);
+	int balance = this.blocks;
+	if (o != null) {
+	    // Online player
+	    int maxBalance = plugin.getMaxBlockBalance(o);
+	    int blocksInDistricts = 0;
+	    if (Settings.maxBlockLimit) {
+		// Increase the balance by how many blocks they have in districts
+		blocksInDistricts = plugin.getBlocksInDistricts(o);
+	    }
+	    if (balance + blocks + blocksInDistricts > maxBalance) {
+		this.blocks = Math.max(maxBalance - blocksInDistricts, 0);
+	    } else {
+		this.blocks += blocks;
+	    }
+	} else {
+	    // Offline - any overage will be handled at login
+	    this.blocks += blocks;
 	}
-	this.blocks -= blocks;
-	return this.blocks;
-    }
+	    return this.blocks;
+	}
 
-    /**
-     * @return the visualize
-     */
-    public boolean isVisualize() {
-	return visualize;
-    }
+	/**
+	 * Removes a number of blocks from a player's balance.
+	 * If the balance becomes negative, the blocks are not removed
+	 * and instead the number required are returned as a negative number
+	 * @param blocks
+	 * @return
+	 */
+	public int removeBlocks(int blocks) {
+	    int balance = this.blocks - blocks;
+	    if (balance < 0) {
+		return balance;
+	    }
+	    this.blocks -= blocks;
+	    return this.blocks;
+	}
 
-    /**
-     * @param visualize the visualize to set
-     */
-    public void setVisualize(boolean visualize) {
-	this.visualize = visualize;
-    }
+	/**
+	 * @return the visualize
+	 */
+	public boolean isVisualize() {
+	    return visualize;
+	}
 
-}
+	/**
+	 * @param visualize the visualize to set
+	 */
+	public void setVisualize(boolean visualize) {
+	    this.visualize = visualize;
+	}
+
+    }

@@ -5,6 +5,7 @@ package com.wasteofplastic.districts;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -25,7 +26,7 @@ public class PlayerCache {
 
     public PlayerCache(Districts plugin) {
 	this.plugin = plugin;
-	final Player[] serverPlayers = Bukkit.getServer().getOnlinePlayers();
+	final Collection<? extends Player> serverPlayers = Bukkit.getServer().getOnlinePlayers();
 	for (Player p : serverPlayers) {
 	    if (p.isOnline()) {
 		final Players playerInf = new Players(plugin, p.getUniqueId());
@@ -61,7 +62,7 @@ public class PlayerCache {
 	if (playerCache.containsKey(player)) {
 	    playerCache.get(player).save();
 	    playerCache.remove(player);
-	    plugin.getLogger().info("Removing player from cache: " + player);
+	    Utils.logger(2,"Removing player from cache: " + player);
 	}
     }
 
@@ -188,8 +189,9 @@ public class PlayerCache {
      * @param playerUUID
      */
     public void save(UUID playerUUID) {
-	addPlayer(playerUUID);
-	playerCache.get(playerUUID).save();
+	if (playerCache.containsKey(playerUUID)) {
+	    playerCache.get(playerUUID).save();
+	}
     }
 
     /**
@@ -200,7 +202,7 @@ public class PlayerCache {
     public UUID getUUID(String string) {
 	for (UUID id : playerCache.keySet()) {
 	    String name = playerCache.get(id).getPlayerName();
-	    //plugin.getLogger().info("DEBUG: Testing name " + name);
+	    //plugin.logger(2,"DEBUG: Testing name " + name);
 	    if (name != null && name.equalsIgnoreCase(string)) {
 		return id;
 	    }
@@ -298,7 +300,6 @@ public class PlayerCache {
 	addPlayer(playerUUID);
 	playerCache.get(playerUUID).setVisualize(visualize);
     }
-
 }
 
 
