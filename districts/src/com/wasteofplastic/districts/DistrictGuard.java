@@ -1121,11 +1121,11 @@ public class DistrictGuard implements Listener {
 	    player.closeInventory();
 	    break;
 	case RENT:
-	    getPrice(d,player,ConversaionSellBuy.Type.RENT);
+	    getPrice(d,player,ConversationSellBuy.Type.RENT);
 	    player.closeInventory();
 	    break;
 	case SELL:
-	    getPrice(d,player,ConversaionSellBuy.Type.SELL);
+	    getPrice(d,player,ConversationSellBuy.Type.SELL);
 	    player.closeInventory();
 	    break;
 	case TRUST:
@@ -1160,12 +1160,12 @@ public class DistrictGuard implements Listener {
 	return;
     }
 
-    private void getPrice(DistrictRegion d, Player player, ConversaionSellBuy.Type type) {
+    private void getPrice(DistrictRegion d, Player player, ConversationSellBuy.Type type) {
 	final HashMap<Object,Object> map = new HashMap<Object,Object>();
 	map.put("District", plugin.players.getInDistrict(player.getUniqueId()));
 
 	ConversationFactory factory = new ConversationFactory(plugin);
-	Conversation conv = factory.withFirstPrompt(new ConversaionSellBuy(plugin,type)).withLocalEcho(false).withInitialSessionData(map)
+	Conversation conv = factory.withFirstPrompt(new ConversationSellBuy(plugin,type)).withLocalEcho(false).withInitialSessionData(map)
 		.withEscapeSequence("").withTimeout(10).buildConversation(player);
 	conv.addConversationAbandonedListener(new ConversationAbandonedListener() {
 

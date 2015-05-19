@@ -9,7 +9,7 @@ import org.bukkit.conversations.Prompt;
  * @author tastybento
  *
  */
-public class ConversaionSellBuy implements Prompt {
+public class ConversationSellBuy implements Prompt {
     public enum Type { RENT, SELL };
 
     private Districts plugin;
@@ -18,7 +18,7 @@ public class ConversaionSellBuy implements Prompt {
     /**
      * @param plugin
      */
-    public ConversaionSellBuy(Districts plugin, Type type) {
+    public ConversationSellBuy(Districts plugin, Type type) {
 	this.plugin = plugin;
 	this.type = type;
     }
