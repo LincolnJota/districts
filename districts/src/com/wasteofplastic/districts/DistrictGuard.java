@@ -62,7 +62,7 @@ public class DistrictGuard implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     void vehicleDamageEvent(VehicleDamageEvent e){
 	Utils.logger(3,e.getEventName());
-	
+
 	if (e.getVehicle() instanceof Boat) {
 	    // Boats can always be hit
 	    return;
@@ -185,8 +185,8 @@ public class DistrictGuard implements Listener {
      * @return false if the player can move into that area, true if not allowed
      */
     private boolean checkMove(Player player, Location from, Location to) {
-	DistrictRegion fromDistrict = null;
-	DistrictRegion toDistrict = null;
+	DistrictRegion fromDistrict = plugin.getGrid().getDistrictRegionAt(from);
+	DistrictRegion toDistrict = plugin.getGrid().getDistrictRegionAt(to);
 	if (plugin.getDistricts().isEmpty()) {
 	    // No districts yet
 	    return false;
@@ -195,33 +195,12 @@ public class DistrictGuard implements Listener {
 	Utils.logger(2,"From : " + from.toString());
 	Utils.logger(2,"From: " + from.getBlockX() + "," + from.getBlockZ());
 	Utils.logger(2,"To: " + to.getBlockX() + "," + to.getBlockZ());
-	for (DistrictRegion d: plugin.getDistricts()) {
-	    Utils.logger(2,"District (" + d.getPos1().getBlockX() + "," + d.getPos1().getBlockZ() + " : " + d.getPos2().getBlockX() + "," + d.getPos2().getBlockZ() + ")");
-	    if (d.intersectsDistrict(to)) {
-		Utils.logger(2,"To intersects d!");
-		toDistrict = d;
-	    }
-	    if (d.intersectsDistrict(from)) {
-		Utils.logger(2,"From intersects d!");
-		fromDistrict = d;
-	    }
-	    // If player is trying to make a district, then we need to check if the proposed district overlaps with any others
-	    if (plugin.getPos1s().containsKey(player.getUniqueId())) {
-		Location origin = plugin.getPos1s().get(player.getUniqueId());
-		// Check the advancing lines
-		for (int x = Math.min(to.getBlockX(),origin.getBlockX()); x <= Math.max(to.getBlockX(),origin.getBlockX()); x++) {
-		    if (d.intersectsDistrict(new Location(to.getWorld(),x,0,to.getBlockZ()))) {
-			player.sendMessage(ChatColor.RED + "Districts cannot overlap!");
-			return true;	
-		    }
-		}
-		for (int z = Math.min(to.getBlockZ(),origin.getBlockZ()); z <= Math.max(to.getBlockZ(),origin.getBlockZ()); z++) {
-		    if (d.intersectsDistrict(new Location(to.getWorld(),to.getBlockX(),0,z))) {
-			player.sendMessage(ChatColor.RED + "Districts cannot overlap!");
-			return true;	
-		    }
-		}
-		return false;
+	// If player is trying to make a district, then we need to check if the proposed district overlaps with any others
+	if (plugin.getPos1s().containsKey(player.getUniqueId())) {
+	    //plugin.getLogger().info("DEBUG: trying to make a district");
+	    // Just check their current location
+	    if (plugin.getGrid().districtAtLocation(player.getLocation())) {
+		player.sendMessage(ChatColor.RED + "Districts cannot overlap!");
 	    }
 	}
 	// No district interaction
@@ -319,9 +298,12 @@ public class DistrictGuard implements Listener {
 	    Utils.logger(2,"No block");
 	    return;
 	}
-	if (plugin.players.getInDistrict(playerUUID) != null) {
-	    p.sendMessage(ChatColor.RED + "You are already in a district!");
-	    p.sendMessage(ChatColor.RED + "To remove this district type /d remove");
+	DistrictRegion currentDistrict = plugin.players.getInDistrict(playerUUID);
+	if (currentDistrict != null) {
+	    p.sendMessage(ChatColor.RED + "You cannot do that here. You are in a district!");
+	    if (currentDistrict.getOwner().equals(playerUUID)) {
+		p.sendMessage(ChatColor.RED + "To remove this district type /d remove");
+	    }
 	    e.setCancelled(true);
 	    return;
 	}
@@ -331,9 +313,12 @@ public class DistrictGuard implements Listener {
 	    Location to = b.getLocation();
 	    // Check for overlapping districts (you can reach with the hoe)
 	    for (DistrictRegion d : plugin.getDistricts()) {
+		//plugin.getLogger().info("DEBUG: district info pos1 " + d.getPos1().getBlockX() + "," + d.getPos1().getBlockZ());
+		//plugin.getLogger().info("DEBUG: district info pos2 " + d.getPos1().getBlockX() + "," + d.getPos1().getBlockZ());
 		// Check the advancing lines
 		for (int x = Math.min(to.getBlockX(),origin.getBlockX()); x <= Math.max(to.getBlockX(),origin.getBlockX()); x++) {
 		    if (d.intersectsDistrict(new Location(to.getWorld(),x,0,to.getBlockZ()))) {
+			//plugin.getLogger().info("DEBUG: overlap found in x at " + x + "," + to.getBlockZ());
 			p.sendMessage(ChatColor.RED + "Districts cannot overlap!");
 			e.setCancelled(true);
 			return;	
@@ -341,6 +326,7 @@ public class DistrictGuard implements Listener {
 		}
 		for (int z = Math.min(to.getBlockZ(),origin.getBlockZ()); z <= Math.max(to.getBlockZ(),origin.getBlockZ()); z++) {
 		    if (d.intersectsDistrict(new Location(to.getWorld(),to.getBlockX(),0,z))) {
+			//plugin.getLogger().info("DEBUG: overlap found in z at " + to.getBlockX() + "," + z);
 			p.sendMessage(ChatColor.RED + "Districts cannot overlap!");
 			e.setCancelled(true);
 			return;	
@@ -650,7 +636,7 @@ public class DistrictGuard implements Listener {
 	    e.setCancelled(true);
 	}
     }
-    
+
     @EventHandler(priority = EventPriority.LOW)
     public void onBucketFill(final PlayerBucketFillEvent e) {
 	Utils.logger(3,e.getEventName());

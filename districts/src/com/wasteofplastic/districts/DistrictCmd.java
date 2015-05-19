@@ -285,11 +285,12 @@ public class DistrictCmd implements CommandExecutor {
 			int height = Math.abs(d.getPos1().getBlockX() - d.getPos2().getBlockX()) + 1;
 			int width = Math.abs(d.getPos1().getBlockX() - d.getPos2().getBlockX()) + 1;
 			int blocks = height * width;
-			int balance = plugin.players.getBlockBalance(owner);
 			// Remove the district
 			HashSet<DistrictRegion> ds = plugin.getDistricts();
 			ds.remove(d);
 			plugin.setDistricts(ds);
+			// Delete from the grid
+			plugin.getGrid().deleteDistrictRegion(d);
 			// Find everyone who is in this district and remove them
 			for (Player p : plugin.getServer().getOnlinePlayers()) {
 			    if (d.intersectsDistrict(p.getLocation())) {
@@ -376,9 +377,13 @@ public class DistrictCmd implements CommandExecutor {
 			HashSet<DistrictRegion> ds = plugin.getDistricts();
 			ds.remove(d);
 			plugin.setDistricts(ds);
+			// Remove from the grid
+			plugin.getGrid().deleteDistrictRegion(d);
 			// Recreate the district for this player
-			plugin.createNewDistrict(pos1, pos2, player);
+			DistrictRegion newDistrict = plugin.createNewDistrict(pos1, pos2, player);
 			players.save(owner.getUniqueId());
+			// Add to grid
+			plugin.getGrid().addToGrid(newDistrict);
 			return true;
 		    } else {
 			player.sendMessage(ChatColor.RED + "There was an economy problem trying to purchase the district for "+ VaultHelper.econ.format(d.getPrice()) + "!");

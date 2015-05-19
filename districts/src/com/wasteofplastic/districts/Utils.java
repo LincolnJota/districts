@@ -40,7 +40,7 @@ public class Utils {
 	    if (level > 1) {
 		message = "DEBUG["+level+"]:" + message;
 	    }
-	    Bukkit.getLogger().info(message);
+	    plugin.getLogger().info(message);
 	}
     }
     

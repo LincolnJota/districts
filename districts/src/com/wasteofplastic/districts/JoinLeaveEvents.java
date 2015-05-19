@@ -34,28 +34,17 @@ public class JoinLeaveEvents implements Listener {
 	Utils.logger(2,"Cached " + p.getName());
 	// TODO: Check leases and expire any old ones.
 	// Check to see if the player is in a district - one may have cropped up around them while they were logged off
-	for (DistrictRegion d: plugin.getDistricts()) {
-	    if (d.intersectsDistrict(p.getLocation())) {
-		//plugin.logger(2,p.getName() + " is in a known district");
-		if (players.getInDistrict(playerUUID) == null || !players.getInDistrict(playerUUID).equals(d)) {
-		    players.setInDistrict(playerUUID, d);
-		    p.sendMessage(d.getEnterMessage());
-		}
-		final DistrictRegion dr = d;
-		if (plugin.players.getVisualize(p.getUniqueId())) {
-		    plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
+	final DistrictRegion dr = plugin.getGrid().getDistrictRegionAt(p.getLocation());
+	if (dr != null) {
+	    if (plugin.players.getVisualize(p.getUniqueId())) {
+		plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
 
-			@Override
-			public void run() {
-			    //plugin.logger(2,"visualizing tick");
-			    Visualization.visualize(dr, p);
+		    @Override
+		    public void run() {
+			//plugin.logger(2,"visualizing tick");
+			Visualization.visualize(dr, p);
 
-			}},20L);
-		}
-		// }
-
-		//players.setVisualize(playerUUID, true);
-		break;
+		    }},20L);
 	    }
 	}
 

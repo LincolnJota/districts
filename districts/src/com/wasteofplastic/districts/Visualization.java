@@ -101,7 +101,7 @@ public class Visualization {
 
     @SuppressWarnings("deprecation")
     public static void devisualize(Player player) {
-	Utils.logger(1,"Removing visualization");
+	Utils.logger(2,"Removing visualization");
 	if (!visualizations.containsKey(player.getUniqueId())) {
 	    return;
 	}

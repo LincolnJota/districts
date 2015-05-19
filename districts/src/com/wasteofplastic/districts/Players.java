@@ -145,6 +145,7 @@ public class Players {
 				d.setRenterTrusted(renterTrustedUUID);
 			    }	    
 			    plugin.getDistricts().add(d);
+			    plugin.getGrid().addToGrid(d);
 			}
 		    }
 		} catch (IllegalArgumentException iae) { 
@@ -157,7 +158,6 @@ public class Players {
 		}
 
 	    }
-	    Utils.logger(2,"Loaded " + plugin.getDistricts().size() + " districts.");
 	}
     }
     /**

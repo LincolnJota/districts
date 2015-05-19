@@ -1,6 +1,5 @@
 package com.wasteofplastic.districts;
 
-import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,6 +56,9 @@ public class Districts extends JavaPlugin {
     // Database of control panels for players
     HashMap<UUID, List<CPItem>> controlPanel = new HashMap<UUID, List<CPItem>>();
     HashMap<UUID, List<IPItem>> infoPanel = new HashMap<UUID, List<IPItem>>();
+    // Grid manager
+    private GridManager grid;
+
     /**
      * @return plugin object instance
      */
@@ -362,6 +364,9 @@ public class Districts extends JavaPlugin {
 	if (!playersFolder.exists()) {
 	    playersFolder.mkdir();
 	}
+	// Load grid
+	grid = new GridManager(this);
+	// Load players
 	players = new PlayerCache(this);
 	// Set up commands for this plugin
 	getCommand("district").setExecutor(new DistrictCmd(this,players));
@@ -632,6 +637,7 @@ public class Districts extends JavaPlugin {
 
     protected void loadDistricts() {
 	// Load all known districts
+	districts.clear();
 	// Load all the players
 	for (final File f : playersFolder.listFiles()) {
 	    // Need to remove the .yml suffix
@@ -649,6 +655,7 @@ public class Districts extends JavaPlugin {
 		}
 	    }
 	}
+	Utils.logger(1,"Loaded " + districts.size() + " districts.");
 	// Put all online players in districts
 	for (Player p : getServer().getOnlinePlayers()) {
 	    for (DistrictRegion d: districts) {
@@ -859,7 +866,11 @@ public class Districts extends JavaPlugin {
      * @return
      */
     public boolean checkDistrictIntersection(Location pos1, Location pos2) {
+	if (grid.districtAtLocation(pos1) || grid.districtAtLocation(pos2)) {
+	    return true;
+	}
 	// Create a 2D rectangle of this
+	/* old way
 	Rectangle2D.Double rect = new Rectangle2D.Double();
 	rect.setFrameFromDiagonal(pos1.getX(), pos1.getZ(), pos2.getX(), pos2.getZ());
 	Rectangle2D.Double testRect = new Rectangle2D.Double();
@@ -869,7 +880,7 @@ public class Districts extends JavaPlugin {
 	    if (rect.intersects(testRect)) {
 		return true;
 	    }
-	}
+	}*/
 	return false;
     }
 
@@ -897,17 +908,22 @@ public class Districts extends JavaPlugin {
 		Visualization.visualize(d,p);
 	    }
 	}
+	// Add to grid
+	grid.addToGrid(d);
 	return d;
     }
 
 
 
     public DistrictRegion getInDistrict(Location location) {
+	grid.getDistrictRegionAt(location);
+	/* old way
 	for (DistrictRegion d : districts) {
 	    if (d.intersectsDistrict(location)) {
 		return d;
 	    }
 	}
+	*/
 	// This location is not in a district
 	return null;
     }
@@ -1293,5 +1309,15 @@ public class Districts extends JavaPlugin {
 		player.sendMessage(ChatColor.GREEN + "" + balance + " free blocks");
 	    }
 	}
+    }
+
+
+
+
+    /**
+     * @return the grid
+     */
+    public GridManager getGrid() {
+        return grid;
     }
 }

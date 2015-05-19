@@ -715,6 +715,42 @@ public class DistrictRegion {
     }
 
 
+    public int getMinX() {
+	return Math.min(pos1.getBlockX(),pos2.getBlockX());
+    }
+
+
+    public int getMinZ() {
+	return Math.min(pos1.getBlockZ(),pos2.getBlockZ());
+    }
+
+    public int getMaxX() {
+	return Math.max(pos1.getBlockX(),pos2.getBlockX());
+    }
+
+
+    public int getMaxZ() {
+	return Math.max(pos1.getBlockZ(),pos2.getBlockZ());
+    }
+
+
+    /**
+     * Check if a location is in this district
+     * @param x
+     * @param z
+     * @return
+     */
+    public boolean inDistrict(int x, int z) {
+	//plugin.getLogger().info("DEBUG: Check:" + x + "," + z + " Min:" + getMinX() + "," + getMinZ()
+		//+ " Max:" + getMaxX() + "," + getMaxZ());
+	if (x >= getMinX() && z >= getMinZ() && x <= getMaxX() && z <= getMaxZ()) {
+	    //plugin.getLogger().info("DEBUG: inside");
+	    return true;
+	}
+	//plugin.getLogger().info("DEBUG: outside");
+	return false;
+    }  
+
 
 
 }
