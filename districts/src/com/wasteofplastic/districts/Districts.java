@@ -1,5 +1,6 @@
 package com.wasteofplastic.districts;
 
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +23,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
@@ -866,11 +869,7 @@ public class Districts extends JavaPlugin {
      * @return
      */
     public boolean checkDistrictIntersection(Location pos1, Location pos2) {
-	if (grid.districtAtLocation(pos1) || grid.districtAtLocation(pos2)) {
-	    return true;
-	}
 	// Create a 2D rectangle of this
-	/* old way
 	Rectangle2D.Double rect = new Rectangle2D.Double();
 	rect.setFrameFromDiagonal(pos1.getX(), pos1.getZ(), pos2.getX(), pos2.getZ());
 	Rectangle2D.Double testRect = new Rectangle2D.Double();
@@ -880,7 +879,7 @@ public class Districts extends JavaPlugin {
 	    if (rect.intersects(testRect)) {
 		return true;
 	    }
-	}*/
+	}
 	return false;
     }
 
@@ -996,7 +995,13 @@ public class Districts extends JavaPlugin {
 	List<CPItem> cp = new ArrayList<CPItem>();
 	int slot = 0;
 	// Common options
-	cp.add(new CPItem(Material.SKULL_ITEM, 3,  Locale.blocksavailable.replace("[number]", String.valueOf(plugin.players.getBlockBalance(player.getUniqueId()))), false, slot++, null, CPItem.Type.INFO ));
+	ItemStack playerSkull = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+	SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
+	meta.setOwner(player.getName());
+	playerSkull.setItemMeta(meta);
+	cp.add(new CPItem(playerSkull, Locale.blocksavailable.replace("[number]", String.valueOf(plugin.players.getBlockBalance(player.getUniqueId()))), false, slot++, null, CPItem.Type.INFO ));
+	//cp.add(new CPItem(Material.SKULL_ITEM, 3, Locale.blocksavailable.replace("[number]", String.valueOf(plugin.players.getBlockBalance(player.getUniqueId()))), false, slot++, null, CPItem.Type.INFO ));
+
 	// Check if buying blocks is allowed
 	if (VaultHelper.setupEconomy() && Settings.blockPrice > 0D && VaultHelper.checkPerm(player,"districts.buyblocks")) {
 	    cp.add(new CPItem(Material.GOLD_INGOT, 0, "Buy Blocks", false, slot++, null, CPItem.Type.BUYBLOCKS));
@@ -1184,7 +1189,7 @@ public class Districts extends JavaPlugin {
 
 
 	// For sale
-	if (VaultHelper.setupEconomy() && d.isForSale()) {
+	if (VaultHelper.setupEconomy() && d.isForSale() && VaultHelper.checkPerm(player, "districts.advancedplayer")) {
 	    ip.add(new IPItem(Material.EMPTY_MAP, 0,  "District For Sale!", false, slot++, 
 		    Utils.chop(ChatColor.YELLOW, "Click to buy for " + VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.BUY));
 	}
@@ -1209,7 +1214,7 @@ public class Districts extends JavaPlugin {
 			Utils.chop(ChatColor.RED, "Lease will end in " + plugin.daysToEndOfLease(d) + " days!", 20), IPItem.Type.INFO));
 	    }
 	} else {
-	    if (VaultHelper.setupEconomy() && d.isForRent()) {
+	    if (VaultHelper.setupEconomy() && d.isForRent() && VaultHelper.checkPerm(player, "districts.advancedplayer")) {
 		ip.add(new IPItem(Material.GOLD_INGOT, 0,  "District For Rent!", false, slot++, 
 			Utils.chop(ChatColor.YELLOW, "Click to rent for " + VaultHelper.econ.format(d.getPrice()), 20), IPItem.Type.RENT));
 	    }

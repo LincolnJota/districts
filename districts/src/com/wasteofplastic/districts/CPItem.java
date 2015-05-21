@@ -25,19 +25,36 @@ public class CPItem {
     /**
      * @param item
      * @param material
-     * @param i 
+     * @param durability 
      * @param name
      * @param b
      * @param nextSection
      */
-    public CPItem(Material material, int i, String name, boolean flagValue, int slot, List<String> desc, Type type) {
+    public CPItem(Material material, int durability, String name, boolean flagValue, int slot, List<String> desc, Type type) {
+	item = new ItemStack(material);
+	item.setDurability((short) durability);
+	createItem(item, name, flagValue,slot,desc,type);
+    }
+
+    /**
+     * @param item
+     * @param name
+     * @param flagValue
+     * @param slot
+     * @param desc
+     * @param type
+     */
+    public CPItem(ItemStack item, String name, boolean flagValue, int slot, List<String> desc, Type type) {
+	createItem(item, name, flagValue, slot,desc, type);
+    }
+    
+    private void createItem(ItemStack item, String name, boolean flagValue, int slot, List<String> desc, Type type) {
+	this.item = item;
 	this.flagValue = flagValue;
 	this.slot = slot;
 	this.name = name;
 	this.type = type;
 	description.clear();
-	item = new ItemStack(material);
-	item.setDurability((short) i);
 	ItemMeta meta = item.getItemMeta();
 	switch (type) {
 	case TOGGLEINFO:

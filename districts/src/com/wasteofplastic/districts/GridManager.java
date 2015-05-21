@@ -21,16 +21,14 @@ import org.bukkit.Location;
 public class GridManager {
     private Districts plugin = Districts.getPlugin();
     // 2D Grid of districts, x first
-    private TreeMap<Integer, TreeMap<Integer, DistrictRegion>> districtXGrid = new TreeMap<Integer, TreeMap<Integer, DistrictRegion>>();
-    // 2D Grid of districts, z first
-    private TreeMap<Integer, TreeMap<Integer, DistrictRegion>> districtZGrid = new TreeMap<Integer, TreeMap<Integer, DistrictRegion>>();
+    private TreeMap<Integer, TreeMap<Integer, DistrictRegion>> districtGrid = new TreeMap<Integer, TreeMap<Integer, DistrictRegion>>();
 
     /**
      * @param plugin
      */
     public GridManager(Districts plugin) {
 	this.plugin = plugin;
-   }
+    }
 
     /**
      * Returns the district at the location or null if there is none
@@ -50,38 +48,50 @@ public class GridManager {
      * @return PlayerDistrictRegion or null
      */
     public DistrictRegion getDistrictRegionAt(int x, int z) {
-	//plugin.getLogger().info("DEBUG: get region at " + x + "," + z);
+	//
 	// Check xgrid
 	// Try excat values first
-	Entry<Integer, TreeMap<Integer, DistrictRegion>> en = districtXGrid.floorEntry(x);
-	if (en != null) {
-	    //plugin.getLogger().info("DEBUG: entry found in x");
-	    Entry<Integer, DistrictRegion> ent = en.getValue().floorEntry(z);
-	    if (ent != null) {
-		// Check if in the district range
-		DistrictRegion district = ent.getValue();
-		//plugin.getLogger().info("DEBUG: x grid check");
-		if (district.inDistrict(x, z)) {
-		    //plugin.getLogger().info("DEBUG: In district - x grid");
-		    return district;
-		}
+	//int count = 0;
+	//plugin.getLogger().info("***************************************************");
+	//plugin.getLogger().info("DEBUG: get region at " + x + "," + z);
+	// Loop x search
+	int searchTerm = x;
+	Entry<Integer, TreeMap<Integer, DistrictRegion>> en = null;
+	do {
+	    //count++;
+	    //plugin.getLogger().info("DEBUG: Trying x = " + searchTerm); 
+	    en = districtGrid.floorEntry(searchTerm);
+	    if (en != null) {
+		//plugin.getLogger().info("DEBUG: something found in x at " + en.getKey());
+		int searchTermZ = z;
+		Entry<Integer, DistrictRegion> ent = null;
+		do {
+		    //count++;
+		    //plugin.getLogger().info("DEBUG: Trying z = " + searchTermZ); 
+		    ent = en.getValue().floorEntry(searchTermZ);
+		    if (ent != null) {
+			// Check if in the district range
+			DistrictRegion district = ent.getValue();
+			//plugin.getLogger().info("DEBUG: x grid - z entry found");
+			if (district.inDistrict(x, z)) {
+			    //plugin.getLogger().info("DEBUG: Player is in district - x grid");
+			    //plugin.getLogger().info("DEBUG: Player is in district with coords:" + district.getMinX()
+				//    + "," + district.getMinZ() + " " + district.getMaxX() + "," + district.getMaxZ());
+			    //plugin.getLogger().info("DEBUG: " + count);
+			    return district;
+			} else {
+			    //plugin.getLogger().info("DEBUG: Player is not in district with coords:" + district.getMinX()
+			//	    + "," + district.getMinZ() + " " + district.getMaxX() + "," + district.getMaxZ());
+			}
+			// Try next lowest z
+			searchTermZ = ent.getKey() - 1;
+		    }
+		} while (ent != null);
+		// Try next lowest x
+		searchTerm = en.getKey() - 1;
 	    }
-	}
-	// Check zgrid
-	en = districtZGrid.floorEntry(z);
-	if (en != null) {
-	    Entry<Integer, DistrictRegion> ent = en.getValue().floorEntry(x);
-	    if (ent != null) {
-		// Check if in the district range
-		DistrictRegion district = ent.getValue();
-		//plugin.getLogger().info("DEBUG: z grid check");
-		if (district.inDistrict(x, z)) {
-		    //plugin.getLogger().info("DEBUG: In district - z grid");
-		    return district;
-		}
-		//plugin.getLogger().info("DEBUG: not in district");
-	    }
-	}
+	} while (en != null);
+	//plugin.getLogger().info("DEBUG: " + count);
 	return null;
     }
 
@@ -116,12 +126,12 @@ public class GridManager {
      */
     public void addToGrid(DistrictRegion newDistrictRegion) {
 	//plugin.getLogger().info("DEBUG: adding district to grid");
-	if (districtXGrid.containsKey(newDistrictRegion.getMinX())) {
+	if (districtGrid.containsKey(newDistrictRegion.getMinX())) {
 	    //plugin.getLogger().info("DEBUG: min x is in the grid :" + newDistrictRegion.getMinX());
-	    TreeMap<Integer, DistrictRegion> zEntry = districtXGrid.get(newDistrictRegion.getMinX());
+	    TreeMap<Integer, DistrictRegion> zEntry = districtGrid.get(newDistrictRegion.getMinX());
 	    // Add district
 	    zEntry.put(newDistrictRegion.getMinZ(), newDistrictRegion);
-	    districtXGrid.put(newDistrictRegion.getMinX(), zEntry);
+	    districtGrid.put(newDistrictRegion.getMinX(), zEntry);
 	} else {
 	    // Add district
 	    //plugin.getLogger().info("DEBUG: min x is not in the grid :" + newDistrictRegion.getMinX());
@@ -129,23 +139,8 @@ public class GridManager {
 	    // X grid first
 	    TreeMap<Integer, DistrictRegion> zEntry = new TreeMap<Integer, DistrictRegion>();
 	    zEntry.put(newDistrictRegion.getMinZ(), newDistrictRegion);
-	    districtXGrid.put(newDistrictRegion.getMinX(), zEntry);
+	    districtGrid.put(newDistrictRegion.getMinX(), zEntry);
 	}
-	if (districtZGrid.containsKey(newDistrictRegion.getMinZ())) {
-	    //plugin.getLogger().info("DEBUG: min z is in the grid :" + newDistrictRegion.getMinZ());
-	    TreeMap<Integer, DistrictRegion> xEntry = districtZGrid.get(newDistrictRegion.getMinZ());
-	    // Add district
-	    xEntry.put(newDistrictRegion.getMinX(), newDistrictRegion);
-	    districtZGrid.put(newDistrictRegion.getMinZ(), xEntry);
-	} else {
-	    // Add district
-	    //plugin.getLogger().info("DEBUG: min Z is not in the grid :" + newDistrictRegion.getMinZ());
-	    // Z grid next
-	    TreeMap<Integer, DistrictRegion> xEntry = new TreeMap<Integer, DistrictRegion>();
-	    xEntry.put(newDistrictRegion.getMinX(), newDistrictRegion);
-	    districtZGrid.put(newDistrictRegion.getMinZ(), xEntry);
-	}
-
     }
 
     /**
@@ -158,30 +153,16 @@ public class GridManager {
 	    int x = district.getMinX();
 	    int z = district.getMinZ();
 	    // plugin.getLogger().info("DEBUG: x = " + x + " z = " + z);
-	    if (districtXGrid.containsKey(x)) {
+	    if (districtGrid.containsKey(x)) {
 		// plugin.getLogger().info("DEBUG: x found");
-		TreeMap<Integer, DistrictRegion> zEntry = districtXGrid.get(x);
+		TreeMap<Integer, DistrictRegion> zEntry = districtGrid.get(x);
 		if (zEntry.containsKey(z)) {
 		    // plugin.getLogger().info("DEBUG: z found - deleting the district");
 		    // DistrictRegion exists - delete it
 		    DistrictRegion deletedDistrictRegion = zEntry.get(z);
 		    deletedDistrictRegion.setOwner(null);
 		    zEntry.remove(z);
-		    districtXGrid.put(x, zEntry);
-		} // else {
-		// plugin.getLogger().info("DEBUG: could not find z");
-		// }
-	    }
-	    if (districtZGrid.containsKey(z)) {
-		// plugin.getLogger().info("DEBUG: x found");
-		TreeMap<Integer, DistrictRegion> xEntry = districtZGrid.get(z);
-		if (xEntry.containsKey(x)) {
-		    // plugin.getLogger().info("DEBUG: z found - deleting the district");
-		    // DistrictRegion exists - delete it
-		    DistrictRegion deletedDistrictRegion = xEntry.get(x);
-		    deletedDistrictRegion.setOwner(null);
-		    xEntry.remove(x);
-		    districtZGrid.put(z, xEntry);
+		    districtGrid.put(x, zEntry);
 		} // else {
 		// plugin.getLogger().info("DEBUG: could not find z");
 		// }

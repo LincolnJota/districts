@@ -121,9 +121,8 @@ public class DistrictGuard implements Listener {
 		}
 	    }
 	}
-	// Did we move a block?
+	// Did we move a block? Only check in x and z
 	if (event.getFrom().getBlockX() != event.getTo().getBlockX()
-		|| event.getFrom().getBlockY() != event.getTo().getBlockY()
 		|| event.getFrom().getBlockZ() != event.getTo().getBlockZ()) {
 	    boolean result = checkMove(player, event.getFrom(), event.getTo());
 	    if (result) {
@@ -234,11 +233,13 @@ public class DistrictGuard implements Listener {
 	    if (plugin.players.getVisualize(player.getUniqueId())) {
 		Visualization.visualize(toDistrict, player);
 	    }
-	    if (toDistrict.isForSale()) {
-		player.sendMessage("This district is for sale for " + VaultHelper.econ.format(toDistrict.getPrice()) + "!");
-	    } else if (toDistrict.isForRent() && toDistrict.getRenter() == null) {
-		player.sendMessage("This district is for rent for " + VaultHelper.econ.format(toDistrict.getPrice()) + " per week.");
-	    } 
+	    if (VaultHelper.checkPerm(player, "districts.advancedplayer")) {
+		if (toDistrict.isForSale()) {
+		    player.sendMessage("This district is for sale for " + VaultHelper.econ.format(toDistrict.getPrice()) + "!");
+		} else if (toDistrict.isForRent() && toDistrict.getRenter() == null) {
+		    player.sendMessage("This district is for rent for " + VaultHelper.econ.format(toDistrict.getPrice()) + " per week.");
+		} 
+	    }
 	    plugin.players.setInDistrict(player.getUniqueId(), toDistrict);	    
 
 	} else if (fromDistrict != null && toDistrict != null){
@@ -253,10 +254,12 @@ public class DistrictGuard implements Listener {
 	    if (!toDistrict.getEnterMessage().isEmpty()) {
 		player.sendMessage(toDistrict.getEnterMessage());
 	    }
-	    if (toDistrict.isForSale()) {
-		player.sendMessage("This district is for sale for " + VaultHelper.econ.format(toDistrict.getPrice()) + "!");
-	    } else if (toDistrict.isForRent()) {
-		player.sendMessage("This district is for rent for " + VaultHelper.econ.format(toDistrict.getPrice()) + "!");
+	    if (VaultHelper.checkPerm(player, "districts.advancedplayer")) {
+		if (toDistrict.isForSale()) {
+		    player.sendMessage("This district is for sale for " + VaultHelper.econ.format(toDistrict.getPrice()) + "!");
+		} else if (toDistrict.isForRent()) {
+		    player.sendMessage("This district is for rent for " + VaultHelper.econ.format(toDistrict.getPrice()) + "!");
+		}
 	    }
 	    plugin.players.setInDistrict(player.getUniqueId(), toDistrict);	    
 	}  
@@ -370,6 +373,15 @@ public class DistrictGuard implements Listener {
 	    plugin.createNewDistrict(pos, b.getLocation(), p);
 	    e.setCancelled(true);
 	} else {
+	    // Check if this position is in a district
+	    if (plugin.getGrid().districtAtLocation(b.getLocation())) {
+		p.sendMessage(ChatColor.RED + "That spot is in a district!");
+		if (plugin.getGrid().getDistrictRegionAt(b.getLocation()).getOwner().equals(playerUUID)) {
+		    p.sendMessage(ChatColor.RED + "To remove that district go into it and type /d remove");
+		}
+		e.setCancelled(true);
+		return;
+	    }
 	    plugin.getPos1s().put(playerUUID, b.getLocation());
 	    p.sendMessage("Setting position 1 : " + b.getLocation().getBlockX() + ", " + b.getLocation().getBlockZ());
 	    p.sendMessage("Click on the opposite corner of the district");

@@ -90,7 +90,7 @@ public class Players {
 			}		
 		    } else {
 			// Check if this district already exists
-			if (!plugin.checkDistrictIntersection(pos1, pos2)) {
+			//if (!plugin.checkDistrictIntersection(pos1, pos2)) {
 			    //plugin.logger(2,"DEBUG: District already exists or overlaps - ignoring");
 
 			    //} else {
@@ -146,7 +146,7 @@ public class Players {
 			    }	    
 			    plugin.getDistricts().add(d);
 			    plugin.getGrid().addToGrid(d);
-			}
+			//}
 		    }
 		} catch (IllegalArgumentException iae) { 
 		    plugin.getLogger().severe("Problem loading the district owned by " + playerName);
