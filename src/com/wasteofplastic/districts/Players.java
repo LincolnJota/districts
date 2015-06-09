@@ -65,7 +65,7 @@ public class Players {
 		playerName = "";		
 	    }
 	}
-	//plugin.logger(2,"Loading player..." + playerName);
+	Utils.logger(2,"Loading player..." + playerName);
 	this.hasDistricts = playerInfo.getBoolean("hasDistricts", false);
 	this.visualize = playerInfo.getBoolean("visualize",true);
 	// Get how many blocks I have to use
@@ -164,7 +164,7 @@ public class Players {
      * Saves the player info to the file system
      */
     public void save() {
-	Utils.logger(2,"Saving player..." + playerName);
+	Utils.logger(1,"Saving player..." + playerName + " [" + uuid + "]");
 	// Save the variables
 	playerInfo.set("playerName", playerName);
 	playerInfo.set("hasDistricts", hasDistricts);
@@ -177,6 +177,7 @@ public class Players {
 	    int index = 0;
 	    for (DistrictRegion district : plugin.getDistricts()) {
 		if (district.getOwner().equals(uuid)) {
+		    Utils.logger(1,"Owner = " + district.getOwner().toString());
 		    // Save all the values
 		    playerInfo.set("districts." + index + ".id", district.getId().toString());
 		    playerInfo.set("districts." + index + ".pos-one", getStringLocation(district.getPos1()));

@@ -425,40 +425,41 @@ public class Districts extends JavaPlugin {
 		}
 		// Load players and check leases
 		loadDistricts();
+		// Kick off give blocks
+		long dur = Settings.blockTick * 60 * 20; // Minutes
+		if (dur > 0) {
+		    Utils.logger(1,"Block tick timer started. Will give out blocks every " + Settings.blockTick + " minutes.");
+		    getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
+			@Override
+			public void run() {
+			    //Utils.logger(1,"Giving out blocks. Will repeat in " + Settings.blockTick + " mins.");
+			    giveBlocks();
+			}
+		    }, dur, dur);
+
+		} else {
+		    getLogger().warning("Blocks will not be given out automatically. Set blocktick to non-zero to change.");
+		}
+
+
+		// Kick off the check leases 
+		long duration = Settings.checkLeases * 60 * 60 * 20; // Server ticks
+		if (duration > 0) {
+		    Utils.logger(1,"Check lease timer started. Will check leases every " + Settings.checkLeases + " hours.");
+		    getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
+			@Override
+			public void run() {
+			    Utils.logger(1,"Checking leases. Will check leases again in " + Settings.checkLeases + " hours.");
+			    checkLeases();
+			}
+		    }, 20L, duration);
+
+		} else {
+		    getLogger().warning("Leases will not be checked automatically. Make sure your server restarts regularly.");
+		}
 	    }
 	});
-	// Kick off give blocks
-	long dur = Settings.blockTick * 60 * 20; // Minutes
-	if (dur > 0) {
-	    Utils.logger(1,"Block tick timer started. Will give out blocks every " + Settings.blockTick + " minutes.");
-	    getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-		@Override
-		public void run() {
-		    //Utils.logger(1,"Giving out blocks. Will repeat in " + Settings.blockTick + " mins.");
-		    giveBlocks();
-		}
-	    }, dur, dur);
 
-	} else {
-	    getLogger().warning("Blocks will not be given out automatically. Set blocktick to non-zero to change.");
-	}
-
-
-	// Kick off the check leases 
-	long duration = Settings.checkLeases * 60 * 60 * 20; // Server ticks
-	if (duration > 0) {
-	    Utils.logger(1,"Check lease timer started. Will check leases every " + Settings.checkLeases + " hours.");
-	    getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-		@Override
-		public void run() {
-		    Utils.logger(1,"Checking leases. Will check leases again in " + Settings.checkLeases + " hours.");
-		    checkLeases();
-		}
-	    }, 0L, duration);
-
-	} else {
-	    getLogger().warning("Leases will not be checked automatically. Make sure your server restarts regularly.");
-	}
     }
 
     /**
@@ -571,50 +572,59 @@ public class Districts extends JavaPlugin {
 			Utils.logger(2,"Debug: District is still for rent");
 			// Try to deduct rent
 			Utils.logger(2,"Debug: Withdrawing rent from renters account");
-			EconomyResponse r = VaultHelper.econ.withdrawPlayer(getServer().getOfflinePlayer(d.getRenter()), d.getPrice());
-			if (r.transactionSuccess()) {
-			    Utils.logger(2,"Successfully withdrew rent of " + VaultHelper.econ.format(d.getPrice()) + " from " + getServer().getOfflinePlayer(d.getRenter()).getName() + " account.");
+			if (getServer().getOfflinePlayer(d.getRenter()).hasPlayedBefore()) {
+			    EconomyResponse r = VaultHelper.econ.withdrawPlayer(getServer().getOfflinePlayer(d.getRenter()), d.getPrice());
+			    if (r.transactionSuccess()) {
+				Utils.logger(2,"Successfully withdrew rent of " + VaultHelper.econ.format(d.getPrice()) + " from " + getServer().getOfflinePlayer(d.getRenter()).getName() + " account.");
+				Calendar currentDate = Calendar.getInstance();
+				// Only work in days
+				currentDate.set(Calendar.HOUR_OF_DAY, 0);            // set hour to midnight
+				currentDate.set(Calendar.MINUTE, 0);                 // set minute in hour
+				currentDate.set(Calendar.SECOND, 0);                 // set second in minute
+				currentDate.set(Calendar.MILLISECOND, 0);            // set millisecond in second
+				d.setLastPayment(currentDate.getTime());
 
-			    Calendar currentDate = Calendar.getInstance();
-			    // Only work in days
-			    currentDate.set(Calendar.HOUR_OF_DAY, 0);            // set hour to midnight
-			    currentDate.set(Calendar.MINUTE, 0);                 // set minute in hour
-			    currentDate.set(Calendar.SECOND, 0);                 // set second in minute
-			    currentDate.set(Calendar.MILLISECOND, 0);            // set millisecond in second
-			    d.setLastPayment(currentDate.getTime());
+				if (getServer().getPlayer(d.getRenter()) != null) {
+				    getServer().getPlayer(d.getRenter()).sendMessage("You paid a rent of " + VaultHelper.econ.format(d.getPrice()) + " to " + getServer().getOfflinePlayer(d.getOwner()).getName() );
+				} else {
+				    plugin.setMessage(d.getRenter(), "You paid a rent of " + VaultHelper.econ.format(d.getPrice()) + " to " + getServer().getOfflinePlayer(d.getOwner()).getName());
+				}
+				if (getServer().getPlayer(d.getOwner()) != null) {
+				    getServer().getPlayer(d.getOwner()).sendMessage(getServer().getOfflinePlayer(d.getRenter()).getName() + " paid you a rent of " + VaultHelper.econ.format(d.getPrice()));
+				} else {
+				    plugin.setMessage(d.getOwner(), getServer().getOfflinePlayer(d.getRenter()).getName() + " paid you a rent of " + VaultHelper.econ.format(d.getPrice()));
+				}
+			    } else {
+				// evict!
+				Utils.logger(2,"Could not withdraw rent of " + VaultHelper.econ.format(d.getPrice()) + " from " + getServer().getOfflinePlayer(d.getRenter()).getName() + " account.");
 
-			    if (getServer().getPlayer(d.getRenter()) != null) {
-				getServer().getPlayer(d.getRenter()).sendMessage("You paid a rent of " + VaultHelper.econ.format(d.getPrice()) + " to " + getServer().getOfflinePlayer(d.getOwner()).getName() );
-			    } else {
-				plugin.setMessage(d.getRenter(), "You paid a rent of " + VaultHelper.econ.format(d.getPrice()) + " to " + getServer().getOfflinePlayer(d.getOwner()).getName());
-			    }
-			    if (getServer().getPlayer(d.getOwner()) != null) {
-				getServer().getPlayer(d.getOwner()).sendMessage(getServer().getOfflinePlayer(d.getRenter()).getName() + " paid you a rent of " + VaultHelper.econ.format(d.getPrice()));
-			    } else {
-				plugin.setMessage(d.getOwner(), getServer().getOfflinePlayer(d.getRenter()).getName() + " paid you a rent of " + VaultHelper.econ.format(d.getPrice()));
+				if (getServer().getPlayer(d.getRenter()) != null) {
+				    getServer().getPlayer(d.getRenter()).sendMessage("You could not pay a rent of " + VaultHelper.econ.format(d.getPrice()) + " so you were evicted from " + getServer().getOfflinePlayer(d.getOwner()).getName() + "'s district!");
+				} else {
+				    plugin.setMessage(d.getRenter(),"You could not pay a rent of " + VaultHelper.econ.format(d.getPrice()) + " so you were evicted from " + getServer().getOfflinePlayer(d.getOwner()).getName() + "'s district!");
+				}
+				if (getServer().getPlayer(d.getOwner()) != null) {
+				    getServer().getPlayer(d.getOwner()).sendMessage(getServer().getOfflinePlayer(d.getRenter()).getName() + " could not pay you a rent of " + VaultHelper.econ.format(d.getPrice()) + " so they were evicted from a propery!");
+				} else {
+				    plugin.setMessage(d.getOwner(), getServer().getOfflinePlayer(d.getRenter()).getName() + " could not pay you a rent of " + VaultHelper.econ.format(d.getPrice()) + " so they were evicted from a propery!");			
+				}
+				d.setRenter(null);
+				d.setRenterTrusted(new ArrayList<UUID>());
+				d.setEnterMessage("Entering " + players.getName(d.getOwner()) + "'s district!");
+				d.setFarewellMessage("Now leaving " + players.getName(d.getOwner()) + "'s district.");
 			    }
 			} else {
-			    // evict!
-			    Utils.logger(2,"Could not withdraw rent of " + VaultHelper.econ.format(d.getPrice()) + " from " + getServer().getOfflinePlayer(d.getRenter()).getName() + " account.");
-
-			    if (getServer().getPlayer(d.getRenter()) != null) {
-				getServer().getPlayer(d.getRenter()).sendMessage("You could not pay a rent of " + VaultHelper.econ.format(d.getPrice()) + " so you were evicted from " + getServer().getOfflinePlayer(d.getOwner()).getName() + "'s district!");
-			    } else {
-				plugin.setMessage(d.getRenter(),"You could not pay a rent of " + VaultHelper.econ.format(d.getPrice()) + " so you were evicted from " + getServer().getOfflinePlayer(d.getOwner()).getName() + "'s district!");
-			    }
-			    if (getServer().getPlayer(d.getOwner()) != null) {
-				getServer().getPlayer(d.getOwner()).sendMessage(getServer().getOfflinePlayer(d.getRenter()).getName() + " could not pay you a rent of " + VaultHelper.econ.format(d.getPrice()) + " so they were evicted from a propery!");
-			    } else {
-				plugin.setMessage(d.getOwner(), getServer().getOfflinePlayer(d.getRenter()).getName() + " could not pay you a rent of " + VaultHelper.econ.format(d.getPrice()) + " so they were evicted from a propery!");			
-			    }
-			    d.setRenter(null);
-			    d.setRenterTrusted(new ArrayList<UUID>());
-			    d.setEnterMessage("Entering " + players.getName(d.getOwner()) + "'s district!");
-			    d.setFarewellMessage("Now leaving " + players.getName(d.getOwner()) + "'s district.");
+			    getLogger().severe("Renter does not exist on this server! " + d.getRenter());
 			}
 		    } else {
+			String rentersName = "[No name]";
+			if (!getServer().getOfflinePlayer(d.getRenter()).hasPlayedBefore()) {
+			    getLogger().severe("Renter does not exist on this server! " + d.getRenter());
+			} else {
+			    rentersName = getServer().getOfflinePlayer(d.getRenter()).getName();
+			}
 			// No longer for rent
-			Utils.logger(2,"District is no longer for rent - evicting " + getServer().getOfflinePlayer(d.getRenter()).getName());
+			Utils.logger(2,"District is no longer for rent - evicting " + rentersName);
 
 			// evict!
 			if (getServer().getPlayer(d.getRenter()) != null) {
@@ -623,9 +633,9 @@ public class Districts extends JavaPlugin {
 			    plugin.setMessage(d.getRenter(),"The lease on a district you were renting from " + players.getName(d.getOwner()) + " ended.");
 			}
 			if (getServer().getPlayer(d.getOwner()) != null) {
-			    getServer().getPlayer(d.getOwner()).sendMessage(getServer().getOfflinePlayer(d.getRenter()).getName() + "'s lease ended.");
+			    getServer().getPlayer(d.getOwner()).sendMessage(rentersName + "'s lease ended.");
 			} else {
-			    plugin.setMessage(d.getOwner(), getServer().getOfflinePlayer(d.getRenter()).getName() + "'s lease ended.");			
+			    plugin.setMessage(d.getOwner(), rentersName + "'s lease ended.");			
 			}
 			d.setRenter(null);
 			d.setRenterTrusted(new ArrayList<UUID>());
@@ -922,7 +932,7 @@ public class Districts extends JavaPlugin {
 		return d;
 	    }
 	}
-	*/
+	 */
 	// This location is not in a district
 	return null;
     }
@@ -1323,6 +1333,6 @@ public class Districts extends JavaPlugin {
      * @return the grid
      */
     public GridManager getGrid() {
-        return grid;
+	return grid;
     }
 }
