@@ -90,10 +90,11 @@ public class Players {
 			}		
 		    } else {
 			// Check if this district already exists
+			if (plugin.getGrid(pos1.getWorld().getName()) != null && plugin.getGrid(pos1.getWorld().getName()).districtAtLocation(pos1)) {
 			//if (!plugin.checkDistrictIntersection(pos1, pos2)) {
-			    //plugin.logger(2,"DEBUG: District already exists or overlaps - ignoring");
+			    Utils.logger(2,"DEBUG: District already exists or overlaps - ignoring");
 
-			    //} else {
+			   } else {
 			    DistrictRegion d = new DistrictRegion(plugin, pos1, pos2, uuid);
 			    d.setId(UUID.fromString(playerInfo.getString("districts." + key + ".id")));
 			    // Load all the flags
@@ -146,7 +147,7 @@ public class Players {
 			    }	    
 			    plugin.getDistricts().add(d);
 			    plugin.getGrid(d.getPos1().getWorld().getName()).addToGrid(d);
-			//}
+			}
 		    }
 		} catch (IllegalArgumentException iae) { 
 		    plugin.getLogger().severe("Problem loading the district owned by " + playerName);
@@ -164,7 +165,7 @@ public class Players {
      * Saves the player info to the file system
      */
     public void save() {
-	Utils.logger(1,"Saving player..." + playerName + " [" + uuid + "]");
+	Utils.logger(2,"Saving player..." + playerName + " [" + uuid + "]");
 	// Save the variables
 	playerInfo.set("playerName", playerName);
 	playerInfo.set("hasDistricts", hasDistricts);
@@ -176,7 +177,8 @@ public class Players {
 	    // Get a list of all my districts
 	    int index = 0;
 	    for (DistrictRegion district : plugin.getDistricts()) {
-		if (district.getOwner().equals(uuid)) {
+		Utils.logger(2,"District = " + district.getId().toString());
+		if (district.getOwner() != null && district.getOwner().equals(uuid)) {
 		    Utils.logger(2,"Owner = " + district.getOwner().toString());
 		    // Save all the values
 		    playerInfo.set("districts." + index + ".id", district.getId().toString());
