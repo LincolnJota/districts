@@ -30,7 +30,7 @@ public class Visualization {
 	World world = player.getWorld();
 	Vector playerLoc = player.getLocation().toVector().multiply(new Vector(1,0,1));
 	// Deactivate any previous visualization
-	
+
 	//if (visualizations.containsKey(player.getUniqueId())) {
 	//    devisualize(player);
 	//}
@@ -106,8 +106,10 @@ public class Visualization {
 	    return;
 	}
 	for (Location pos: visualizations.get(player.getUniqueId())) {
-	    Block b = pos.getBlock();	    
-	    player.sendBlockChange(pos, b.getType(), b.getData());
+	    Block b = pos.getBlock();
+	    if (b.getWorld().equals(player.getWorld())) {
+		player.sendBlockChange(pos, b.getType(), b.getData());
+	    }
 	}
 	visualizations.remove(player.getUniqueId());
     }

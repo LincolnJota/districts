@@ -889,9 +889,11 @@ public class Districts extends JavaPlugin {
 	Rectangle2D.Double testRect = new Rectangle2D.Double();
 	// Create a set of rectangles of current districts
 	for (DistrictRegion d: districts) {
-	    testRect.setFrameFromDiagonal(d.getPos1().getX(), d.getPos1().getZ(),d.getPos2().getX(),d.getPos2().getZ());
-	    if (rect.intersects(testRect)) {
-		return true;
+	    if (d.getPos1().getWorld().equals(pos1.getWorld())) {
+		testRect.setFrameFromDiagonal(d.getPos1().getX(), d.getPos1().getZ(),d.getPos2().getX(),d.getPos2().getZ());
+		if (rect.intersects(testRect)) {
+		    return true;
+		}
 	    }
 	}
 	return false;
@@ -1339,5 +1341,5 @@ public class Districts extends JavaPlugin {
     public GridManager getGrid(String worldName) {
 	return grid.get(worldName);
     }
-    
+
 }

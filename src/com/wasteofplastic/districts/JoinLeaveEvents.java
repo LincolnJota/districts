@@ -34,20 +34,21 @@ public class JoinLeaveEvents implements Listener {
 	Utils.logger(2,"Cached " + p.getName());
 	// TODO: Check leases and expire any old ones.
 	// Check to see if the player is in a district - one may have cropped up around them while they were logged off
-	final DistrictRegion dr = plugin.getGrid(p.getLocation().getWorld().getName()).getDistrictRegionAt(p.getLocation());
-	if (dr != null) {
-	    if (plugin.players.getVisualize(p.getUniqueId())) {
-		plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
+	if (Settings.worldName.contains(p.getWorld().getName())) {
+	    final DistrictRegion dr = plugin.getGrid(p.getLocation().getWorld().getName()).getDistrictRegionAt(p.getLocation());
+	    if (dr != null) {
+		if (plugin.players.getVisualize(p.getUniqueId())) {
+		    plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
 
-		    @Override
-		    public void run() {
-			//plugin.logger(2,"visualizing tick");
-			Visualization.visualize(dr, p);
+			@Override
+			public void run() {
+			    //plugin.logger(2,"visualizing tick");
+			    Visualization.visualize(dr, p);
 
-		    }},20L);
+			}},20L);
+		}
 	    }
 	}
-
 	// Check to see how many blocks they have
 	int maxBlocks = plugin.getMaxBlockBalance(p);
 	if (Settings.maxBlockLimit) {
