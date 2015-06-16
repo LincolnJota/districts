@@ -34,7 +34,7 @@ public class JoinLeaveEvents implements Listener {
 	Utils.logger(2,"Cached " + p.getName());
 	// TODO: Check leases and expire any old ones.
 	// Check to see if the player is in a district - one may have cropped up around them while they were logged off
-	final DistrictRegion dr = plugin.getGrid().getDistrictRegionAt(p.getLocation());
+	final DistrictRegion dr = plugin.getGrid(p.getLocation().getWorld().getName()).getDistrictRegionAt(p.getLocation());
 	if (dr != null) {
 	    if (plugin.players.getVisualize(p.getUniqueId())) {
 		plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {

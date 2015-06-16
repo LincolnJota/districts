@@ -145,7 +145,7 @@ public class Players {
 				d.setRenterTrusted(renterTrustedUUID);
 			    }	    
 			    plugin.getDistricts().add(d);
-			    plugin.getGrid().addToGrid(d);
+			    plugin.getGrid(d.getPos1().getWorld().getName()).addToGrid(d);
 			//}
 		    }
 		} catch (IllegalArgumentException iae) { 
@@ -177,7 +177,7 @@ public class Players {
 	    int index = 0;
 	    for (DistrictRegion district : plugin.getDistricts()) {
 		if (district.getOwner().equals(uuid)) {
-		    Utils.logger(1,"Owner = " + district.getOwner().toString());
+		    Utils.logger(2,"Owner = " + district.getOwner().toString());
 		    // Save all the values
 		    playerInfo.set("districts." + index + ".id", district.getId().toString());
 		    playerInfo.set("districts." + index + ".pos-one", getStringLocation(district.getPos1()));

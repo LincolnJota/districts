@@ -10,6 +10,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -60,7 +62,7 @@ public class Districts extends JavaPlugin {
     HashMap<UUID, List<CPItem>> controlPanel = new HashMap<UUID, List<CPItem>>();
     HashMap<UUID, List<IPItem>> infoPanel = new HashMap<UUID, List<IPItem>>();
     // Grid manager
-    private GridManager grid;
+    private Map<String, GridManager> grid = new HashMap<String, GridManager>();
 
     /**
      * @return plugin object instance
@@ -368,7 +370,9 @@ public class Districts extends JavaPlugin {
 	    playersFolder.mkdir();
 	}
 	// Load grid
-	grid = new GridManager(this);
+	for (String worldName: Settings.worldName) {
+	    grid.put(worldName,new GridManager(this));
+	}
 	// Load players
 	players = new PlayerCache(this);
 	// Set up commands for this plugin
@@ -918,14 +922,14 @@ public class Districts extends JavaPlugin {
 	    }
 	}
 	// Add to grid
-	grid.addToGrid(d);
+	grid.get(pos1.getWorld().getName()).addToGrid(d);
 	return d;
     }
 
 
 
     public DistrictRegion getInDistrict(Location location) {
-	grid.getDistrictRegionAt(location);
+	grid.get(location.getWorld().getName()).getDistrictRegionAt(location);
 	/* old way
 	for (DistrictRegion d : districts) {
 	    if (d.intersectsDistrict(location)) {
@@ -1332,7 +1336,8 @@ public class Districts extends JavaPlugin {
     /**
      * @return the grid
      */
-    public GridManager getGrid() {
-	return grid;
+    public GridManager getGrid(String worldName) {
+	return grid.get(worldName);
     }
+    
 }

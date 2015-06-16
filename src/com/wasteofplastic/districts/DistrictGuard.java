@@ -184,8 +184,8 @@ public class DistrictGuard implements Listener {
      * @return false if the player can move into that area, true if not allowed
      */
     private boolean checkMove(Player player, Location from, Location to) {
-	DistrictRegion fromDistrict = plugin.getGrid().getDistrictRegionAt(from);
-	DistrictRegion toDistrict = plugin.getGrid().getDistrictRegionAt(to);
+	DistrictRegion fromDistrict = plugin.getGrid(from.getWorld().getName()).getDistrictRegionAt(from);
+	DistrictRegion toDistrict = plugin.getGrid(to.getWorld().getName()).getDistrictRegionAt(to);
 	if (plugin.getDistricts().isEmpty()) {
 	    // No districts yet
 	    return false;
@@ -198,7 +198,7 @@ public class DistrictGuard implements Listener {
 	if (plugin.getPos1s().containsKey(player.getUniqueId())) {
 	    //plugin.getLogger().info("DEBUG: trying to make a district");
 	    // Just check their current location
-	    if (plugin.getGrid().districtAtLocation(player.getLocation())) {
+	    if (plugin.getGrid(player.getLocation().getWorld().getName()).districtAtLocation(player.getLocation())) {
 		player.sendMessage(ChatColor.RED + "Districts cannot overlap!");
 	    }
 	}
@@ -374,9 +374,9 @@ public class DistrictGuard implements Listener {
 	    e.setCancelled(true);
 	} else {
 	    // Check if this position is in a district
-	    if (plugin.getGrid().districtAtLocation(b.getLocation())) {
+	    if (plugin.getGrid(b.getLocation().getWorld().getName()).districtAtLocation(b.getLocation())) {
 		p.sendMessage(ChatColor.RED + "That spot is in a district!");
-		if (plugin.getGrid().getDistrictRegionAt(b.getLocation()).getOwner().equals(playerUUID)) {
+		if (plugin.getGrid(b.getLocation().getWorld().getName()).getDistrictRegionAt(b.getLocation()).getOwner().equals(playerUUID)) {
 		    p.sendMessage(ChatColor.RED + "To remove that district go into it and type /d remove");
 		}
 		e.setCancelled(true);
