@@ -78,6 +78,7 @@ public class GridManager {
 			    //plugin.getLogger().info("DEBUG: Player is in district with coords:" + district.getMinX()
 				//    + "," + district.getMinZ() + " " + district.getMaxX() + "," + district.getMaxZ());
 			    //plugin.getLogger().info("DEBUG: " + count);
+			    //plugin.getLogger().info("DEBUG: in district!");
 			    return district;
 			} else {
 			    //plugin.getLogger().info("DEBUG: Player is not in district with coords:" + district.getMinX()
@@ -92,6 +93,7 @@ public class GridManager {
 	    }
 	} while (en != null);
 	//plugin.getLogger().info("DEBUG: " + count);
+	//plugin.getLogger().info("DEBUG: not in district - grid manager");
 	return null;
     }
 

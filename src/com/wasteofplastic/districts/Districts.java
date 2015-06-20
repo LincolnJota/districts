@@ -931,16 +931,7 @@ public class Districts extends JavaPlugin {
 
 
     public DistrictRegion getInDistrict(Location location) {
-	grid.get(location.getWorld().getName()).getDistrictRegionAt(location);
-	/* old way
-	for (DistrictRegion d : districts) {
-	    if (d.intersectsDistrict(location)) {
-		return d;
-	    }
-	}
-	 */
-	// This location is not in a district
-	return null;
+	return grid.get(location.getWorld().getName()).getDistrictRegionAt(location);
     }
 
     public Location getClosestDistrict(Player player) {

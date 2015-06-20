@@ -557,12 +557,15 @@ public class DistrictGuard implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerBlockPlace(final BlockPlaceEvent e) {
 	Utils.logger(3,e.getEventName());
+	//plugin.getLogger().info("DEBUG: place block event called");
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getPlayer().getWorld().getName())) {
 	    return;
 	}
+	//plugin.getLogger().info("DEBUG: correct world");
 	// If the offending block is not in a district, forget it!
 	DistrictRegion d = plugin.getInDistrict(e.getBlock().getLocation());
 	if (d == null) {
+	    //plugin.getLogger().info("DEBUG: district is null!");
 	    return;
 	}
 	if (!d.getAllowPlaceBlocks(e.getPlayer().getUniqueId()) && !e.getPlayer().isOp()) {
