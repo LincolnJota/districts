@@ -699,7 +699,24 @@ public class DistrictGuard implements Listener {
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getBlock().getWorld().getName())) {
 	    return;
 	}
-	// Get To and From Districts
+	// Only check lateral movement
+	if (e.getBlock().getLocation().getBlockX() == e.getToBlock().getLocation().getBlockX()
+		&& e.getBlock().getLocation().getBlockZ() == e.getToBlock().getLocation().getBlockZ()) {
+	    return;
+	}
+	// Ignore flows within flow
+	if (e.getBlock().getType().equals(e.getToBlock().getType())) {
+	    return;
+	}
+	// Ignore stationary to non-stationary
+	if (e.getBlock().getType().equals(Material.STATIONARY_WATER) && e.getToBlock().getType().equals(Material.WATER) ) {
+	    return;
+	}
+	if (e.getBlock().getType().equals(Material.STATIONARY_LAVA) && e.getToBlock().getType().equals(Material.LAVA) ) {
+	    return;
+	}
+	    // Get To and From Districts
+	//plugin.getLogger().info("DEBUG: " + e.getBlock().getType() + " to " + e.getToBlock().getType());
 	DistrictRegion to = plugin.getInDistrict(e.getToBlock().getLocation());
 	DistrictRegion from = plugin.getInDistrict(e.getBlock().getLocation());
 	
