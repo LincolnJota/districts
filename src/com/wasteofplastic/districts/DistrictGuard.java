@@ -220,9 +220,9 @@ public class DistrictGuard implements Listener {
 	    // leaving a district
 	    if (!fromDistrict.getFarewellMessage().isEmpty()) {
 		player.sendMessage(fromDistrict.getFarewellMessage());
-		// Stop visualization
-		Visualization.devisualize(player);
 	    }
+	    // Stop visualization
+	    Visualization.devisualize(player);
 	    plugin.players.setInDistrict(player.getUniqueId(), null);
 	} else if (fromDistrict == null && toDistrict != null){
 	    // Going into a district
@@ -700,8 +700,9 @@ public class DistrictGuard implements Listener {
 	    return;
 	}
 	// Get To and From Districts
-	DistrictRegion to = plugin.getInDistrict(e.getToBlock().getLocation());
-	DistrictRegion from = plugin.getInDistrict(e.getBlock().getLocation());
+	DistrictRegion from = plugin.getGrid(e.getToBlock().getWorld().getName()).getDistrictRegionAt(e.getToBlock().getLocation());
+	DistrictRegion to = plugin.getGrid(e.getToBlock().getWorld().getName()).getDistrictRegionAt(e.getBlock().getLocation());
+	
 	// Scenarios
 	// 1. inside district or outside - always ok
 	// 2. inside to outside - allowFlowOut determines

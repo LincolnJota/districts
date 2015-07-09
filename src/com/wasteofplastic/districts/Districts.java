@@ -459,6 +459,7 @@ public class Districts extends JavaPlugin {
 		    }, 20L, duration);
 
 		} else {
+		    checkLeases();
 		    getLogger().warning("Leases will not be checked automatically. Make sure your server restarts regularly.");
 		}
 	    }
@@ -565,10 +566,13 @@ public class Districts extends JavaPlugin {
 	if (!VaultHelper.setupEconomy()) {
 	    return;
 	}
+	Utils.logger(2,"Debug: checking leases");
 	// Check all the leases
 	for (DistrictRegion d:districts) {
+	    //Utils.logger(2,"Debug: Checking district owned by " + players.getName(d.getOwner()) + " Days left = " + daysToEndOfLease(d));
 	    // Only check rented properties
 	    if (d.getLastPayment() != null && d.getRenter() != null) {
+		Utils.logger(2,"Debug: Rental property found. Days left = " + daysToEndOfLease(d));
 		if (daysToEndOfLease(d) == 0) {
 		    Utils.logger(2,"Debug: Check to see if the lease is renewable");
 		    // Check to see if the lease is renewable

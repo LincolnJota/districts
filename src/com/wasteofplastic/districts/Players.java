@@ -146,6 +146,9 @@ public class Players {
 				d.setRenterTrusted(renterTrustedUUID);
 			    }	    
 			    plugin.getDistricts().add(d);
+			    //plugin.getLogger().info("DEBUG: " + d.getPos1());
+			    //plugin.getLogger().info("DEBUG: " + d.getPos1().getWorld());
+			    //plugin.getLogger().info("DEBUG: " + d.getPos1().getWorld().getName());
 			    plugin.getGrid(d.getPos1().getWorld().getName()).addToGrid(d);
 			}
 		    }
