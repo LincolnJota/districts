@@ -700,8 +700,8 @@ public class DistrictGuard implements Listener {
 	    return;
 	}
 	// Get To and From Districts
-	DistrictRegion from = plugin.getGrid(e.getToBlock().getWorld().getName()).getDistrictRegionAt(e.getToBlock().getLocation());
-	DistrictRegion to = plugin.getGrid(e.getToBlock().getWorld().getName()).getDistrictRegionAt(e.getBlock().getLocation());
+	DistrictRegion to = plugin.getInDistrict(e.getToBlock().getLocation());
+	DistrictRegion from = plugin.getInDistrict(e.getBlock().getLocation());
 	
 	// Scenarios
 	// 1. inside district or outside - always ok
