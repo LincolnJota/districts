@@ -225,7 +225,7 @@ public class Districts extends JavaPlugin {
 	Locale.conversationsmove = getLocale().getString("conversations.move","Move out of a district to claim an area");
 	Locale.conversationshowmany = getLocale().getString("conversations.howmany","How many?");
 	Locale.conversationsyoubought = getLocale().getString("conversations.youbought","You bought [number] blocks for [cost]");
-	Locale.conversationsblockscost = getLocale().getString("conversations.blockscost","Blocks cost [price]");
+	Locale.conversationsblockscost = getLocale().getString("conversations.blockscost","Blocks cost [cost]");
 	Locale.conversationsyouhave = getLocale().getString("conversations.youhave","You have [balance]");
 	Locale.notenoughblocks = getLocale().getString("conversations.notenoughblocks","You do not have enough blocks!");
 	Locale.blocksavailable = getLocale().getString("conversations.blocksavailable","Blocks available: [number]");

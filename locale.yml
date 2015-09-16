@@ -128,7 +128,7 @@ conversations:
    move: "Move out of a district to claim an area"
    howmany: "How many?"
    youbought: "You bought [number] blocks for [cost]"
-   blockscost: "Blocks cost [price]"
+   blockscost: "Blocks cost [cost]"
    youhave: "You have [balance]"
    notenoughblocks: "You do not have enough blocks!"
    blocksavailable: "Blocks available: [number]"
