@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,9 +28,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
+
+import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldguard.bukkit.RegionContainer;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 
 /**
@@ -63,6 +73,8 @@ public class Districts extends JavaPlugin {
     HashMap<UUID, List<IPItem>> infoPanel = new HashMap<UUID, List<IPItem>>();
     // Grid manager
     private Map<String, GridManager> grid = new HashMap<String, GridManager>();
+    // Whether WG is used
+    private boolean worldGuard;
 
     /**
      * @return plugin object instance
@@ -713,6 +725,7 @@ public class Districts extends JavaPlugin {
 	manager.registerEvents(new JoinLeaveEvents(this, players), this);
 	// WorldGuard PVP
 	if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
+	    worldGuard = true;
 	    manager.registerEvents(new WorldGuardPVPListener(this), this);
 	}
     }
@@ -884,9 +897,30 @@ public class Districts extends JavaPlugin {
      * Checks if a district defined by the corner points pos1 and pos2 overlaps any known districts
      * @param pos1
      * @param pos2
-     * @return
+     * @return true if it intersects
      */
     public boolean checkDistrictIntersection(Location pos1, Location pos2) {
+	//getLogger().info("DEBUG: checking district intersection " + pos1 + " " + pos2);
+	if (worldGuard) {
+	    //getLogger().info("DEBUG:worldguard is true");
+	    // Check if the district overlaps a worldguard region
+	    RegionContainer container = getWorldGuard().getRegionContainer();
+	    RegionManager regions = container.get(pos1.getWorld());
+	    BlockVector min = new BlockVector(pos1.getBlockX(), 0, pos1.getBlockZ());
+	    BlockVector max = new BlockVector(pos2.getBlockX(), pos2.getWorld().getMaxHeight(), pos2.getBlockZ());
+	    ProtectedRegion test = new ProtectedCuboidRegion("dummy", min, max);
+	    /*
+	    Collection<ProtectedRegion> c = regions.getRegions().values();
+	    getLogger().info("C = " + c);
+	    List<ProtectedRegion> intersecting = test.getIntersectingRegions(c);*/
+	    ApplicableRegionSet intersecting = regions.getApplicableRegions(test);
+	    if (!intersecting.getRegions().isEmpty()) {
+		// District will overlap a worldguard region
+		Utils.logger(2, "District overlaps WG region");
+		return true;
+	    }
+	    //getLogger().info("DEBUG: Regions are empty");
+	}
 	// Create a 2D rectangle of this
 	Rectangle2D.Double rect = new Rectangle2D.Double();
 	rect.setFrameFromDiagonal(pos1.getX(), pos1.getZ(), pos2.getX(), pos2.getZ());
@@ -902,6 +936,22 @@ public class Districts extends JavaPlugin {
 	}
 	return false;
     }
+
+    /**
+     * @return the worldGuard
+     */
+    private WorldGuardPlugin getWorldGuard() {
+	Plugin plugin = getServer().getPluginManager().getPlugin("WorldGuard");
+
+	// WorldGuard may not be loaded
+	if (plugin == null || !(plugin instanceof WorldGuardPlugin)) {
+	    return null; // Maybe you want throw an exception instead
+	}
+
+	return (WorldGuardPlugin) plugin;
+    }
+
+
 
     /**
      * Creates a new district
