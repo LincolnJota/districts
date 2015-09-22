@@ -34,6 +34,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
@@ -1041,16 +1042,17 @@ public class DistrictGuard implements Listener {
 	if (!panel.getName().equals(ChatColor.translateAlternateColorCodes('&', Locale.controlpaneltitle))) {
 	    return;
 	}
+	Player player = (Player)e.getWhoClicked();
 	// Check the right worlds
 	if (!Settings.worldName.isEmpty() && !Settings.worldName.contains(e.getWhoClicked().getWorld().getName())) {
+	    player.closeInventory();
 	    return;
 	}
-	Player player = (Player)e.getWhoClicked();
 	UUID playerUUID = player.getUniqueId();
 	DistrictRegion d = plugin.players.getInDistrict(player.getUniqueId());
 
 	// Check for clicks outside
-	if (e.getSlot() < 0) {
+	if (e.getSlotType().equals(SlotType.OUTSIDE)) {
 	    player.closeInventory();
 	    return;
 	}
