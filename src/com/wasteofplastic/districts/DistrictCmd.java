@@ -4,6 +4,7 @@ package com.wasteofplastic.districts;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -286,7 +287,7 @@ public class DistrictCmd implements CommandExecutor {
 			int width = Math.abs(d.getPos1().getBlockX() - d.getPos2().getBlockX()) + 1;
 			int blocks = height * width;
 			// Remove the district
-			HashSet<DistrictRegion> ds = plugin.getDistricts();
+			Set<DistrictRegion> ds = plugin.getDistricts();
 			ds.remove(d);
 			plugin.setDistricts(ds);
 			// Delete from the grid
@@ -374,7 +375,7 @@ public class DistrictCmd implements CommandExecutor {
 			Location pos2 = d.getPos2();
 			player.sendMessage("You purchased the district for "+ VaultHelper.econ.format(d.getPrice()) + "!");
 			// Remove the district
-			HashSet<DistrictRegion> ds = plugin.getDistricts();
+			Set<DistrictRegion> ds = plugin.getDistricts();
 			ds.remove(d);
 			plugin.setDistricts(ds);
 			// Remove from the grid

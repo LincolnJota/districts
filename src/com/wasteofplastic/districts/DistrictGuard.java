@@ -61,7 +61,7 @@ public class DistrictGuard implements Listener {
 
     // Vehicle damage
     @EventHandler(priority = EventPriority.LOW)
-    void vehicleDamageEvent(VehicleDamageEvent e){
+    public void vehicleDamageEvent(VehicleDamageEvent e){
 	Utils.logger(3,e.getEventName());
 
 	if (e.getVehicle() instanceof Boat) {

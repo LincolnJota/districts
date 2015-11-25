@@ -7,9 +7,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +22,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -28,18 +30,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
-
-import com.sk89q.worldedit.BlockVector;
-import com.sk89q.worldguard.bukkit.RegionContainer;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 
 /**
@@ -60,7 +53,7 @@ public class Districts extends JavaPlugin {
     // Players object
     public PlayerCache players;
     // Districts
-    private HashSet<DistrictRegion> districts = new HashSet<DistrictRegion>();
+    private Set<DistrictRegion> districts = new HashSet<DistrictRegion>();
     // Offline Messages
     private HashMap<UUID, List<String>> messages = new HashMap<UUID, List<String>>();
     private YamlConfiguration messageStore;
@@ -74,7 +67,7 @@ public class Districts extends JavaPlugin {
     // Grid manager
     private Map<String, GridManager> grid = new HashMap<String, GridManager>();
     // Whether WG is used
-    private boolean worldGuard;
+    private WorldGuardPVPListener worldGuard;
 
     /**
      * @return plugin object instance
@@ -97,22 +90,6 @@ public class Districts extends JavaPlugin {
 	}
 	// Get the localization strings
 	getLocale();
-	/*
-	Locale.adminHelpdelete = getLocale().getString("adminHelp.delete", "deletes the district you are standing in.");
-	Locale.errorUnknownPlayer = getLocale().getString("error.unknownPlayer","That player is unknown.");
-	Locale.errorNoPermission = getLocale().getString("error.noPermission", "You don't have permission to use that command!");
-	Locale.errorCommandNotReady = getLocale().getString("error.commandNotReady", "You can't use that command right now.");
-	Locale.errorOfflinePlayer = getLocale().getString("error.offlinePlayer", "That player is offline or doesn't exist.");
-	Locale.errorUnknownCommand = getLocale().getString("error.unknownCommand","Unknown command.");
-	Locale.districtProtected = getLocale().getString("error.districtProtected", "District protected");
-	Locale.newsHeadline = getLocale().getString("news.headline", "[District News]");
-	Locale.adminHelpreload = getLocale().getString("adminHelp.reload","reload configuration from file.");
-	Locale.adminHelpdelete = getLocale().getString("adminHelp.delete","deletes the district you are standing in.");
-	Locale.adminHelpinfo = getLocale().getString("adminHelp.info","display information for the given player.");
-	Locale.reloadconfigReloaded = getLocale().getString("reload.configurationReloaded", "Configuration reloaded from file.");	//delete
-	Locale.deleteremoving = getLocale().getString("delete.removing","District removed.");
-	Locale.controlPanelTitle = getLocale().getString("general.controlpaneltitle", "District Control Panel");
-	 */
 	Locale.infoPanelTitle = getLocale().getString("general.infopaneltitle", "District Info");
 
 	Locale.generalnotavailable = getLocale().getString("general.notavailable", "Districts are not available in this world");
@@ -298,9 +275,6 @@ public class Districts extends JavaPlugin {
 	if (Settings.blockTick < 0) {
 	    Settings.blockTick = 0;
 	    getLogger().warning("blocktick in config.yml was set to a negative value! Setting to 0. No blocks given out.");
-
-
-
 	}
 
 	Settings.maxBlockLimit = getConfig().getBoolean("districts.maxblocklimit",false);
@@ -335,6 +309,8 @@ public class Districts extends JavaPlugin {
 	    getLogger().warning("config.yml issue: blockprice cannot be negative, setting to 0 (disabled).");
 	}
 	Utils.setDebug(getConfig().getInt("districts.debug",1));
+	
+	Settings.claimPurge = getConfig().getInt("districts.claimpurge", 0);
     }
 
     /*
@@ -474,11 +450,59 @@ public class Districts extends JavaPlugin {
 		    checkLeases();
 		    getLogger().warning("Leases will not be checked automatically. Make sure your server restarts regularly.");
 		}
+		
+		// Kick of claim purging
+		if (Settings.claimPurge > 0) {
+		    Utils.logger(1,"Claims of players with > " + Settings.claimPurge + " days will be checked and purged hourly.");
+		    getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
+			@Override
+			public void run() {
+			    Utils.logger(1,"Checking claims for inactivity.");
+			    purgeClaims();
+			}
+		    }, 80L, 72000); // Hourly check
+		} else {
+		    Utils.logger(1,"Claims will not be purged.");
+		}
 	    }
 	});
 
     }
 
+    /**
+     * Run through the claims and delete any that are by inactive players
+     */
+    public void purgeClaims() {
+	Iterator<DistrictRegion> it = districts.iterator();
+	Set<DistrictRegion> toBeDeleted = new HashSet<DistrictRegion>();
+	while (it.hasNext()) {
+	    DistrictRegion region = it.next();
+	    UUID owner = region.getOwner();
+	    if (owner != null) {
+		OfflinePlayer player = getServer().getOfflinePlayer(owner);
+		long lastPlayed = player.getLastPlayed();
+		long prior = System.currentTimeMillis() - (Settings.claimPurge * 24 * 60 * 60 * 1000);
+		//long prior = System.currentTimeMillis() - (Settings.claimPurge * 60 * 1000);
+		Date date = new Date(lastPlayed);
+		Date limit = new Date(prior);
+		//getLogger().info("DEBUG: " + date.toString() + " " + limit.toString());
+		if (lastPlayed < prior) {
+		    // Player is inactive
+		    Utils.logger(1, "Purging claim for " + player.getName() + " at " + region.getMinX() + "," + region.getMinZ());
+		    toBeDeleted.add(region);
+		}
+	    }
+	}
+	it = toBeDeleted.iterator();
+	while (it.hasNext()) {
+	    DistrictRegion region = it.next();
+	    String worldName = region.getPos1().getWorld().getName();
+	    GridManager gridManager = grid.get(worldName);
+	    if (gridManager != null) {
+		gridManager.deleteDistrictRegion(region);
+	    }
+	}	
+    }
     /**
      * Gives out blocks to every registered player depending on their permission level
      */
@@ -725,8 +749,11 @@ public class Districts extends JavaPlugin {
 	manager.registerEvents(new JoinLeaveEvents(this, players), this);
 	// WorldGuard PVP
 	if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
-	    worldGuard = true;
-	    manager.registerEvents(new WorldGuardPVPListener(this), this);
+	    getLogger().info("WorldGuard found!");
+	    worldGuard = new WorldGuardPVPListener(this);
+	    manager.registerEvents(worldGuard, this);
+	} else {
+	    getLogger().info("WorldGuard not found.");
 	}
     }
 
@@ -881,16 +908,16 @@ public class Districts extends JavaPlugin {
     /**
      * @return the districts
      */
-    public HashSet<DistrictRegion> getDistricts() {
+    public Set<DistrictRegion> getDistricts() {
 	return districts;
     }
 
 
     /**
-     * @param districts the districts to set
+     * @param ds the districts to set
      */
-    public void setDistricts(HashSet<DistrictRegion> districts) {
-	this.districts = districts;
+    public void setDistricts(Set<DistrictRegion> ds) {
+	this.districts = ds;
     }
 
     /**
@@ -901,25 +928,11 @@ public class Districts extends JavaPlugin {
      */
     public boolean checkDistrictIntersection(Location pos1, Location pos2) {
 	//getLogger().info("DEBUG: checking district intersection " + pos1 + " " + pos2);
-	if (worldGuard) {
-	    //getLogger().info("DEBUG:worldguard is true");
-	    // Check if the district overlaps a worldguard region
-	    RegionContainer container = getWorldGuard().getRegionContainer();
-	    RegionManager regions = container.get(pos1.getWorld());
-	    BlockVector min = new BlockVector(pos1.getBlockX(), 0, pos1.getBlockZ());
-	    BlockVector max = new BlockVector(pos2.getBlockX(), pos2.getWorld().getMaxHeight(), pos2.getBlockZ());
-	    ProtectedRegion test = new ProtectedCuboidRegion("dummy", min, max);
-	    /*
-	    Collection<ProtectedRegion> c = regions.getRegions().values();
-	    getLogger().info("C = " + c);
-	    List<ProtectedRegion> intersecting = test.getIntersectingRegions(c);*/
-	    ApplicableRegionSet intersecting = regions.getApplicableRegions(test);
-	    if (!intersecting.getRegions().isEmpty()) {
-		// District will overlap a worldguard region
-		Utils.logger(2, "District overlaps WG region");
+	if (worldGuard != null) {
+	    getLogger().info("DEBUG:worldguard is true");
+	    if (worldGuard.checkRegion(pos1, pos2)) {
 		return true;
 	    }
-	    //getLogger().info("DEBUG: Regions are empty");
 	}
 	// Create a 2D rectangle of this
 	Rectangle2D.Double rect = new Rectangle2D.Double();
@@ -936,22 +949,6 @@ public class Districts extends JavaPlugin {
 	}
 	return false;
     }
-
-    /**
-     * @return the worldGuard
-     */
-    private WorldGuardPlugin getWorldGuard() {
-	Plugin plugin = getServer().getPluginManager().getPlugin("WorldGuard");
-
-	// WorldGuard may not be loaded
-	if (plugin == null || !(plugin instanceof WorldGuardPlugin)) {
-	    return null; // Maybe you want throw an exception instead
-	}
-
-	return (WorldGuardPlugin) plugin;
-    }
-
-
 
     /**
      * Creates a new district

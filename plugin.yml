@@ -4,7 +4,7 @@ version: ${version}
 description: Districts
 author: Tastybento
 depend: [Vault]
-softdepend: [WorldGuard]
+softdepend: [WorldGuard, WorldEdit]
 commands:
     district:
         description: Main player command

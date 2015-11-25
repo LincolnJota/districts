@@ -41,7 +41,7 @@ public class Settings {
     public static double blockPrice;
     public static boolean maxBlockLimit;
     public static int vizRange;
-
+    public static int claimPurge;
    
     
 }

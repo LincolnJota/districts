@@ -149,7 +149,12 @@ public class Players {
 			    //plugin.getLogger().info("DEBUG: " + d.getPos1());
 			    //plugin.getLogger().info("DEBUG: " + d.getPos1().getWorld());
 			    //plugin.getLogger().info("DEBUG: " + d.getPos1().getWorld().getName());
-			    plugin.getGrid(d.getPos1().getWorld().getName()).addToGrid(d);
+			    GridManager gridManager = plugin.getGrid(d.getPos1().getWorld().getName());
+			    if (gridManager == null) {
+				Utils.logger(1, "Skipping District in world " + d.getPos1().getWorld().getName() + " because it is not in the list of District worlds in config.yml");
+			    } else {
+				gridManager.addToGrid(d);
+			    }
 			}
 		    }
 		} catch (IllegalArgumentException iae) { 
