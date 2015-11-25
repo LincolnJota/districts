@@ -929,7 +929,7 @@ public class Districts extends JavaPlugin {
     public boolean checkDistrictIntersection(Location pos1, Location pos2) {
 	//getLogger().info("DEBUG: checking district intersection " + pos1 + " " + pos2);
 	if (worldGuard != null) {
-	    getLogger().info("DEBUG:worldguard is true");
+	    //getLogger().info("DEBUG:worldguard is true");
 	    if (worldGuard.checkRegion(pos1, pos2)) {
 		return true;
 	    }
