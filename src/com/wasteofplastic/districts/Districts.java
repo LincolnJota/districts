@@ -309,7 +309,7 @@ public class Districts extends JavaPlugin {
 	    getLogger().warning("config.yml issue: blockprice cannot be negative, setting to 0 (disabled).");
 	}
 	Utils.setDebug(getConfig().getInt("districts.debug",1));
-	
+
 	Settings.claimPurge = getConfig().getInt("districts.claimpurge", 0);
     }
 
@@ -450,7 +450,7 @@ public class Districts extends JavaPlugin {
 		    checkLeases();
 		    getLogger().warning("Leases will not be checked automatically. Make sure your server restarts regularly.");
 		}
-		
+
 		// Kick of claim purging
 		if (Settings.claimPurge > 0) {
 		    Utils.logger(1,"Claims of players with > " + Settings.claimPurge + " days will be checked and purged hourly.");
@@ -483,12 +483,11 @@ public class Districts extends JavaPlugin {
 		long lastPlayed = player.getLastPlayed();
 		long prior = System.currentTimeMillis() - (Settings.claimPurge * 24 * 60 * 60 * 1000);
 		//long prior = System.currentTimeMillis() - (Settings.claimPurge * 60 * 1000);
-		Date date = new Date(lastPlayed);
-		Date limit = new Date(prior);
+		//Date date = new Date(lastPlayed);
+		//Date limit = new Date(prior);
 		//getLogger().info("DEBUG: " + date.toString() + " " + limit.toString());
 		if (lastPlayed < prior) {
 		    // Player is inactive
-		    Utils.logger(1, "Purging claim for " + player.getName() + " at " + region.getMinX() + "," + region.getMinZ());
 		    toBeDeleted.add(region);
 		}
 	    }
@@ -496,10 +495,31 @@ public class Districts extends JavaPlugin {
 	it = toBeDeleted.iterator();
 	while (it.hasNext()) {
 	    DistrictRegion region = it.next();
+	    UUID owner = region.getOwner();
+	    Utils.logger(2, "Owner is " + owner);
 	    String worldName = region.getPos1().getWorld().getName();
+	    Utils.logger(2, "World name is " + worldName);
 	    GridManager gridManager = grid.get(worldName);
 	    if (gridManager != null) {
+		Utils.logger(2, "Grid manager is known");
+		String name = getServer().getOfflinePlayer(owner).getName();
+		if (name == null) {
+		    name = "Unknown Name";
+		}
+		Utils.logger(1, "Purging claim for " + name + " (" + owner.toString() + ") at " 
+			+ region.getMinX() + "," + region.getMinZ() + " in world " + worldName + " due to inactivity of player.");
+		// Load player
+		players.get(owner);
+		// Find everyone who is in this district and remove them
+		for (Player p : getServer().getOnlinePlayers()) {
+		    if (region.intersectsDistrict(p.getLocation())) {
+			players.setInDistrict(p.getUniqueId(), null);
+			Visualization.devisualize(p);
+		    }
+		}
+		districts.remove(region);
 		gridManager.deleteDistrictRegion(region);
+		players.save(owner);
 	    }
 	}	
     }

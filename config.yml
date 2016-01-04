@@ -60,8 +60,10 @@ districts:
    # Claim purging
    # Players will lose claims after this many days of not logging onto the server
    # Claim will disappear and the land will be free for another player to claim
-   # If set to zero, claims will exist forever
-   claimpurge: 30
+   # If set to zero, claims will exist forever.
+   # WARNING: when claims are gone, they are deleted completely. Use backups if
+   # you need to.
+   claimpurge: 0
 
    # How often to check leases in hours. If this is 0, then leases will be checked
    # once when the plugin is loaded. If your server is automatically reset every day

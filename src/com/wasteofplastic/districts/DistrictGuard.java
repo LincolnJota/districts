@@ -112,6 +112,7 @@ public class DistrictGuard implements Listener {
 	    return; // handled in vehicle listener
 	}
 	// Check if the player has a compass in their hand
+	/*
 	ItemStack holding = player.getItemInHand();
 	if (holding != null) {
 	    if (holding.getType().equals(Material.COMPASS)) {
@@ -121,7 +122,7 @@ public class DistrictGuard implements Listener {
 		    Utils.logger(2,"DEBUG: Compass " + closest.getBlockX() + "," + closest.getBlockZ());
 		}
 	    }
-	}
+	}*/
 	// Did we move a block? Only check in x and z
 	if (event.getFrom().getBlockX() != event.getTo().getBlockX()
 		|| event.getFrom().getBlockZ() != event.getTo().getBlockZ()) {

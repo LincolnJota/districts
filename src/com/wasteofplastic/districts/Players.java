@@ -91,10 +91,10 @@ public class Players {
 		    } else {
 			// Check if this district already exists
 			if (plugin.getGrid(pos1.getWorld().getName()) != null && plugin.getGrid(pos1.getWorld().getName()).districtAtLocation(pos1)) {
-			//if (!plugin.checkDistrictIntersection(pos1, pos2)) {
+			    //if (!plugin.checkDistrictIntersection(pos1, pos2)) {
 			    Utils.logger(2,"DEBUG: District already exists or overlaps - ignoring");
 
-			   } else {
+			} else {
 			    DistrictRegion d = new DistrictRegion(plugin, pos1, pos2, uuid);
 			    d.setId(UUID.fromString(playerInfo.getString("districts." + key + ".id")));
 			    // Load all the flags
@@ -151,7 +151,7 @@ public class Players {
 			    //plugin.getLogger().info("DEBUG: " + d.getPos1().getWorld().getName());
 			    GridManager gridManager = plugin.getGrid(d.getPos1().getWorld().getName());
 			    if (gridManager == null) {
-				Utils.logger(1, "Skipping District in world " + d.getPos1().getWorld().getName() + " because it is not in the list of District worlds in config.yml");
+				plugin.getLogger().warning("World " + d.getPos1().getWorld().getName() + " not in config.yml, but players have districts there!");
 			    } else {
 				gridManager.addToGrid(d);
 			    }
@@ -355,37 +355,37 @@ public class Players {
 	    // Offline - any overage will be handled at login
 	    this.blocks += blocks;
 	}
-	    return this.blocks;
-	}
-
-	/**
-	 * Removes a number of blocks from a player's balance.
-	 * If the balance becomes negative, the blocks are not removed
-	 * and instead the number required are returned as a negative number
-	 * @param blocks
-	 * @return
-	 */
-	public int removeBlocks(int blocks) {
-	    int balance = this.blocks - blocks;
-	    if (balance < 0) {
-		return balance;
-	    }
-	    this.blocks -= blocks;
-	    return this.blocks;
-	}
-
-	/**
-	 * @return the visualize
-	 */
-	public boolean isVisualize() {
-	    return visualize;
-	}
-
-	/**
-	 * @param visualize the visualize to set
-	 */
-	public void setVisualize(boolean visualize) {
-	    this.visualize = visualize;
-	}
-
+	return this.blocks;
     }
+
+    /**
+     * Removes a number of blocks from a player's balance.
+     * If the balance becomes negative, the blocks are not removed
+     * and instead the number required are returned as a negative number
+     * @param blocks
+     * @return
+     */
+    public int removeBlocks(int blocks) {
+	int balance = this.blocks - blocks;
+	if (balance < 0) {
+	    return balance;
+	}
+	this.blocks -= blocks;
+	return this.blocks;
+    }
+
+    /**
+     * @return the visualize
+     */
+    public boolean isVisualize() {
+	return visualize;
+    }
+
+    /**
+     * @param visualize the visualize to set
+     */
+    public void setVisualize(boolean visualize) {
+	this.visualize = visualize;
+    }
+
+}
