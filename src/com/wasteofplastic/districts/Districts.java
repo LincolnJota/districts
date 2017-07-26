@@ -756,7 +756,8 @@ public class Districts extends JavaPlugin {
 	// Look for defaults in the jar
 	InputStream defLocaleStream = this.getResource("locale.yml");
 	if (defLocaleStream != null) {
-	    YamlConfiguration defLocale = YamlConfiguration.loadConfiguration(defLocaleStream);
+	    Reader defLocaleReader = new InputStreamReader(defLocaleStream);
+	    YamlConfiguration defLocale = YamlConfiguration.loadConfiguration(defLocaleReader);
 	    locale.setDefaults(defLocale);
 	}
     }
